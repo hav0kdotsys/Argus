@@ -1,0 +1,113 @@
+# ARGUS - Agent Runtime for General-purpose Utility Services.
+# The default skin of the ARGUS build of Hermes (installed into $ARGUS_HOME/skins by argus/install.sh).
+# Argus Panoptes, the hundred-eyed watchman; MIRA's Cockpit palette (orchid / magenta on violet-black),
+# so the terminal, the Desktop app and MIRA's own surfaces read as one system.
+name: argus
+description: "ARGUS - the hundred-eyed cockpit for MIRA's estate (orchid on violet-black)"
+
+colors:
+  banner_border: "#9D6BFF"
+  banner_title: "#F0C4FF"
+  banner_accent: "#C77DFF"
+  banner_dim: "#6E5A8A"
+  banner_text: "#F7EBFF"
+  ui_accent: "#C77DFF"
+  ui_label: "#D6B2FF"
+  ui_ok: "#3EE6A8"
+  ui_error: "#FF5A6A"
+  ui_warn: "#FFB24D"
+  prompt: "#F7EBFF"
+  input_rule: "#6B4A9E"
+  response_border: "#C77DFF"
+  status_bar_bg: "#140A22"
+  status_bar_text: "#F7EBFF"
+  status_bar_strong: "#F0C4FF"
+  status_bar_dim: "#7A6A90"
+  status_bar_good: "#3EE6A8"
+  status_bar_warn: "#FFB24D"
+  status_bar_bad: "#FF5A6A"
+  status_bar_critical: "#FF3B5C"
+  session_label: "#D6B2FF"
+  session_border: "#5A4A72"
+  completion_menu_bg: "#140A22"
+  completion_menu_current_bg: "#3A1F5C"
+  completion_menu_meta_bg: "#140A22"
+  completion_menu_meta_current_bg: "#3A1F5C"
+  selection_bg: "#4A2A70"
+  shell_dollar: "#FF5BD8"
+  voice_status_bg: "#140A22"
+
+# Hand-tuned for light terminals (Windows Terminal light profiles): dark violet text, pale lilac surfaces.
+light_colors:
+  banner_border: "#7B3FD6"
+  banner_title: "#5A1FA8"
+  banner_accent: "#9B3FE0"
+  banner_dim: "#8A7AA0"
+  banner_text: "#2A1A3D"
+  ui_accent: "#9B3FE0"
+  ui_label: "#7B3FD6"
+  prompt: "#2A1A3D"
+  input_rule: "#B9A2DA"
+  response_border: "#9B3FE0"
+  status_bar_bg: "#F1E8FB"
+  status_bar_text: "#2A1A3D"
+  status_bar_strong: "#5A1FA8"
+  status_bar_dim: "#8A7AA0"
+  completion_menu_bg: "#F1E8FB"
+  completion_menu_current_bg: "#DCC7F5"
+  completion_menu_meta_bg: "#F1E8FB"
+  completion_menu_meta_current_bg: "#DCC7F5"
+  selection_bg: "#DCC7F5"
+  shell_dollar: "#C2189B"
+  voice_status_bg: "#F1E8FB"
+
+spinner:
+  waiting_faces: ["(◉)", "(◎)", "(⊙)", "(●)", "(◌)"]
+  thinking_faces: ["(◐)", "(◓)", "(◑)", "(◒)", "(◉)"]
+  thinking_verbs:
+    - "watching"
+    - "scanning the estate"
+    - "opening another eye"
+    - "cross-checking"
+    - "tracing it back"
+    - "surveying"
+    - "keeping watch"
+    - "reading the signs"
+  wings:
+    - ["⟪◉", "◉⟫"]
+    - ["⟪◎", "◎⟫"]
+    - ["⟪⊙", "⊙⟫"]
+
+branding:
+  agent_name: "ARGUS"
+  welcome: "ARGUS online - Agent Runtime for General-purpose Utility Services. Type a message or /help."
+  goodbye: "ARGUS closing its eyes. ◉"
+  response_label: " ◉ ARGUS "
+  prompt_symbol: "❯"
+  help_header: "(◉) Available Commands"
+
+tool_prefix: "┊"
+
+banner_logo: |-
+  [bold #9D6BFF] █████╗ ██████╗  ██████╗ ██╗   ██╗███████╗[/]
+  [bold #AA74FF]██╔══██╗██╔══██╗██╔════╝ ██║   ██║██╔════╝[/]
+  [#B97CFF]███████║██████╔╝██║  ███╗██║   ██║███████╗[/]
+  [#C77DFF]██╔══██║██╔══██╗██║   ██║██║   ██║╚════██║[/]
+  [#E06BE8]██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║[/]
+  [#FF5BD8]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝[/]
+  [dim #7A6A90]Agent Runtime for General-purpose Utility Services[/]
+
+banner_hero: |-
+  [#6B4A9E]        ▄▄▄██████████▄▄▄        [/]
+  [#9D6BFF]    ▄▄██▀▀            ▀▀██▄▄    [/]
+  [#B97CFF]  ▄█▀       ▄▄████▄▄       ▀█▄  [/]
+  [#C77DFF] ██       ██▀ [#FF5BD8]▄██▄[/][#C77DFF] ▀██       ██ [/]
+  [#B97CFF]  ▀█▄       ▀▀████▀▀       ▄█▀  [/]
+  [#9D6BFF]    ▀▀██▄▄            ▄▄██▀▀    [/]
+  [#6B4A9E]        ▀▀▀██████████▀▀▀        [/]
+  [dim #7A6A90]       a hundred eyes, open      [/]
+
+# The Desktop app reads this too (Settings -> Appearance). MIRA's glass and glow, kept subtle.
+customCSS: |
+  :root { --argus-glow: 0 0 18px rgba(199, 125, 255, 0.35); }
+  .message-assistant, .tool-card { box-shadow: var(--argus-glow); }

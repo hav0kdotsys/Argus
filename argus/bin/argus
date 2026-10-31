@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# argus - the ARGUS command (Linux, macOS, WSL).
+#
+# ARGUS is a soft fork of Hermes Agent: the same core, run under ARGUS's own home and identity. This launcher
+# is the whole difference at the process level - it points the core at $ARGUS_HOME (default ~/.argus, kept
+# apart from any Hermes install), makes sure the ARGUS overlay (skin, plugins, defaults) is in that home, and
+# runs this checkout's `hermes` entry point in its managed environment. Everything after `argus` is passed
+# through: `argus` (TUI), `argus serve`, `argus model`, `argus doctor`, ...
+set -euo pipefail
+
+self="$(readlink -f "${BASH_SOURCE[0]}")"
+argus_dir="$(cd "$(dirname "$self")/.." && pwd)"     # <repo>/argus
+repo="$(cd "$argus_dir/.." && pwd)"                   # the Hermes checkout this ARGUS lives in
+
+export ARGUS_HOME="${ARGUS_HOME:-$HOME/.argus}"
+export HERMES_HOME="$ARGUS_HOME"
+export ARGUS_REPO="$repo"
+
+# Idempotent and fast when nothing changed; never touches what the user edited.
+"$argus_dir/install.sh" --quiet
+
+# The checkout's `hermes` script by path, under the PM environment's Python. Not the `hermes` shell function that
+# `activate` defines: that one cd's into the checkout, and an agent harness must work in the caller's directory.
+exec "$repo/scripts/run-in-hermes-env" python "$repo/hermes" "$@"

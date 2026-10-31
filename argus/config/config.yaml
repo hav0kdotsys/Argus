@@ -1,0 +1,41 @@
+# ARGUS - starting configuration. argus/install.sh copies this to $ARGUS_HOME/config.yaml ONCE, when there is
+# none; after that the file is yours and is never overwritten (`argus config` / `argus setup` edit it too).
+# Keys are the Hermes config schema (cli-config.yaml.example in the repo root has every option).
+
+model:
+  # Picked from whatever credentials $ARGUS_HOME/.env holds until you choose one with `argus model`.
+  # Z.ai (GLM_API_KEY) and NVIDIA NIM (NVIDIA_API_KEY) are first-class Hermes providers.
+  provider: "auto"
+
+# Fallback chain - filled in once the keys are in .env and the model ids are confirmed live (`argus model`).
+# Same entry format as the docs: website/docs/user-guide/features/fallback-providers.md
+# fallback_providers:
+#   - provider: zai
+#     model: "<a GLM model id from `argus model`>"
+#   - provider: nvidia
+#     model: "<a NIM model id>"
+#   - provider: custom              # Cloudflare Workers AI (OpenAI-compatible)
+#     model: "<@cf/... model id>"
+#     base_url: "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1"
+#     key_env: CLOUDFLARE_API_TOKEN
+
+mcp_servers:
+  # MIRA's own MCP (mira-mcp on debhvk): every tool MIRA has - phone, PCs, TV, music, calendar, vault, estate.
+  # Through the Cloudflare relay with MIRA's MCP token, from anywhere. Not the LAN: mira-mcp's LAN guard
+  # (2026-10-27) only lets loopback and the Docker networks reach /mcp, because the tools include ssh_exec and
+  # PC control and the LAN is not a credential. Put the token in $ARGUS_HOME/.env as JARVIS_MCP_TOKEN
+  # (value: JARVIS_MCP_TOKEN in debhvk:/srv/authentik-prod/config/.env.jarvis - see MCP-CLOUD-SETUP.md).
+  mira:
+    url: "https://jarvis-mcp-relay.moonauth.dpdns.org/mcp"
+    headers:
+      Authorization: "Bearer ${JARVIS_MCP_TOKEN}"
+    timeout: 120
+    connect_timeout: 20
+
+skills:
+  # MIRA's skills, read-only (ARGUS writes its own new skills into $ARGUS_HOME/skills).
+  external_dirs:
+    - ~/.argus/mira-skills
+
+display:
+  skin: argus
