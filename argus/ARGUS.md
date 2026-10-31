@@ -25,19 +25,20 @@ four separate apps. MIRA's own apps keep their per-device jobs; ARGUS is the one
 ## Process model
 
 ```
- argus (TUI, Ink)            ARGUS Desktop (Electron)          other clients (phone, MIRA, scripts)
+ argus (TUI, Ink)            ARGUS Desktop (Electron)          other clients (dashboard, remote, scripts)
         \                              |                                  /
-         \---- JSON-RPC (tui_gateway) --+-- HTTP/WS (argus serve) --------/
+         \--- JSON-RPC over WebSocket (ws://127.0.0.1:<port>/api/ws, per-client ticket) ---/
                                         |
-                          ARGUS core server (Hermes core, Python)
+             ARGUS core server = the profile's gateway owner (`argus gateway run`, Python)
           agent loop - providers + fallback - MCP client - skills - memory - cron - subagents
                                         |
          MIRA's MCP (relay)  -  mira-api  -  hvkdeckd (debhvk)  -  MiraAgent (winhvk)  -  local tools
 ```
 
-Hermes already ships this split: `tui_gateway/` is the Python JSON-RPC backend the Ink TUI talks to and that
-also serves the Desktop app; `hermes serve` is the headless backend. ARGUS makes the long-lived server the
-default shape (`argus serve` on a host, TUI and Desktop attach) rather than a TUI-owned child process.
+Hermes already ships this split: one owner process per profile home serves the JSON-RPC methods (`tui_gateway/`)
+over WebSocket; each client gets a short-lived ticket from the owner's private control socket. `argus serve` is
+a separate headless web backend (dashboard / remote Desktop). ARGUS makes the long-lived owner the default shape
+(`argus gateway install`) rather than one that the first TUI starts and that exits when idle.
 
 ## How ARGUS stays a soft fork
 
@@ -117,11 +118,13 @@ In the TUI these become panels and slash commands (`/estate`, `/containers`, `/d
 2. **Providers - mostly done (2026-10-31):** NIM primary + Cloudflare/NIM fallback chain live-tested; a real
    turn (`argus chat --oneshot`) answered from MIRA's tools. Still to do: Z.ai once funded, Gemini / Ollama Cloud
    keys, the claude-code sidecar as a delegation backend, `argus doctor` green.
-3. **Server-first:** `argus serve` as a user service (`argus/install-service.sh` on laphvk; a scheduled task on
-   winhvk). Then the first real core feature: **`argus --attach`** - today the Ink TUI always spawns its own
-   tui_gateway over stdio while Desktop reaches `argus serve` over WebSocket; teach the TUI the same WebSocket
-   client (`apps/shared` JsonRpcGatewayClient) so TUI and Desktop share one server and its sessions. A
-   generic upstream-shaped change (a new transport), so it can go upstream too.
+3. **Server-first - built in upstream, verified (2026-10-31):** Hermes already runs ONE long-lived core server
+   per profile home (the gateway "owner", `argus gateway run`): the Ink TUI asks a private control socket for a
+   short-lived ticket and attaches over WebSocket (`ws://127.0.0.1:<port>/api/ws`, loopback, ticket in the
+   subprotocol header); Desktop attaches to the same owner. Verified on laphvk: two separate TUI bootstraps
+   got the same instance. ARGUS's part: make the TUI the default interface (`display.interface: tui`) and run
+   the owner as a service instead of letting it idle-exit - `argus gateway install` (Hermes' own systemd /
+   launchd / Windows-task installer; the unit pins HERMES_HOME=~/.argus and refuses to touch another install's).
 4. **Cockpit plugin pack:** HvkDeck and MIRA Desktop functions as tools + TUI panels + Desktop pages.
 5. **Desktop rebrand + builds:** ARGUS name/icon (CORE-PATCHES), Windows installer and Linux AppImage/deb.
 6. **Polish to beat Claude Code / opencode:** the things HavoK uses daily, measured by HavoK.

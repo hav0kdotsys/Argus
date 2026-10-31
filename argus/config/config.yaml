@@ -49,3 +49,6 @@ skills:
 
 display:
   skin: argus
+  # The Ink TUI by default (Hermes defaults to its classic prompt_toolkit CLI); `argus --cli` still opens that.
+  # The TUI attaches to the profile's one long-lived core server (`argus gateway`), the same one Desktop uses.
+  interface: tui
