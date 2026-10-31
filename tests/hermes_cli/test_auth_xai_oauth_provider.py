@@ -578,7 +578,7 @@ def test_auth_remove_xai_oauth_clears_singleton_and_sticks(tmp_path, monkeypatch
     assert not pool_after.has_credentials(), (
         "Removal must stick across load_pool() calls — without the "
         "device_code RemovalStep, the seed function reads the singleton "
-        "and rebuilds the entry on every Hermes invocation."
+        "and rebuilds the entry on every ARGUS invocation."
     )
 
 

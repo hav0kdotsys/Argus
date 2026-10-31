@@ -35,14 +35,14 @@ _IN_NIX_BUILD = os.environ.get("HERMES_NIX_BUILD") == "1"
 
 _BLOCK_MESSAGE = (
     "Building wheels or sdists for hermes-agent is not supported.\n"
-    "Hermes is distributed via the shell installer, Docker image, or Nix.\n"
+    "ARGUS is distributed via the shell installer, Docker image, or Nix.\n"
     "See: https://hermes-agent.nousresearch.com/docs/getting-started/installation\n"
     "\n"
     "If you are developing, use an editable install instead:\n"
     "  source ./activate  # PowerShell: . .\\activate.ps1\n"
     "\n"
     "If you are building with Nix (uv2nix), this error should not fire —\n"
-    "the Hermes Nix derivation sets HERMES_NIX_BUILD=1. If it does, file a bug."
+    "the ARGUS Nix derivation sets HERMES_NIX_BUILD=1. If it does, file a bug."
 )
 
 

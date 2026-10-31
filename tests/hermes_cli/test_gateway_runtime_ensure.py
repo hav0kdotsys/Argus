@@ -457,7 +457,7 @@ def _standalone_host(tmp_path, monkeypatch, record):
     return home, spawned
 
 
-_REASON = "duplicate Telegram token; run hermes gateway migrate --multiplex"
+_REASON = "duplicate Telegram token; run argus gateway migrate --multiplex"
 
 
 def test_ensure_reports_a_standalone_host_reason_for_an_unserved_named_profile(tmp_path, monkeypatch):

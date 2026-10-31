@@ -75,7 +75,7 @@ def test_neighbour_update_leaves_this_installs_gateway_running(journey: Journey)
     pid = int(before.get("pid") or 0)
     after = journey["host_after"]
     assert after["alive"] and after.get("pid") == pid and after.get("gateway_state") == "running", fail_with(
-        m, f"another install's `hermes update` stopped this install's gateway (pid {pid}); "
+        m, f"another install's `argus update` stopped this install's gateway (pid {pid}); "
            f"alive={after['alive']}, gateway_state after: {after.get('gateway_state')!r} pid {after.get('pid')}", run)
 
 
@@ -84,5 +84,5 @@ def test_neighbour_update_stops_no_foreign_gateway(journey: Journey) -> None:
     journey["host_before"]  # a foreign gateway was running during the update
     stopped = [line.strip() for line in run.stdout.splitlines() if any(s in line for s in _FOREIGN_STOP)]
     assert run.returncode == 0 and not stopped, fail_with(
-        n, f"`hermes update` without a gateway of its own reported stopping gateways "
+        n, f"`argus update` without a gateway of its own reported stopping gateways "
            f"(rc={run.returncode}): {stopped}", run)

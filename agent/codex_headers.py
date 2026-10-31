@@ -46,7 +46,7 @@ def codex_cloudflare_headers(access_token: str, *, base_url: str = CODEX_AUX_BAS
             "originator": "hermes-agent",
         }
     else:
-        headers = {"User-Agent": "codex_cli_rs/0.0.0 (Hermes Agent)", "originator": "codex_cli_rs"}
+        headers = {"User-Agent": "codex_cli_rs/0.0.0 (ARGUS)", "originator": "codex_cli_rs"}
     headers.update(codex_account_headers(access_token))
     return headers
 

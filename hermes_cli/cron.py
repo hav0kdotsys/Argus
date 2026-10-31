@@ -82,9 +82,9 @@ def _warn_if_gateway_not_running() -> None:
     # profile's jobs, so a bare "not running" reads as a system claim it cannot make (#99579).
     print(color(f"  ⚠  Scheduler is not ready for profile '{get_active_profile_name()}': "
                 "no gateway serves it and no fresh ticker heartbeat.", Colors.YELLOW))
-    print(color("     If no gateway is running: hermes gateway install\n"
-                "                    sudo hermes gateway install --system  # Linux servers\n"
-                "     Check status:  hermes cron status", Colors.DIM))
+    print(color("     If no gateway is running: argus gateway install\n"
+                "                    sudo argus gateway install --system  # Linux servers\n"
+                "     Check status:  argus cron status", Colors.DIM))
 
 
 def _format_lateness(seconds: float) -> str:
@@ -189,7 +189,7 @@ def cron_list(show_all: bool = False):
     from hermes_cli.profiles import get_active_profile_name
     if not jobs:
         print(color(f"No scheduled jobs in profile '{get_active_profile_name()}'.\n"
-                    "Create one with 'hermes cron create ...' or the /cron command in chat.", Colors.DIM))
+                    "Create one with 'argus cron create ...' or the /cron command in chat.", Colors.DIM))
         return
 
     _print_banner(f"Scheduled Jobs (profile: {get_active_profile_name()})")
@@ -272,14 +272,14 @@ def _short_reason(text: Any, limit: int = 120) -> str:
 
 
 def _delivery_fix_hint(job: dict[str, Any]) -> str:
-    return (f"Check the target with `hermes cron status` or change it with "
-            f"`hermes cron edit {job.get('id', '<id>')} --deliver <target>`.")
+    return (f"Check the target with `argus cron status` or change it with "
+            f"`argus cron edit {job.get('id', '<id>')} --deliver <target>`.")
 
 
 def _missed_fire_issue(job: dict[str, Any], fire_err: dict[str, Any]) -> str:
     return (f"missed scheduled fire at {fire_err.get('at', '?')}: {_short_reason(fire_err['detail'])}. "
-            "The messaging gateway was unreachable. Run `hermes gateway restart`, then "
-            f"`hermes cron run {job.get('id', '<id>')}` to run it now.")
+            "The messaging gateway was unreachable. Run `argus gateway restart`, then "
+            f"`argus cron run {job.get('id', '<id>')}` to run it now.")
 
 
 def _job_warnings(job: dict[str, Any]) -> list[str]:
@@ -334,7 +334,7 @@ def cron_tick():
         # For the one-shot CLI surface, report cleanly instead of dumping a traceback; the gateway ticker
         # loop handles its own retry. See #87644.
         print(color(f"✗ Cron tick failed: {exc}", Colors.RED))
-        print("  Check `hermes cron status` and the gateway log for details.")
+        print("  Check `argus cron status` and the gateway log for details.")
         return 1
     return 0
 
@@ -368,7 +368,7 @@ def cron_incidents(args) -> int:
     if action == "ack":
         incident_id = getattr(args, "incident_id", None)
         if not incident_id:
-            print(color("✗ Incident ID required: hermes cron incidents ack <incident_id>", Colors.RED))
+            print(color("✗ Incident ID required: argus cron incidents ack <incident_id>", Colors.RED))
             return 1
         if ack_incident(incident_id):
             print(color(f"✓ Incident {incident_id} acknowledged (closed).", Colors.GREEN))
@@ -399,13 +399,13 @@ def cron_incidents(args) -> int:
             if label != "Output" or value:
                 print(f"    {label + ':':<12}{value}")
         print()
-    print(color(f"  {len(incidents)} incident(s)  |  ack one with: hermes cron incidents ack <id>",
+    print(color(f"  {len(incidents)} incident(s)  |  ack one with: argus cron incidents ack <id>",
                 Colors.DIM))
     return 0
 
 
 _PERMISSION_HINT = ("  Hint: jobs.json may be owned by another user (e.g. rewritten by a root "
-                    "`docker exec hermes hermes cron ...`). Fix ownership to match the gateway "
+                    "`docker exec hermes hermes cron ...`). Fix ownership to match the gateway "  # rebrand: keep
                     "user, and prefer `docker exec -u <uid>:<gid>`.")
 _FD_EXHAUSTION_HINT = ("  Hint: the ticker hit file-descriptor exhaustion (EMFILE). The scheduler "
                        "now retries with backoff and attempts fd reclamation, but if the leak "
@@ -444,14 +444,14 @@ def _probe_then_list_jobs(*, include_disabled: bool, brief: bool = False):
 def _print_store_unwritable(report: dict, *, brief: bool = False) -> None:
     if brief:  # `cron list`: one line
         print(color(f"⚠ Cron store {report['store']} is NOT writable ({report['error']}) — scheduled jobs "
-                    f"are being skipped; {report['fix']}. See `hermes cron status`.", Colors.RED))
+                    f"are being skipped; {report['fix']}. See `argus cron status`.", Colors.RED))
         return
     print(color("⚠ Cron store is NOT writable — scheduled jobs are being skipped", Colors.RED))
     print(color(f"  {report['store']}: {report['error']} (last successful write {report['since']})", Colors.RED))
     print(color(f"  Fix: {report['fix']}. Each due job then fires once on the next tick.", Colors.YELLOW))
 
 
-def _print_ticker_health(pids: list, restart_command: str = "hermes gateway restart") -> None:
+def _print_ticker_health(pids: list, restart_command: str = "argus gateway restart") -> None:
     """Report builtin-ticker liveness for a gateway process known to be alive.
 
     The ticker THREAD can die silently or stay alive while every tick fails, so check both
@@ -476,7 +476,7 @@ def _print_ticker_health(pids: list, restart_command: str = "hermes gateway rest
         # Ticker never started (non-cron profile, gateway just started, or a config issue).
         _warn("⚠ Gateway is running but the cron ticker has not reported a heartbeat.")
         print("  Cron jobs will NOT fire until the ticker writes its first heartbeat.\n"
-              "  If the gateway just started, wait ~60s and re-run `hermes cron status`.\n"
+              "  If the gateway just started, wait ~60s and re-run `argus cron status`.\n"
               f"  If heartbeat never appears, restart: {restart_command}")
     elif not _ticker_age_is_fresh(hb_age):  # ticker thread is gone
         _warn("⚠ Gateway is running but the cron ticker looks STALLED — "
@@ -580,14 +580,14 @@ def cron_status():
                 from hermes_cli.gateway import host_multiplexer_serving
                 owner = host_multiplexer_serving(active)
             host_profile = owner.profile_label if owner is not None else "default"
-            _print_ticker_health([host.pid], restart_command=f"hermes --profile {host_profile} gateway restart")
+            _print_ticker_health([host.pid], restart_command=f"argus --profile {host_profile} gateway restart")
         elif pids or gateway_alive_via_lock or served_by_multiplexer or in_process_ticker:
             if served_by_multiplexer:
                 print("  Scheduler host: the host gateway (multiplexing this profile)")
-                _print_ticker_health([], restart_command="hermes --profile default gateway restart")
+                _print_ticker_health([], restart_command="argus --profile default gateway restart")
             elif in_process_ticker:
-                print(f"  Scheduler host: an in-process ticker (hermes serve / Desktop backend) ticking profile '{active}'")
-                _print_ticker_health([], restart_command="restart the Hermes Desktop app (or its serve backend)")
+                print(f"  Scheduler host: an in-process ticker (argus serve / Desktop backend) ticking profile '{active}'")
+                _print_ticker_health([], restart_command="restart the ARGUS Desktop app (or its serve backend)")
             else:
                 _print_ticker_health(pids)
         else:
@@ -604,15 +604,15 @@ def cron_status():
                                 f"{_format_lateness(hb_age)} ago — jobs that came due "
                                 "since then have not fired.", Colors.YELLOW))
             print("\n  Start the ONE host gateway (it multiplexes every profile, this one included):\n"
-                  "    hermes --profile default gateway install   # user service\n"
-                  "    sudo hermes --profile default gateway install --system  # Linux servers: boot-time service\n"
-                  "    hermes --profile default gateway run       # Or run in foreground")
+                  "    argus --profile default gateway install   # user service\n"
+                  "    sudo argus --profile default gateway install --system  # Linux servers: boot-time service\n"
+                  "    argus --profile default gateway run       # Or run in foreground")
             if active not in ("default", "custom"):
                 print("\n  It serves this profile automatically. If a per-profile service or gateway\n"
                       "  from an older release is still installed, fold it in (preflight + dry run):\n"
-                      "      hermes --profile default gateway migrate --multiplex --dry-run\n"
-                      "      hermes --profile default gateway migrate --multiplex\n"
-                      "  Check: hermes cron status from this profile should show its ticker heartbeat.\n")
+                      "      argus --profile default gateway migrate --multiplex --dry-run\n"
+                      "      argus --profile default gateway migrate --multiplex\n"
+                      "  Check: argus cron status from this profile should show its ticker heartbeat.\n")
 
     print()
     _print_active_jobs_summary(active_jobs)
@@ -769,7 +769,7 @@ def cron_doctor() -> int:
         for issue in issues:
             print(f"    - {issue}")
     print()
-    print(color("Review the findings above, then run `hermes cron doctor` again.", Colors.DIM))
+    print(color("Review the findings above, then run `argus cron doctor` again.", Colors.DIM))
     return 1
 
 
@@ -973,7 +973,7 @@ def cron_notepad(args) -> int:
             return 0
         usage_args = "set <key> <value>" if action == "set" else f"{action} <key>"
         if key is None or (action == "set" and value is None):
-            print(color(f"Usage: hermes cron notepad <job_id> {usage_args}", Colors.RED))
+            print(color(f"Usage: argus cron notepad <job_id> {usage_args}", Colors.RED))
             return 1
         if action == "set":
             notepad.set_note(job_id, key, value)
@@ -1041,5 +1041,5 @@ def cron_command(args):
     if handler is not None:
         return handler(args)
     print(f"Unknown cron command: {subcmd}\n"
-          "Usage: hermes cron [list|create|edit|pause|resume|run|cancel|remove|status|runs|doctor|tick]")
+          "Usage: argus cron [list|create|edit|pause|resume|run|cancel|remove|status|runs|doctor|tick]")
     sys.exit(1)

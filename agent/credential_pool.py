@@ -1616,7 +1616,7 @@ class CredentialPool(CredentialPoolAdminMixin, CredentialPoolModelCooldownMixin)
         if entry.source == "claude_code":
             store = "~/.claude/.credentials.json"
         elif entry.source == "hermes_pkce":
-            store = "~/.hermes/.anthropic_oauth.json"
+            store = "~/.argus/.anthropic_oauth.json"
         else:
             return
         try:
@@ -1774,7 +1774,7 @@ class CredentialPool(CredentialPoolAdminMixin, CredentialPoolModelCooldownMixin)
                 # CLI's credentials file here — only Hermes' own row goes DEAD.
                 logger.warning(
                     "Anthropic OAuth refresh token for %s is terminally invalid (%s); the credential "
-                    "leaves rotation. Re-run 'hermes auth add anthropic' to sign in again.",
+                    "leaves rotation. Re-run 'argus auth add anthropic' to sign in again.",
                     entry.label or entry.id[:8], exc)
                 self._mark_dead_refresh_grant(entry, exc)
                 return None
@@ -1793,7 +1793,7 @@ class CredentialPool(CredentialPoolAdminMixin, CredentialPoolModelCooldownMixin)
                 # silent quarantine looked like "I logged in once and Hermes keeps failing" (#113023).
                 logger.warning(
                     "%s OAuth refresh token is terminally invalid (%s); clearing local token state. "
-                    "Re-run 'hermes auth add %s' to sign in again.", display, exc, self.provider)
+                    "Re-run 'argus auth add %s' to sign in again.", display, exc, self.provider)
                 self._clear_terminal_tokens_state(entry, exc)
                 self._quarantine_sources(entry, {"device_code"})
                 self._mark_dead_refresh_grant(entry, exc)
@@ -1815,7 +1815,7 @@ class CredentialPool(CredentialPoolAdminMixin, CredentialPoolModelCooldownMixin)
             if auth_mod._is_terminal_nous_refresh_error(exc):
                 logger.warning(
                     "Nous refresh token is terminally invalid (%s); clearing local token state. "
-                    "Re-run 'hermes auth add nous' to sign in again.", exc)
+                    "Re-run 'argus auth add nous' to sign in again.", exc)
                 self._clear_terminal_nous_state(entry, exc)
                 self._quarantine_sources(
                     entry,
@@ -2065,7 +2065,7 @@ class CredentialPool(CredentialPoolAdminMixin, CredentialPoolModelCooldownMixin)
                     if dead_at and now - dead_at > DEAD_MANUAL_PRUNE_TTL_SECONDS:
                         logger.warning(
                             "credential pool: pruning DEAD manual entry %s "
-                            "(reason=%s, age=%.1fh) — re-add via `hermes auth add %s`",
+                            "(reason=%s, age=%.1fh) — re-add via `argus auth add %s`",
                             entry.label or entry.id[:8],
                             entry.last_error_reason or "unknown",
                             (now - dead_at) / 3600.0,
@@ -2797,7 +2797,7 @@ def _warn_env_ingestion_once(provider: str, env_var: str) -> None:
     logger.warning(
         "Ingested %s from environment into the %s credential pool — this "
         "enables %s spend. Remove the key or run "
-        "hermes auth remove %s <n> to suppress.",
+        "argus auth remove %s <n> to suppress.",
         env_var,
         provider,
         "OpenRouter" if provider == "openrouter" else provider,

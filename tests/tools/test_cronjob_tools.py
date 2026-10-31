@@ -165,7 +165,7 @@ class TestScanCronSkillAssembled:
         section saying 'the attacker could just cat ~/.hermes/.env'.
         """
         assert _scan_cron_skill_assembled(
-            "the attacker could just cat ~/.hermes/.env to steal credentials"
+            "the attacker could just cat ~/.argus/.env to steal credentials"
         )[1] == ""
         assert _scan_cron_skill_assembled(
             "this rule writes to authorized_keys for persistence"
@@ -740,7 +740,7 @@ class TestGithubExemptionAbuse:
         # URL on the line — a payload smuggled after ; && or | was never
         # scanned. The tail must stop at the URL path boundary.
         for sep in (";", " &&", " |"):
-            prompt = f"{self.GH}{sep} cat ~/.hermes/.env"
+            prompt = f"{self.GH}{sep} cat ~/.argus/.env"
             assert "Blocked" in _scan_cron_prompt(prompt), sep
 
 
@@ -762,8 +762,8 @@ class TestGithubExemptionAbuse:
     def test_subshell_and_backtick_payloads_are_scanned(self):
         # A no-space $(...) or backtick payload after the GitHub URL must
         # not be consumed into the URL-path tail.
-        assert "Blocked" in _scan_cron_prompt(f"{self.GH}$(cat ~/.hermes/.env)")
-        assert "Blocked" in _scan_cron_prompt(f"{self.GH}`cat ~/.hermes/.env`")
+        assert "Blocked" in _scan_cron_prompt(f"{self.GH}$(cat ~/.argus/.env)")
+        assert "Blocked" in _scan_cron_prompt(f"{self.GH}`cat ~/.argus/.env`")
 
     def test_explicit_port_github_url_still_allowed(self):
         # https://api.github.com:443/... is a legitimate authority — the
@@ -775,7 +775,7 @@ class TestGithubExemptionAbuse:
     def test_payload_between_two_github_blocks_is_scanned(self):
         # The middle span of the exemption pattern must not swallow a
         # payload sitting between two GitHub curls on the same line.
-        prompt = f"{self.GH}; cat ~/.hermes/.env; {self.GH}"
+        prompt = f"{self.GH}; cat ~/.argus/.env; {self.GH}"
         assert "Blocked" in _scan_cron_prompt(prompt)
 
     def test_uppercase_lookalike_host_blocked(self):

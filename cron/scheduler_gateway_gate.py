@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 GATEWAY_DOWN_HINT = (
     "the gateway is not running, so agent jobs cannot fire; they run at the next tick once it is "
-    "up. Start it with `hermes gateway start` (or `hermes gateway install` for a service)."
+    "up. Start it with `argus gateway start` (or `argus gateway install` for a service)."
 )
 # A crontab tick has a minute; a gateway still starting answers within a few seconds or not at all.
 _HEADLESS_PROBE_TIMEOUT_S = 5.0
@@ -42,7 +42,7 @@ def _gateway_unavailable(home) -> str | None:
         return GATEWAY_DOWN_HINT
     reason = observed.state + (f" ({observed.reason_code})" if observed.reason_code else "")
     return (f"the gateway is {reason}, so agent jobs cannot fire; they run at the next tick once it "
-            "is ready. Check it with `hermes gateway status`.")
+            "is ready. Check it with `argus gateway status`.")
 
 
 def _note_fire_refused(job_ids, detail: str) -> None:

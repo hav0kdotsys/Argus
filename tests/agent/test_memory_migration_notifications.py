@@ -34,7 +34,7 @@ def _start(tmp_path, monkeypatch, platform):
 
 def test_cli_start_prints_the_refusal(tmp_path, monkeypatch):
     agent = _start(tmp_path, monkeypatch, "cli")
-    assert any("hermes plugins install scout_missing_provider" in line for line in agent.printed)
+    assert any("argus plugins install scout_missing_provider" in line for line in agent.printed)
 
 
 def test_gateway_start_replays_the_refusal_once_on_first_turn(tmp_path, monkeypatch):
@@ -44,7 +44,7 @@ def test_gateway_start_replays_the_refusal_once_on_first_turn(tmp_path, monkeypa
     agent._replay_startup_warnings()
     agent._replay_startup_warnings()
     assert len(notices) == 1 and notices[0].level == "warn"
-    assert "hermes plugins install scout_missing_provider" in notices[0].text
+    assert "argus plugins install scout_missing_provider" in notices[0].text
 
 
 def test_a_gateway_hosted_cli_session_prints_the_startup_warning_on_its_first_turn():

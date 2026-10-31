@@ -223,7 +223,7 @@ def test_uninspectable_unknown_descriptor_uses_hermes_identity_at_repair_boundar
     if should_block:
 
         def _unexpected_probe(*_args, **_kwargs):
-            pytest.fail("repair opened SQLite with an unproven Hermes descriptor")
+            pytest.fail("repair opened SQLite with an unproven ARGUS descriptor")
 
         monkeypatch.setattr(
             hermes_state_repair, "_connect_repair_durable",
@@ -332,7 +332,7 @@ def test_uninspectable_alias_descriptor_for_hermes_blocks_before_sqlite(
     )
 
     def _unexpected_probe(*_args, **_kwargs):
-        pytest.fail("repair opened SQLite with an unproven Hermes alias fd")
+        pytest.fail("repair opened SQLite with an unproven ARGUS alias fd")
 
     monkeypatch.setattr(hermes_state_repair, "_connect_repair_durable", _unexpected_probe)
 

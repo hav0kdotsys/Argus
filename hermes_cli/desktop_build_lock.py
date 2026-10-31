@@ -82,7 +82,7 @@ class DesktopBuildLock:
             if not wait:
                 return False
             if not announced:
-                print("→ Waiting for a running Hermes update to release this checkout...")
+                print("→ Waiting for a running ARGUS update to release this checkout...")
                 announced = True
             time.sleep(1.0)
         self._checkout = lock
@@ -108,7 +108,7 @@ class DesktopBuildLock:
         # Blocking mode queues behind the holder; say so instead of appearing
         # to hang with no output (the update path would rather wait for the
         # in-flight build it depends on than fail the update).
-        print("→ Waiting for another Hermes desktop dependency install or build to finish...")
+        print("→ Waiting for another ARGUS desktop dependency install or build to finish...")
         print(f"  Lock: {self.path}")
         from gateway.status import _release_file_lock
 

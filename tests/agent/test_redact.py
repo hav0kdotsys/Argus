@@ -1136,7 +1136,7 @@ class TestTerminalOutputRedaction:
         assert _command_reads_secret_file("cat -n .env")
         assert _command_reads_secret_file("cat -A .env")
         # With paths
-        assert _command_reads_secret_file("cat ~/.hermes/.env")
+        assert _command_reads_secret_file("cat ~/.argus/.env")
         assert _command_reads_secret_file("cat /home/user/project/.env")
         assert _command_reads_secret_file("cat ./config/.env.local")
         # In a pipeline / sequence
@@ -1230,9 +1230,9 @@ class TestTerminalOutputRedaction:
     @pytest.mark.parametrize(
         ("command", "output", "secret"),
         [
-            ("cat ~/.hermes/config.yaml", "api_key: hermesConfigSecret123", "hermesConfigSecret123"),
+            ("cat ~/.argus/config.yaml", "api_key: hermesConfigSecret123", "hermesConfigSecret123"),
             (
-                "head ~/.hermes/profiles/work/config.yaml",
+                "head ~/.argus/profiles/work/config.yaml",
                 "provider.token=profileConfigSecret456",
                 "profileConfigSecret456",
             ),
@@ -1265,7 +1265,7 @@ class TestTerminalOutputRedaction:
                 "awkQuotedSecret123",
             ),
             (
-                "grep 'foo|bar' ~/.hermes/config.yaml",
+                "grep 'foo|bar' ~/.argus/config.yaml",
                 "SERVICE_TOKEN=grepQuotedSecret456",
                 "grepQuotedSecret456",
             ),
@@ -1281,8 +1281,8 @@ class TestTerminalOutputRedaction:
         [
             "cat config.yaml",
             "cat /project/config.yaml",
-            "cat ~/.hermes/config.example.yaml",
-            "cat ~/.hermes/config.template.yaml",
+            "cat ~/.argus/config.example.yaml",
+            "cat ~/.argus/config.template.yaml",
             "cat ~/.bashrc.example",
             'cat "$OTHER/config.yaml"',
             "grep TOKEN app.py",
@@ -1678,7 +1678,7 @@ class TestWebappLaunchLinks:
         from agent.redact import redact_terminal_output
 
         link = "http://127.0.0.1:9120/?profile=work#hermes-session=" + self.CREDENTIAL
-        out = redact_terminal_output(f"Open this link in your browser:\n  {link}\n", "hermes webapp")
+        out = redact_terminal_output(f"Open this link in your browser:\n  {link}\n", "argus webapp")
         assert self.CREDENTIAL not in out
         assert "http://127.0.0.1:9120/?profile=work#hermes-session=" in out
 
@@ -1686,7 +1686,7 @@ class TestWebappLaunchLinks:
         from agent.redact import redact_terminal_output
 
         link = "http://127.0.0.1:9120/webapp/launch#ticket=" + self.CREDENTIAL + "&query=%3Fprofile%3Dwork"
-        out = redact_terminal_output(f"Open this one-use link:\n  {link}\n", "hermes webapp --no-open")
+        out = redact_terminal_output(f"Open this one-use link:\n  {link}\n", "argus webapp --no-open")
         assert self.CREDENTIAL not in out
         assert "http://127.0.0.1:9120/webapp/launch#ticket=" in out and "&query=%3Fprofile%3Dwork" in out
         assert self.CREDENTIAL not in redact_sensitive_text(link)

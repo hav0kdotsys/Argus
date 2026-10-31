@@ -172,7 +172,7 @@ def world(tmp_path_factory, provider):
 
 def test_update_on_a_realistic_home_exits_clean_at_the_new_commit(world):
     sb, up = world["sb"], world["update"]
-    assert up.returncode == 0, "hermes update failed on a realistic home:\n" + I.describe(up)
+    assert up.returncode == 0, "argus update failed on a realistic home:\n" + I.describe(up)
     assert I.TRACEBACK not in up.stdout + up.stderr, I.describe(up)
     assert I.git("rev-parse", "HEAD", cwd=sb.checkout) == world["target"], "update exited 0 but HEAD is not the target"
     assert not (sb.checkout / ".git" / "index.lock").exists()
@@ -246,7 +246,7 @@ def test_every_profile_session_resumes_after_update(world, provider):
 def test_broken_profiles_warn_but_do_not_fail_the_update(world):
     sb, up = world["sb"], world["update"]
     out = up.stdout + up.stderr
-    assert up.returncode == 0, "a broken profile under ~/.hermes/profiles/ failed the whole update:\n" + I.describe(up)
+    assert up.returncode == 0, "a broken profile under ~/.argus/profiles/ failed the whole update:\n" + I.describe(up)
     bad = str(sb.hermes_home / "profiles" / "badyaml" / "config.yaml")
     assert bad in out, "the update did not warn about the profile whose config.yaml is broken:\n" + I.describe(up)
     assert (sb.hermes_home / "profiles" / "badyaml" / "config.yaml").read_bytes() == world["snap"]["badyaml"], (

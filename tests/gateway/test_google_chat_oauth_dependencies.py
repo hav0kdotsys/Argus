@@ -69,7 +69,7 @@ def test_ensure_deps_requests_every_extra_before_reporting_a_restart(monkeypatch
 
     def installs_then_needs_restart(extra):
         requested.append(extra)
-        raise pm.InstallError("venv", f"{extra} installed; restart Hermes to activate the new dependency environment")
+        raise pm.InstallError("venv", f"{extra} installed; restart ARGUS to activate the new dependency environment")
 
     monkeypatch.setattr(pm, "ensure_import", installs_then_needs_restart)
     with pytest.raises(pm.InstallError, match="google installed"):

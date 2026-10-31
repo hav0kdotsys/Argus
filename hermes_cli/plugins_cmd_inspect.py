@@ -164,7 +164,7 @@ def _inspect(identifier: str, catalog_name: Optional[str]) -> dict[str, Any]:
         from hermes_cli import plugins_cmd_catalog as catalog
         entry = catalog.get_live_catalog_entry(catalog_name)
         if entry is None:
-            return _failure(f"'{catalog_name}' is not in the Hermes plugin catalog.", [], False)
+            return _failure(f"'{catalog_name}' is not in the ARGUS plugin catalog.", [], False)
         identifier, revision, names = entry.install_identifier, entry.sha or None, (entry.name,)
     try:
         git_url, subdir = pc._resolve_git_url(identifier)

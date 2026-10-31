@@ -349,7 +349,7 @@ def _raise_if_non_interactive(lead: str) -> None:
     """
     if not _is_interactive():
         raise OAuthNonInteractiveError(
-            f"{lead} Run `hermes mcp login <server>` interactively to (re)authorize, then restart or reload the gateway."
+            f"{lead} Run `argus mcp login <server>` interactively to (re)authorize, then restart or reload the gateway."
         )
 
 
@@ -730,7 +730,7 @@ def _paste_callback_reader(result: dict) -> None:
     if line.lower() in _SKIP_TOKENS:
         result["error"] = _USER_SKIPPED_SENTINEL
         print(
-            "  OAuth skipped. Run `hermes mcp login <server>` later to authenticate, "
+            "  OAuth skipped. Run `argus mcp login <server>` later to authenticate, "
             "or set ``enabled: false`` on that server in config.yaml to disable persistently.",
             file=sys.stderr)
         return
@@ -855,7 +855,7 @@ def _callback_outcome(result: dict, cimd_url: str | None):
     if result["auth_code"] is None:
         hint = (
             " If the browser showed an invalid-client error instead of an approval prompt, the authorization "
-            f"server rejected Hermes' Client ID Metadata Document ({cimd_url}); set ``cimd: false`` under that "
+            f"server rejected ARGUS' Client ID Metadata Document ({cimd_url}); set ``cimd: false`` under that "
             "server's ``oauth:`` block in config.yaml to authorize via dynamic client registration instead."
         ) if cimd_url else ""
         raise OAuthNonInteractiveError(
@@ -1140,7 +1140,7 @@ def _build_client_metadata(cfg: dict) -> "OAuthClientMetadata":
     # Public client by default; confidential only with a known secret or a provider (Figma) needing confidential-style token posts.
     auth_method = cfg.get("token_endpoint_auth_method") or ("client_secret_post" if cfg.get("client_secret") else "none")
     metadata_kwargs: dict[str, Any] = {
-        "client_name": cfg.get("client_name", "Hermes Agent"),
+        "client_name": cfg.get("client_name", "ARGUS"),
         "redirect_uris": [AnyUrl(_resolve_redirect_uri(cfg, port))],
         "grant_types": ["authorization_code", "refresh_token"],
         "response_types": ["code"],
@@ -1183,7 +1183,7 @@ def _invalidate_tokens_on_client_change(
     if removed:
         logger.warning(
             "MCP OAuth '%s': configured OAuth client changed (client_id %r -> %r); discarded tokens minted under "
-            "the previous client. Re-authorize with: hermes mcp login %s",
+            "the previous client. Re-authorize with: argus mcp login %s",
             storage._server_name, old_client_id, new_client_id, storage._server_name)
 
 
@@ -1223,7 +1223,7 @@ def humanize_oauth_registration_error(
             f"'{server_name}' does not support automatic client registration — the registration request returned "
             "404 (typical for Google's hosted Gmail/Drive MCP servers and other providers without RFC 7591 dynamic "
             "client registration). Create an OAuth client for this provider and add it under config.yaml as "
-            f"`oauth: {{client_id: ..., client_secret: ...}}`, then re-run:\n  hermes mcp login {server_name}")
+            f"`oauth: {{client_id: ..., client_secret: ...}}`, then re-run:\n  argus mcp login {server_name}")
     looks_like_registration = ("403" in msg or "forbidden" in lowered) and (
         any(k in lowered for k in ("regist", "dcr", "dynamic client"))
         or lowered.strip() in {"forbidden", "403 forbidden", "http 403: forbidden"}
@@ -1233,9 +1233,9 @@ def humanize_oauth_registration_error(
     if _is_figma_remote_mcp(server_name, server_url):
         return (
             f"'{server_name}' is Figma's remote MCP — DCR is allowlisted by exact client_name "
-            f"(\"{_FIGMA_DCR_CLIENT_NAME}\" and \"Codex\" work; most other names 403). Hermes defaults to "
+            f"(\"{_FIGMA_DCR_CLIENT_NAME}\" and \"Codex\" work; most other names 403). ARGUS defaults to "
             f"client_name: {_FIGMA_DCR_CLIENT_NAME!r} automatically. If you set oauth.client_name yourself, "
-            f"change it to one of those, or clear it and re-run:\n  hermes mcp login {server_name}")
+            f"change it to one of those, or clear it and re-run:\n  argus mcp login {server_name}")
     return (
         f"'{server_name}' only allows pre-approved OAuth clients — it rejected client registration (403), so no "
         "browser flow can start. Options: set oauth.client_name to a name the provider allowlists, add a "
@@ -1257,13 +1257,13 @@ def build_oauth_auth(server_name: str, server_url: str, oauth_config: dict | Non
     if not _is_interactive() and not storage.has_cached_tokens():
         raise OAuthNonInteractiveError(
             f"MCP OAuth for '{server_name}': non-interactive environment and no cached tokens found. The OAuth flow "
-            f"requires browser authorization. Run `hermes mcp login {server_name}` interactively first to complete "
+            f"requires browser authorization. Run `argus mcp login {server_name}` interactively first to complete "
             "initial authorization, then cached tokens will be reused.")
     kwargs = build_provider_kwargs(cfg, storage, ssh_proxy_hint=True)
     if HermesOAuthClientProvider is None:
         from tools.mcp_oauth_provider import HermesProviderMixin
 
         HermesOAuthClientProvider = type("HermesOAuthClientProvider", (HermesProviderMixin, _sdk_class("OAuthClientProvider")), {
-            "__doc__": "SDK provider plus Hermes' token-endpoint fixes (see ``HermesProviderMixin``).",
+            "__doc__": "SDK provider plus ARGUS' token-endpoint fixes (see ``HermesProviderMixin``).",
             "__module__": __name__, "_hermes_logger": logger})
     return HermesOAuthClientProvider(server_url=server_url, **kwargs)

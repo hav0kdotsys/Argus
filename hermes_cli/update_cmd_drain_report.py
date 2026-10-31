@@ -88,7 +88,7 @@ def _tui_command(home: Optional[Path]) -> str:
     from hermes_constants import profile_name_for_home
 
     name = profile_name_for_home(home)
-    return f"hermes -p {name} --tui" if name and name != "default" else "hermes --tui"
+    return f"argus -p {name} --tui" if name and name != "default" else "argus --tui"
 
 
 def format_drain_report(work: Optional[list], *, remaining_s: float, home: Optional[Path] = None) -> str:

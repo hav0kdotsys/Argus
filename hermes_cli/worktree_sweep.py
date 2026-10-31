@@ -467,9 +467,9 @@ def run_sweep(repo_root: str, max_age_hours: int, settings: dict) -> None:
     removed = [ref for ref, gone, _why in archived if gone]
     if removed:
         logger.warning("Archived and removed %d idle worktree(s) with unmerged work; restore any with "
-                       "`hermes worktree restore <name>` (`hermes worktree list` shows archives).", len(removed))
+                       "`argus worktree restore <name>` (`argus worktree list` shows archives).", len(removed))
     if preserved:
-        logger.warning("Preserving %d stale worktree(s) (run `hermes worktree prune --dry-run` for reasons): %s",
+        logger.warning("Preserving %d stale worktree(s) (run `argus worktree prune --dry-run` for reasons): %s",
                        len(preserved), ", ".join(sorted(preserved)[:20]))
     expired = prune_expired_archives(repo_root, settings["archive_retention_days"])
     if expired:

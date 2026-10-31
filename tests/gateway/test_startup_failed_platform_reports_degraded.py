@@ -179,7 +179,7 @@ async def test_last_platform_lost_non_retryably_mid_run_keeps_the_gateway_up_deg
         stop.assert_not_awaited()
         assert any(
             record.levelno >= logging.ERROR and "telegram" in record.getMessage()
-            and "hermes gateway restart" in record.getMessage()
+            and "argus gateway restart" in record.getMessage()
             for record in caplog.records
         )
         assert await flush_runtime_status_async()

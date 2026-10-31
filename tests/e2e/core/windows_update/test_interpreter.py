@@ -91,7 +91,7 @@ def journey(tmp_path_factory):
                 update = j.step("update", machine.update)
                 if j.ok("update"):
                     j.step("update_ok", lambda: j.require("update", update.returncode == 0,
-                                                           f"hermes update exited {update.returncode}", update))
+                                                           f"argus update exited {update.returncode}", update))
                 if j.ok("update_ok"):
                     with machine.gateway_phase():
                         j.results["probe_present"] = (machine.install_dir / _PROBE).is_file()

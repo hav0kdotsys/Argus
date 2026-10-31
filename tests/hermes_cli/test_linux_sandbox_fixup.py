@@ -63,7 +63,7 @@ class TestDesktopLinuxSandboxFixup:
         """Unpacked-app layout with a non-root, non-setuid chrome-sandbox."""
         unpacked = tmp_path / "linux-unpacked"
         unpacked.mkdir()
-        exe = unpacked / "Hermes"
+        exe = unpacked / "ARGUS"
         exe.write_text("", encoding="utf-8")
         sandbox = unpacked / "chrome-sandbox"
         sandbox.write_text("", encoding="utf-8")
@@ -117,7 +117,7 @@ class TestDesktopLinuxNeedsDisableSetuidSandbox:
     def _fake_packaged_app(self, tmp_path):
         unpacked = tmp_path / "linux-unpacked"
         unpacked.mkdir()
-        exe = unpacked / "Hermes"
+        exe = unpacked / "ARGUS"
         exe.write_text("", encoding="utf-8")
         sandbox = unpacked / "chrome-sandbox"
         sandbox.write_text("", encoding="utf-8")
@@ -152,7 +152,7 @@ class TestDesktopLinuxNeedsDisableSetuidSandbox:
     def test_false_when_helper_missing(self, monkeypatch, tmp_path):
         unpacked = tmp_path / "linux-unpacked"
         unpacked.mkdir()
-        exe = unpacked / "Hermes"
+        exe = unpacked / "ARGUS"
         exe.write_text("", encoding="utf-8")
         assert main_desktop._desktop_linux_needs_disable_setuid_sandbox(exe) is False
 
@@ -171,7 +171,7 @@ class TestDesktopLinuxSandboxFixupNoTty:
     def _fake_packaged_app(self, tmp_path):
         unpacked = tmp_path / "linux-unpacked"
         unpacked.mkdir(exist_ok=True)
-        exe = unpacked / "Hermes"
+        exe = unpacked / "ARGUS"
         exe.write_text("", encoding="utf-8")
         sandbox = unpacked / "chrome-sandbox"
         sandbox.write_text("", encoding="utf-8")

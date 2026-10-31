@@ -56,8 +56,14 @@ def _wings(*glyphs) -> list[list[str]]:
             for g in glyphs]
 
 
-# Branding shared by every Hermes-named built-in (mono/daylight override help_header).
-_HERMES_BRANDING: dict[str, str] = _branding(
+# Branding shared by the built-ins that carry the product's own name (mono/daylight override help_header).
+_HERMES_BRANDING: dict[str, str] = {
+    "agent_name": "ARGUS", "welcome": "ARGUS online. Type a message or /help.",
+    "goodbye": "ARGUS closing its eyes. ◉", "response_label": " ◉ ARGUS ", "prompt_symbol": "❯",
+    "help_header": "(◉) Available Commands", "icon": "◉",
+    "tagline": "Agent Runtime for General-purpose Utility Services", "byline": "HvkSys"}
+# The original Hermes persona, kept for the hermes-classic skin.
+_CLASSIC_BRANDING: dict[str, str] = _branding(
     "Hermes", "☤", "Goodbye! ☤", prompt="❯", help_header="(^_^)? Available Commands")
 
 _BUILTIN_SKINS: dict[str, dict[str, Any]] = {
@@ -92,7 +98,7 @@ _BUILTIN_SKINS: dict[str, dict[str, Any]] = {
             "completion_menu_bg": "#F5F5F5", "completion_menu_current_bg": "#E0D1BF",
             "selection_bg": "#D4E4F7", "status_bar_bg": "#F5F5F5", "voice_status_bg": "#F5F5F5"},
         "spinner": {},  # empty = hardcoded defaults in display.py
-        "branding": _HERMES_BRANDING,
+        "branding": _CLASSIC_BRANDING,
         "tool_prefix": "┊"},
     "ares": {
         "name": "ares", "description": "War-god theme — crimson and bronze",
@@ -377,6 +383,25 @@ def _load_skin_from_yaml(path: Path) -> Optional[dict[str, Any]]:
     except Exception as e:
         logger.debug("Failed to load skin from %s: %s", path, e)
     return None
+
+
+# ARGUS is the built-in default: argus/skins/argus.yaml (the one source of the ARGUS look) becomes "default"
+# and "argus"; the original gold Hermes skin stays selectable as "hermes-classic".
+_ARGUS_SKIN_FILE = Path(__file__).resolve().parent.parent / "argus" / "skins" / "argus.yaml"
+
+
+def _install_argus_default() -> None:
+    data = _load_skin_from_yaml(_ARGUS_SKIN_FILE)
+    if not data:
+        logger.warning("ARGUS skin missing at %s; the classic skin stays the default", _ARGUS_SKIN_FILE)
+        return
+    classic = dict(_BUILTIN_SKINS["default"], name="hermes-classic", description="Classic Hermes — gold and kawaii")
+    _BUILTIN_SKINS["hermes-classic"] = classic
+    _BUILTIN_SKINS["argus"] = dict(data, name="argus")
+    _BUILTIN_SKINS["default"] = dict(data, name="default")
+
+
+_install_argus_default()
 
 
 def _build_skin_config(data: dict[str, Any]) -> SkinConfig:

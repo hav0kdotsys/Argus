@@ -49,13 +49,13 @@ _HOMEBREW_CI_POLLER_HINT = (
 
 # A foreground call whose only backgrounding was a trailing `&` is spawned as background=true.
 _AUTO_BACKGROUND_NOTE = (
-    "Ran in the background (the trailing & was converted to background=true; Hermes tracks the "
+    "Ran in the background (the trailing & was converted to background=true; ARGUS tracks the "
     "process). Do NOT re-run it. Use process_manage (poll/log/wait/kill, session_id above) to check it."
 )
 
 _ASYNC_UNSUPPORTED_NOTE = (
     'notify_on_complete / watch_patterns are not available in this session — it cannot receive '
-    'an async completion after the turn ends (a one-shot runner such as `hermes -z`, a cron '
+    'an async completion after the turn ends (a one-shot runner such as `argus -z`, a cron '
     'job, a Kanban worker, or a stateless HTTP endpoint). The process is running in the '
     "background; retrieve its result with process(action='poll') or process(action='wait')."
 )

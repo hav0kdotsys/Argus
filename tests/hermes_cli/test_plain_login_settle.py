@@ -52,7 +52,7 @@ def _tool_login(monkeypatch):
 
 
 @pytest.mark.parametrize("surface", [_terminal_login, _auth_add, _step_up, _tool_login],
-                         ids=["hermes model / login", "auth add nous", "billing step-up", "tool setup login"])
+                         ids=["argus model / login", "auth add nous", "billing step-up", "tool setup login"])
 def test_the_sign_in_settles_the_config_once_after_its_locks_are_released(
         portal, free_account, monkeypatch, surface):
     from hermes_cli import auth
@@ -77,7 +77,7 @@ def test_the_sign_in_settles_the_config_once_after_its_locks_are_released(
 
 
 @pytest.mark.parametrize("surface", [_terminal_login, _auth_add, _tool_login],
-                         ids=["hermes model / login", "auth add nous", "tool setup login"])
+                         ids=["argus model / login", "auth add nous", "tool setup login"])
 def test_the_terminal_sign_in_prints_what_moved(portal, free_account, monkeypatch, capsys, surface):
     from hermes_cli import auth
     anon_auth.ensure_portal_identity(explicit=True)

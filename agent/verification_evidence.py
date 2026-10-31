@@ -640,7 +640,7 @@ def last_unattributed_run(
 
 
 def record_verify_run(
-    *, root: str | Path, session_id: str | None = None, ok: bool, command: str = "hermes verify",
+    *, root: str | Path, session_id: str | None = None, ok: bool, command: str = "argus verify",
     scope: str = "full", output: str = "",
 ) -> Optional[dict[str, Any]]:
     """Record a completed ``hermes verify`` run as verification evidence.
@@ -653,7 +653,7 @@ def record_verify_run(
         return None
     resolved = str(Path(root).resolve())
     return _insert_evidence(VerificationEvidence(
-        command=command, canonical_command="hermes verify", kind="verify",
+        command=command, canonical_command="argus verify", kind="verify",
         scope=scope if scope in {"full", "targeted"} else "full",
         status="passed" if ok else "failed", exit_code=0 if ok else 1, cwd=resolved,
         root=str((_project_facts(root) or {}).get("root") or resolved),

@@ -249,7 +249,7 @@ class TestRefusalIsNotFailure:
 
         # Run 2: a preflight refusal (venv-holder / concurrent instance).
         ur.begin_update_receipt()
-        ur.record_step("venv_preflight", False, "another hermes holds venv")
+        ur.record_step("venv_preflight", False, "another argus holds venv")
         refused_path = ur.finalize_pending_update_receipt(2, "sys.exit(2)")
         refused = json.loads(refused_path.read_text(encoding="utf-8"))
 

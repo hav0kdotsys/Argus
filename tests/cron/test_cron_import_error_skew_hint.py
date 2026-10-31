@@ -31,7 +31,7 @@ def test_import_error_with_skew_names_shas_and_the_restart_command(monkeypatch):
     assert "stale code" in msg
     assert "booted on 7e67f64fce" in msg
     assert "disk is at ec5e369fe6" in msg
-    assert "hermes gateway restart" in msg
+    assert "argus gateway restart" in msg
 
 def test_import_error_without_skew_stays_a_plain_import_message(monkeypatch):
     """No skew (or non-git install): message is byte-identical to today's."""
@@ -40,7 +40,7 @@ def test_import_error_without_skew_stays_a_plain_import_message(monkeypatch):
     msg = _summarize_cron_failure_for_delivery(job, IMPORT_ERROR)
     assert "cannot import name 'user_originated_turn_view'" in msg
     assert "stale code" not in msg
-    assert "hermes gateway restart" not in msg
+    assert "argus gateway restart" not in msg
 
 def test_no_agent_script_import_error_never_blames_gateway_skew(monkeypatch):
     """A no_agent script runs in a fresh subprocess — its ImportError is the
@@ -55,7 +55,7 @@ def test_no_agent_script_import_error_never_blames_gateway_skew(monkeypatch):
         job, "ImportError: cannot import name 'requests'"
     )
     assert "stale code" not in msg
-    assert "hermes gateway restart" not in msg
+    assert "argus gateway restart" not in msg
 
 def test_skew_probe_failure_degrades_to_the_plain_message(monkeypatch):
     """The seam swallowing an exception must behave exactly like no-skew."""

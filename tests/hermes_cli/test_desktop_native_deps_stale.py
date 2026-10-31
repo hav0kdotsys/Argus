@@ -20,7 +20,7 @@ def packaged(tmp_path, monkeypatch):
     (dist / "index.html").write_text("<html></html>", encoding="utf-8")
     (tmp_path / ".gitignore").write_text("apps/desktop/release/\n", encoding="utf-8")
     # Executable lookup and the per-OS resources layout are covered natively elsewhere.
-    monkeypatch.setattr(main_desktop, "_desktop_packaged_executable", lambda _: dist / "Hermes")
+    monkeypatch.setattr(main_desktop, "_desktop_packaged_executable", lambda _: dist / "ARGUS")
     monkeypatch.setattr(main_desktop, "_renderer_bundle_dir", lambda *_a, **_k: dist)
     # The compiler owns receipts now. Hold that independent check current so
     # this test isolates the packaged native-binary boundary.

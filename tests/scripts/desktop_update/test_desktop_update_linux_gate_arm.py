@@ -86,8 +86,8 @@ def _gate(install_root: Path, relaunch_target: Path, tmp_path: Path) -> str:
 def test_arch_specific_unpacked_dir_still_relaunches(tmp_path):
     unpacked = tmp_path / "apps" / "desktop" / "release" / "linux-arm64-unpacked"
     unpacked.mkdir(parents=True)
-    (unpacked / "Hermes").touch()
-    assert _gate(tmp_path, unpacked / "Hermes", tmp_path) == "relaunch"
+    (unpacked / "ARGUS").touch()
+    assert _gate(tmp_path, unpacked / "ARGUS", tmp_path) == "relaunch"
 
 
 def test_arch_specific_dir_is_preferred_over_a_stale_x86_64_one(tmp_path):
@@ -98,9 +98,9 @@ def test_arch_specific_dir_is_preferred_over_a_stale_x86_64_one(tmp_path):
     live = release / "linux-arm64-unpacked"
     stale.mkdir(parents=True)
     live.mkdir(parents=True)
-    (stale / "Hermes").touch()
-    (live / "Hermes").touch()
-    assert _gate(tmp_path, live / "Hermes", tmp_path) == "relaunch"
+    (stale / "ARGUS").touch()
+    (live / "ARGUS").touch()
+    assert _gate(tmp_path, live / "ARGUS", tmp_path) == "relaunch"
 
 
 def test_foreign_target_with_arm_dirs_present_is_still_skew(tmp_path):
@@ -109,10 +109,10 @@ def test_foreign_target_with_arm_dirs_present_is_still_skew(tmp_path):
     release = tmp_path / "apps" / "desktop" / "release"
     arm = release / "linux-arm64-unpacked"
     arm.mkdir(parents=True)
-    (arm / "Hermes").touch()
-    foreign = tmp_path / "opt" / "Hermes"
+    (arm / "ARGUS").touch()
+    foreign = tmp_path / "opt" / "ARGUS"
     foreign.mkdir(parents=True)
     (foreign / "hermes").touch()
     assert _gate(tmp_path, foreign / "hermes", tmp_path) == "skew"
     # A sibling dir sharing the arch prefix must not be mistaken for the unpacked tree.
-    assert _gate(tmp_path, Path(str(arm) + "-evil") / "Hermes", tmp_path) == "skew"
+    assert _gate(tmp_path, Path(str(arm) + "-evil") / "ARGUS", tmp_path) == "skew"

@@ -55,7 +55,7 @@ def test_gateway_start_inside_a_container_exec_is_not_blocked():
         fh.write("#!/bin/sh\nexit 0\n")
     os.chmod(stub, os.stat(stub).st_mode | stat.S_IXUSR)
     result = subprocess.run(
-        [stub, "exec", "-u", "hermes", "ctr", "sh", "-c", "hermes -p prof gateway start"],
+        [stub, "exec", "-u", "hermes", "ctr", "sh", "-c", "argus -p prof gateway start"],
         capture_output=True,
         text=True,
         check=False,

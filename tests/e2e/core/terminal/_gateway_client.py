@@ -106,7 +106,7 @@ class Backend:
     def start(self, *, timeout: float = 90.0) -> Backend:
         operator_root = (Path(_operator_home()) / ".hermes").resolve()
         assert operator_root not in (self.hermes_home.resolve(), *self.hermes_home.resolve().parents), (
-            f"sandbox {self.hermes_home} sits inside the operator's Hermes home {operator_root}")
+            f"sandbox {self.hermes_home} sits inside the operator's ARGUS home {operator_root}")
         self.llm.start()
         write_hermes_home(self.hermes_home, self.llm.base_url, extra_config=self.extra_config)
         self._stdout = open(self.root / "serve.stdout.log", "wb")
@@ -121,7 +121,7 @@ class Backend:
 
         def ready() -> int | None:
             if proc.poll() is not None:
-                raise AssertionError(f"hermes serve exited {proc.returncode} before ready:\n{self.logs()}")
+                raise AssertionError(f"argus serve exited {proc.returncode} before ready:\n{self.logs()}")
             match = READY_RE.search((self.root / "serve.stdout.log").read_text(errors="replace"))
             return int(match.group(1)) if match else None
 

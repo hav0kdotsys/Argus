@@ -500,7 +500,7 @@ def test_failed_launch_completion_degrades_to_a_warning(source_launch, tmp_path,
         assert _receipts(tmp_path) == before_receipts, "a metadata query attempted a dependency sync"
     else:
         assert "source-update completion failed" in result.stderr
-        assert "hermes update" in result.stderr
+        assert "argus update" in result.stderr
 
 
 @pytest.mark.platforms("posix")
@@ -565,7 +565,7 @@ def test_capped_completion_attempts_leave_marker_for_explicit_update(source_laun
     assert venv_sync.prepare_launch(root, []) == store_python
     out = capsys.readouterr().err
     assert "could not be finished automatically" in out
-    assert "hermes update" in out
+    assert "argus update" in out
     assert completion_pending_path(root).is_file(), "the owed completion is still recorded"
     assert not (tmp_path / "completion-calls").exists(), "a capped launch re-ran the tail"
 

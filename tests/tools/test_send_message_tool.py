@@ -1659,7 +1659,7 @@ def test_not_configured_error_names_resolved_home_and_consulted_sources(tmp_path
 
     _, _, _, err = _resolve_platform_config("discord", GatewayConfig())
 
-    assert "~/.hermes" not in err
+    assert "~/.argus" not in err
     assert str(home / ".env") in err
     assert str(home / "config.yaml") in err
 

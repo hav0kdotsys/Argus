@@ -41,8 +41,8 @@ def _warn_memory_provider_unavailable(name: str, reason: str = "", say=None) -> 
     _warn_once(name, (
         f"⚠ Memory provider {name!r} is selected but reports unavailable — external memory "
         "is disabled for this session (built-in memory still works). Check the "
-        "provider's credentials/config with 'hermes memory status'. Note: "
-        "systemd/gateway services do not inherit ~/.hermes/.env automatically; set "
+        "provider's credentials/config with 'argus memory status'. Note: "
+        "systemd/gateway services do not inherit ~/.argus/.env automatically; set "
         f"any required variables in the service environment.{f' {reason}' if reason else ''}"
     ), say=say)
 
@@ -68,7 +68,7 @@ def resolve_memory_provider(name: str, say=None):
         if provider is None and find_provider_dir(name) is not None:
             _warn_once(name, f"⚠ Memory provider '{name}' is installed but failed to load, so external memory is off "
                              "for this session (built-in memory still works). The log names the error; "
-                             "`hermes memory status` shows the plugin's state.", say=say, kind="load")
+                             "`argus memory status` shows the plugin's state.", say=say, kind="load")
     if provider is None or provider.is_available():
         return provider
     if _unavailable_warning_key(name) not in _warned_unavailable_providers:

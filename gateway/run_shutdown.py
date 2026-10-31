@@ -783,7 +783,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
         )
         logger.warning(
             "%s paused after %d consecutive failures (%s) — fix the underlying issue then run `/platform "
-            "resume %s` to retry, or `hermes gateway restart` to restart the gateway.",
+            "resume %s` to retry, or `argus gateway restart` to restart the gateway.",
             platform.value, info.get("attempts", 0), info["pause_reason"], platform.value,
         )
 
@@ -1458,7 +1458,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
         import subprocess
         hermes_cmd = _resolve_hermes_bin()
         if not hermes_cmd:
-            logger.error("Could not locate hermes binary for detached /restart")
+            logger.error("Could not locate argus binary for detached /restart")
             return
         if self._detached_restart_helper_started:
             return
@@ -1716,7 +1716,7 @@ class GatewayShutdownMixin(GatewaySessionEndMixin):
         if not watchdog.start():
             return False
         self._systemd_watchdog = watchdog
-        watchdog.ready("Hermes Gateway running")
+        watchdog.ready("ARGUS Gateway running")
         return True
 
     async def _stop_systemd_watchdog(self) -> None:

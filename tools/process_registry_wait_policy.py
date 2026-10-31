@@ -27,7 +27,7 @@ _state: dict[str, tuple[int, int]] = {}
 _state_lock = threading.Lock()
 
 _STOP_NOTE = (
-    "The process is still running and has printed nothing new since your last check. Hermes has turned on "
+    "The process is still running and has printed nothing new since your last check. ARGUS has turned on "
     "notify_on_complete for it: when it exits, a message with its exit code and final output starts a new turn "
     "automatically, even after you end this turn. Do NOT call process_manage wait or poll on {sid} again, and do "
     "not sleep or loop to wait for it. If you have other work, do it now; otherwise end your turn with a one-line "

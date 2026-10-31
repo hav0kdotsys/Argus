@@ -205,7 +205,7 @@ def test_admission_source_checkout_on_termux_host_refuses_with_apt_hint(tmp_path
     assert refusal is not None and refusal.code == "apt-termux"
     assert "pkg install hermes-agent" in refusal.message
     assert refusal.update_command == "pkg install hermes-agent"
-    assert "hermes update" not in refusal.update_command
+    assert "argus update" not in refusal.update_command
     monkeypatch.setenv("PREFIX", "/usr")
     assert evaluate_update_admission(tmp_path) is None, "the same checkout off Termux stays updatable"
 

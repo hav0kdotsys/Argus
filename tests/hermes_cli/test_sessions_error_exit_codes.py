@@ -32,7 +32,7 @@ def test_delete_missing_returns_1(tmp_path, monkeypatch, capsys):
     rc = sc.cmd_sessions(_args("delete", session_id="nope_xyz"))
     assert rc == 1
     out = capsys.readouterr().out
-    assert "No session 'nope_xyz'" in out and "hermes sessions list" in out
+    assert "No session 'nope_xyz'" in out and "argus sessions list" in out
 
 
 def test_rename_missing_returns_1(tmp_path, monkeypatch):

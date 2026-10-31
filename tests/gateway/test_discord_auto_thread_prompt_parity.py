@@ -45,7 +45,7 @@ async def test_auto_thread_first_turn_pins_the_threads_topic(monkeypatch: pytest
     monkeypatch.setattr(discord_platform.discord, "Thread", _Thread, raising=False)
     monkeypatch.delenv("DISCORD_REQUIRE_MENTION", raising=False)
     monkeypatch.setenv("DISCORD_AUTO_THREAD", "true")
-    guild = SimpleNamespace(id=1, name="Hermes Server")
+    guild = SimpleNamespace(id=1, name="ARGUS Server")
     parent = SimpleNamespace(id=700, name="ops", topic="Incident triage", guild=guild)
     thread = _Thread(parent)
     adapter = DiscordAdapter(PlatformConfig(enabled=True, token="fake"))

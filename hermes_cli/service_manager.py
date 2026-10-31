@@ -385,7 +385,7 @@ class GatewayNotRegisteredError(S6Error):
         self.profile = profile
         super().__init__(
             f"no such gateway {profile!r}: register it with "
-            f"`hermes profile create {profile}` first, or pass "
+            f"`argus profile create {profile}` first, or pass "
             "an existing profile name via `-p <name>`",
             service=f"gateway-{profile}",
         )
@@ -465,12 +465,12 @@ class S6ServiceManager:
         # above prevents the run→start→run recursion. s6 guarantees one supervised instance per
         # slot, so there is no legitimate sibling for ``--replace`` to clobber.
         if profile == "default":
-            gateway_cmd = "hermes gateway run --replace"
+            gateway_cmd = "hermes gateway run --replace"  # rebrand: keep
         else:
-            gateway_cmd = f"hermes -p {shlex.quote(profile)} gateway run --replace"
+            gateway_cmd = f"hermes -p {shlex.quote(profile)} gateway run --replace"  # rebrand: keep
         # Skip the drop when already non-root (setgroups() lacks CAP_SETGID → s6 boot-loop).
         lines.append(f'[ "$(id -u)" = 0 ] || exec {gateway_cmd}')
-        lines.append(f"exec s6-setuidgid hermes {gateway_cmd}")
+        lines.append(f"exec s6-setuidgid hermes {gateway_cmd}")  # rebrand: keep
         return "\n".join(lines) + "\n"
 
     @staticmethod
@@ -519,8 +519,8 @@ class S6ServiceManager:
             # Parent logs/gateways is seeded hermes-owned at stage2 boot (test_log_dir_seed.py).
             # See #45258.
             f'if [ "$(id -u)" = 0 ]; then\n'
-            f'  s6-setuidgid hermes mkdir -p "$log_dir"\n'
-            f'  s6-setuidgid hermes rm -f "$log_dir/lock"\n'
+            f'  s6-setuidgid hermes mkdir -p "$log_dir"\n'  # rebrand: keep
+            f'  s6-setuidgid hermes rm -f "$log_dir/lock"\n'  # rebrand: keep
             f'else\n'
             f'  mkdir -p "$log_dir"\n'
             f'  rm -f "$log_dir/lock"\n'

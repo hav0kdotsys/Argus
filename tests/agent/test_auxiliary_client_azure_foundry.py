@@ -357,7 +357,7 @@ class TestResolveProviderClientAzureFoundry:
         assert client is None
         assert resolved is None
         assert any(
-            "azure-foundry" in rec.message and "hermes doctor" in rec.message
+            "azure-foundry" in rec.message and "argus doctor" in rec.message
             for rec in caplog.records
         )
 

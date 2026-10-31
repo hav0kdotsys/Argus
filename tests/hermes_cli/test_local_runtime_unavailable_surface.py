@@ -118,6 +118,6 @@ def test_chat_text_suggests_retry_only_while_the_server_can_come_up(llamacpp_hom
 
     assert ("/retry" in hint) is enabled
     if not enabled:
-        assert "hermes model" in hint and "/model" in hint
+        assert "argus model" in hint and "/model" in hint
         # Surface-neutral: the backend sentence names the terminal path too, not only the Desktop app.
-        assert "hermes model" in str(exc)
+        assert "argus model" in str(exc)

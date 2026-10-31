@@ -731,7 +731,7 @@ def _append_unconfigured_rows(
             warning = (
                 f"Configured provider missing usable credentials; paste {key_env} to reactivate. {tail}"
                 if auth_type == "api_key" and key_env
-                else f"Configured provider is not authenticated; run `hermes model` to reactivate. {tail}"
+                else f"Configured provider is not authenticated; run `argus model` to reactivate. {tail}"
             )
             extras.append(_canonical_row(
                 entry, cur, models=[saved_model] if saved_model else [], total_models=1 if saved_model else 0,
@@ -851,7 +851,7 @@ def _apply_picker_hints(rows: list[dict]) -> None:
         row["auth_type"] = auth_type
         row["key_env"] = key_env
         row["warning"] = (f"paste {key_env} to activate" if auth_type == "api_key" and key_env
-                          else f"run `hermes model` to configure ({auth_type})")
+                          else f"run `argus model` to configure ({auth_type})")
 
 
 def _reorder_canonical(rows: list[dict]) -> list[dict]:

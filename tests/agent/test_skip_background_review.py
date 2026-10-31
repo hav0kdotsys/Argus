@@ -137,6 +137,6 @@ def test_persistence_failure_error_fallback_is_pinned_and_leaves_final_response_
         _should_review_memory=True,
         _turn_exit_reason="session_persistence_failed",
     )
-    assert f"`hermes {selector}doctor`" in result["error"]
+    assert f"`argus {selector}doctor`" in result["error"]
     assert agent._sync_external_memory_for_turn.call_args.kwargs["final_response"] == ""
     agent._spawn_background_review.assert_not_called()

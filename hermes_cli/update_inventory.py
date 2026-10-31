@@ -38,7 +38,7 @@ class UpdatePlan:
 
     install_method: str = "unknown"       # git | docker | nix | apt | ...
     updatable_in_place: bool = True
-    update_mechanism: str = "hermes update"
+    update_mechanism: str = "argus update"
     expected_sha: Optional[str] = None    # current checkout HEAD (pre-pull)
     expected_version: Optional[str] = None
     profiles: list = field(default_factory=list)
@@ -118,7 +118,7 @@ def _restart_mechanism(supervisor: str, profile: str) -> str:
 def describe_restart_mechanism(mechanism: str, profile: str) -> str:
     """Human-readable description of a restart mechanism id."""
     return _MECHANISM_DESCRIPTIONS.get(mechanism) or (
-        f"hermes -p {profile} gateway restart" if profile != "default" else "hermes gateway restart"
+        f"argus -p {profile} gateway restart" if profile != "default" else "argus gateway restart"
     )
 
 
@@ -364,7 +364,7 @@ def print_update_plan(plan: UpdatePlan) -> None:
         print(f"    Update via: {plan.update_mechanism}")
     print(f"  Profiles: {', '.join(plan.profiles) if plan.profiles else '(none found)'}")
     if not plan.runtimes:
-        print("  Running Hermes services: none detected — code swap only.")
+        print("  Running ARGUS services: none detected — code swap only.")
         return
     print(f"  Running services to restart ({len(plan.runtimes)}):")
     for runtime in plan.runtimes:
@@ -574,7 +574,7 @@ def report_unaccounted_runtimes(outcomes: list[dict[str, Any]]) -> bool:
         print()
         print("  ⚠ Manual serve restarts deferred to their owner (reminders retained until the old processes exit):")
         for o in manual:
-            print(f"    • {o['kind']} [{o['profile']}] pid {o['pid']}: relaunch `hermes serve` / `hermes dashboard`, or reconnect Desktop for an SSH backend")
+            print(f"    • {o['kind']} [{o['profile']}] pid {o['pid']}: relaunch `argus serve` / `argus dashboard`, or reconnect Desktop for an SSH backend")
     deferred = [o for o in outcomes if o.get("outcome") == "deferred" and o.get("mechanism") != "respawn-argv"]
     if deferred:
         # Surfaced but not escalated: the updater has no authority over these, so holding
@@ -601,8 +601,8 @@ def report_unaccounted_runtimes(outcomes: list[dict[str, Any]]) -> bool:
         print(f"    ✗ {o['kind']} [{o['profile']}] pid {o['pid']} — planned mechanism: {o['mechanism']}")
     print("    Restart them manually, then verify:")
     if any(o.get("kind") not in _SERVE_KINDS for o in missed):
-        print("      hermes gateway restart                # active profile")
-        print("      hermes -p <profile> gateway restart   # named profile")
+        print("      argus gateway restart                # active profile")
+        print("      argus -p <profile> gateway restart   # named profile")
     if any(o.get("kind") in _SERVE_KINDS for o in missed):
         # A serve/dashboard is not reachable by any `gateway restart` command: name the process, not the wrong verb.
         # See #100479.
@@ -616,7 +616,7 @@ def report_unaccounted_runtimes(outcomes: list[dict[str, Any]]) -> bool:
         if any(o.get("kind") in _SERVE_KINDS and not o.get("systemd_unit") for o in missed):
             if sys.platform == "linux":
                 print("      systemctl --user restart hermes-serve.service   # unit-managed serve")
-            print("      relaunch `hermes serve` / `hermes dashboard`")
+            print("      relaunch `argus serve` / `argus dashboard`")
     return True
 
 

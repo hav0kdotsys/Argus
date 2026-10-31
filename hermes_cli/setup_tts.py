@@ -20,9 +20,9 @@ def _install_tts_extra(extra: str) -> bool:
         pm.sync_venv([extra], explicit=True)
     except (pm.InstallError, OSError, ValueError) as exc:
         _setup.print_error(f"Failed to install {extra}: {exc}")
-        _setup.print_info("Retry with: hermes setup tts")
+        _setup.print_info("Retry with: argus setup tts")
         return False
-    _setup.print_success(f"{extra} installed. Restart Hermes to use it.")
+    _setup.print_success(f"{extra} installed. Restart ARGUS to use it.")
     return True
 
 
@@ -199,7 +199,7 @@ def _xai_api_key_path():
         _setup.print_success("xAI TTS API key saved")
         return None
     from hermes_constants import display_hermes_home as _dhh
-    return ("No xAI API key provided for TTS. Configure XAI_API_KEY via hermes setup model "
+    return ("No xAI API key provided for TTS. Configure XAI_API_KEY via argus setup model "
             f"or {_dhh()}/.env to use xAI TTS. Falling back to Edge TTS.")
 
 
@@ -253,7 +253,7 @@ def _setup_tts_provider(config: dict):
         _setup.print_info("OpenAI TTS will use the managed Nous gateway and bill to your subscription.")
         if _setup.get_env_value("VOICE_TOOLS_OPENAI_KEY") or _setup.get_env_value("OPENAI_API_KEY"):
             _setup.print_warning("Direct OpenAI credentials are still configured and may take precedence "
-                                 "until removed from ~/.hermes/.env.")
+                                 "until removed from ~/.argus/.env.")
     elif selected in _TTS_LOCAL_PROVIDERS:
         selected = _tts_local_install_step(selected)
     elif selected in _TTS_API_KEY_PROVIDERS:

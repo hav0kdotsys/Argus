@@ -58,7 +58,7 @@ def test_trailing_amp_runs_as_tracked_background_through_the_same_guards(tmp_pat
     ("nohup ./worker.sh > /dev/null 2>&1 &", "nohup/disown/setsid"),
     ("python3 -m http.server 8765", "long-lived server"),
     # Approval keys on the `&` here (gateway outside its service manager): no conversion.
-    ("hermes gateway run &", "'&' backgrounding"),
+    ("argus gateway run &", "'&' backgrounding"),
 ])
 def test_ambiguous_backgrounding_is_still_refused_unchanged(tmp_path, command, expected):
     from tools.terminal_tool import terminal_tool
@@ -93,7 +93,7 @@ def test_converted_command_never_gets_relaunch_hint_even_with_another_hint(tmp_p
     'pid="$(sleep 60 >/dev/null 2>&1 & echo $!)" && printf "%s" "$pid" &',
     'pid="`sleep 60 >/dev/null 2>&1 & echo $!`" && printf "%s" "$pid" &',
     # Same danger, different approval key: a pre-approval of the stripped key must not apply.
-    "hermes gateway run && cp src .env &",
+    "argus gateway run && cp src .env &",
     # The escaped space belongs to the argument.
     "printf '<%s>' trailing\\ &",
 ])

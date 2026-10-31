@@ -129,7 +129,7 @@ def _serve_plugin_skill(
     from tools import skills_tool as _st
     qualified_name = f"{namespace}:{bare}"
     if disabled := sorted(plugin_skill_owners(get_plugin_manager(), qualified_name) & _get_disabled_plugins()):
-        return _fail(f"Plugin '{disabled[0]}' is disabled. Re-enable with: hermes plugins enable {disabled[0]}")
+        return _fail(f"Plugin '{disabled[0]}' is disabled. Re-enable with: argus plugins enable {disabled[0]}")
     try:
         content = _read_skill_text(skill_md)
     except Exception as e:

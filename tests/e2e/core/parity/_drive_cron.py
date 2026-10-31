@@ -50,15 +50,15 @@ def drive_cron(ph: ParityHome, srv: FakeLLMServer, prompt: str) -> DriveResult:
                     "--workdir", str(ph.project))
     match = _JOB_ID.search(created.stdout)
     assert created.returncode == 0 and match, (
-        f"hermes cron create exited {created.returncode}: {created.stdout[-1000:]} {created.stderr[-2000:]}")
+        f"argus cron create exited {created.returncode}: {created.stdout[-1000:]} {created.stderr[-2000:]}")
     job_id = match.group(1)
 
     ran = _cron(ph, "run", job_id)
     gateway_stopped = stop_profile_gateway(ph)
-    assert ran.returncode == 0, f"hermes cron run exited {ran.returncode}: {ran.stderr[-2000:]}"
+    assert ran.returncode == 0, f"argus cron run exited {ran.returncode}: {ran.stderr[-2000:]}"
     # Anything but a synchronous verdict means the run was handed to a ticker/background
     # worker this driver cannot observe — a harness problem, not a parity result.
-    assert "Ran now:" in ran.stdout, f"hermes cron run did not execute synchronously: {ran.stdout[-1000:]}"
+    assert "Ran now:" in ran.stdout, f"argus cron run did not execute synchronously: {ran.stdout[-1000:]}"
 
     outputs = sorted((ph.hermes_home / "cron" / "output" / job_id).glob("*.md"))
     final_text = None

@@ -327,10 +327,10 @@ def _launchd_fallback_to_detached(reason: str, *, exit_on_failure: bool = True) 
         print("✓ Started gateway as a background process instead")
         print("  It will NOT auto-start at login or auto-restart on crash.")
         print(f"  Logs: {_dhh()}/logs/gateway.log")
-        print("  Stop it with: hermes gateway stop")
+        print("  Stop it with: argus gateway stop")
         return True
     _gw().print_error("Failed to start the gateway as a background process.")
-    print(f"  Try manually: nohup hermes gateway run --replace > {_dhh()}/logs/gateway.log 2>&1 &")
+    print(f"  Try manually: nohup argus gateway run --replace > {_dhh()}/logs/gateway.log 2>&1 &")
     if exit_on_failure:
         sys.exit(1)
     return False
@@ -354,7 +354,7 @@ def _launchd_degrade_or_raise(exc: subprocess.CalledProcessError, what: str) -> 
     if _gw()._launchctl_label_supervising_process(label):
         print(f"⚠ {what} failed (exit {exc.returncode}), but launchd still supervises {label}")
         print("  Not switching to the detached fallback — this host manages the job.")
-        print("  Apply the definition with: hermes gateway stop && hermes gateway install --force")
+        print("  Apply the definition with: argus gateway stop && argus gateway install --force")
         raise exc
     _launchd_fallback_to_detached(f"{what} exit {exc.returncode}")
 
@@ -620,7 +620,7 @@ def refresh_launchd_plist_if_needed() -> bool:
             target, int(_reload_budget), _launchd_reload_log_path(),
         )
         return False
-    print("↻ Updated gateway launchd service definition to match the current Hermes install")
+    print("↻ Updated gateway launchd service definition to match the current ARGUS install")
     return True
 
 
@@ -655,7 +655,7 @@ def launchd_install(force: bool = False, *, start_now: bool = True, force_unit_p
                 from hermes_constants import display_hermes_home
                 print(
                     "⚠ Service definition could not be reloaded with launchd. "
-                    "Run 'hermes gateway install --force' or check "
+                    "Run 'argus gateway install --force' or check "
                     f"{display_hermes_home()}/logs/launchd-reload.log for details."
                 )
             return
@@ -678,8 +678,8 @@ def launchd_install(force: bool = False, *, start_now: bool = True, force_unit_p
         print("✓ Service installed, not started (launchd starts it at your next login)")
         print()
         print("Next steps:")
-        print("  hermes gateway start              # Start it now")
-        print("  hermes gateway status             # Check status")
+        print("  argus gateway start              # Start it now")
+        print("  argus gateway status             # Check status")
         return
 
     if force_old_pid is not None:
@@ -708,7 +708,7 @@ def launchd_install(force: bool = False, *, start_now: bool = True, force_unit_p
     _gw()._clear_launchd_unsupported_marker()
     print()
     print("Next steps:")
-    print("  hermes gateway status             # Check status")
+    print("  argus gateway status             # Check status")
     from hermes_constants import display_hermes_home as _dhh
     print(f"  tail -f {_dhh()}/logs/gateway.log  # View logs")
 
@@ -959,15 +959,15 @@ def launchd_status(deep: bool = False):
 
     print(f"Launchd plist: {plist_path}")
     if _gw().launchd_plist_is_current():
-        print("✓ Service definition matches the current Hermes install")
+        print("✓ Service definition matches the current ARGUS install")
     else:
-        print("⚠ Service definition is stale relative to the current Hermes install")
-        print("  Run: hermes gateway start")
+        print("⚠ Service definition is stale relative to the current ARGUS install")
+        print("  Run: argus gateway start")
 
     if not service_listed:
         print("✗ Gateway service is not loaded")
         print("  Service definition exists locally but launchd has not loaded it.")
-        print("  Run: hermes gateway start")
+        print("  Run: argus gateway start")
         if fallback_pid:
             print(f"  Note: a detached gateway process is running (PID {fallback_pid})")
     elif launchd_pid is not None:
@@ -980,10 +980,10 @@ def launchd_status(deep: bool = False):
         print("  launchd cannot manage the gateway on this macOS version.")
         if fallback_pid:
             print(f"✓ Detached fallback process is running (PID {fallback_pid})")
-            print("  Cron jobs will fire. Stop with: hermes gateway stop")
+            print("  Cron jobs will fire. Stop with: argus gateway stop")
         else:
             print("✗ No fallback process is running")
-            print("  Run: hermes gateway start")
+            print("  Run: argus gateway start")
         print("  ⚠ Auto-start at login and auto-restart on crash are NOT available.")
     else:
         print("✓ Gateway service is registered with launchd")

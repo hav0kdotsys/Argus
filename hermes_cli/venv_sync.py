@@ -61,7 +61,7 @@ def check_runtime(project_root: Path) -> str | None:
         return None
     steward = sealed_steward(Path(project_root))
     remedy = (f"this {steward}-managed install must rebuild the artifact to fix"
-              if steward else "run `hermes pm install`")
+              if steward else "run `argus pm install`")
     return f"install out of sync ({'; '.join(problems)}) — {remedy}"
 
 
@@ -389,7 +389,7 @@ def _may_retry_completion(root: Path, command: list[str], *, current: bool) -> b
         # Leave the marker for an explicit `hermes update`; say so once.
         print(
             f"hermes: a source update could not be finished automatically "
-            f"({attempts} attempts); run `hermes update` from a shell to finish it",
+            f"({attempts} attempts); run `argus update` from a shell to finish it",
             file=sys.stderr, flush=True,
         )
     elif not may_retry and not current:
@@ -397,7 +397,7 @@ def _may_retry_completion(root: Path, command: list[str], *, current: bool) -> b
         # tracks the wait); stale dependencies are worth one line in front of the user.
         print(
             f"hermes: running with the previous dependencies after {attempts} failed syncs; "
-            f"next automatic retry in {max(1, backoff // 60)} min, or run `hermes update` to finish it",
+            f"next automatic retry in {max(1, backoff // 60)} min, or run `argus update` to finish it",
             file=sys.stderr, flush=True,
         )
     return may_retry
@@ -417,7 +417,7 @@ def _relaunch_target(root: Path, python: Path, *, same: bool) -> Path | None:
 
     if same and getattr(sys, "_hermes_relaunched", False) and not pm.venv_is_current(project_root=root):
         print("hermes: relaunching did not leave this install current; running with the "
-              "dependencies it has — run `hermes update` to finish it", file=sys.stderr, flush=True)
+              "dependencies it has — run `argus update` to finish it", file=sys.stderr, flush=True)
         return None
     return python
 
@@ -490,7 +490,7 @@ def prepare_launch(project_root: Path, argv: list[str]) -> Path | None:
         # keeps a dead update's marker (R6: refused as held, never reclaimed).
         lock = UpdateLock(install_root=root, checkout_first=False)
         if not lock.acquire():
-            raise RuntimeError("an update is still running; wait for it to exit, then relaunch Hermes")
+            raise RuntimeError("an update is still running; wait for it to exit, then relaunch ARGUS")
         try:
             # Under the launching update's own claim (its pid is our ancestor) a process it
             # spawned owes no tail: that obligation is the updater's.
@@ -509,13 +509,13 @@ def prepare_launch(project_root: Path, argv: list[str]) -> Path | None:
                 # marker over a held checkout lock is a killed update whose tree (its completion
                 # child) still runs.
                 if not lock.acquire_checkout(root):
-                    raise RuntimeError("an update is still running; wait for it to exit, then relaunch Hermes")
+                    raise RuntimeError("an update is still running; wait for it to exit, then relaunch ARGUS")
                 _finish_source_update(root, current=current, pending=pending)
         finally:
             lock.release()
     python = resolve_store_python(root)
     if python is None:
-        raise RuntimeError("source update has no managed Python; run `hermes pm install`")
+        raise RuntimeError("source update has no managed Python; run `argus pm install`")
     # Lexical identity, never resolve(): PM spells the store path through
     # HERMES_HOME (which may carry '..') while sys.executable arrives
     # normalized, so a raw compare re-execs every child forever (#122513). A
@@ -528,7 +528,7 @@ def prepare_launch(project_root: Path, argv: list[str]) -> Path | None:
     if owed_to_cli:
         # Left owed, not dropped: say so (once, in the process that boots) where an
         # operator of the unit will read it.
-        print("hermes: a source update is unfinished; run `hermes update` from a shell to finish it",
+        print("hermes: a source update is unfinished; run `argus update` from a shell to finish it",
               file=sys.stderr, flush=True)
     return None
 
@@ -553,7 +553,7 @@ def _prepare_borrowed_launch(root: Path, owner: Path, *, current: bool) -> Path 
     if not current:
         lock = UpdateLock(install_root=root, checkout_first=False)  # R6, as in prepare_launch
         if not lock.acquire():
-            raise RuntimeError("an update is still running; wait for it to exit, then relaunch Hermes")
+            raise RuntimeError("an update is still running; wait for it to exit, then relaunch ARGUS")
         try:
             _sync_source_dependencies(root, arm=False, borrowed_from=owner)
         finally:
@@ -563,7 +563,7 @@ def _prepare_borrowed_launch(root: Path, owner: Path, *, current: bool) -> Path 
             raise RuntimeError("dependency sync left this install out of date")
     python = resolve_store_python(root)
     if python is None:
-        raise RuntimeError("source update has no managed Python; run `hermes pm install`")
+        raise RuntimeError("source update has no managed Python; run `argus pm install`")
     same = os.path.normcase(os.path.abspath(python)) == os.path.normcase(os.path.abspath(sys.executable))
     return python if not current or not same else None
 
@@ -579,7 +579,7 @@ def _finish_source_update(root: Path, *, current: bool, pending: Path) -> None:
         # Current post-sync verification children can boot under a live updater.
         legacy_markers = (root / ".update-incomplete", root / ".lazy-refresh-incomplete")
         if any(_marker_owner_is_live(marker) for marker in legacy_markers):
-            raise RuntimeError("an update is still running; wait for it to exit, then relaunch Hermes")
+            raise RuntimeError("an update is still running; wait for it to exit, then relaunch ARGUS")
         print("hermes: completing source-update dependencies...", file=sys.stderr, flush=True)
         completed = _tree_matches_completed_stamp(root)
         # ponytail: commit-only match; a product dir deleted by hand is rebuilt on demand
@@ -637,7 +637,7 @@ def _finish_source_update(root: Path, *, current: bool, pending: Path) -> None:
     if code != 0:
         _record_completion_attempt(root, failed=True)
         raise RuntimeError(
-            "source update completion failed; run `hermes update` to finish it"
+            "source update completion failed; run `argus update` to finish it"
         )
     clear_completion(root)
 

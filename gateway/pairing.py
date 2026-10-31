@@ -264,9 +264,9 @@ def _load_json_file(path: Path) -> dict:
         euid = os.geteuid() if hasattr(os, "geteuid") else "n/a"  # no geteuid on Windows
         logger.warning(
             "Pairing file %s exists but is not readable as uid=%s (%s; %s). "
-            "If you ran `docker exec <container> hermes pairing approve ...` as root, "
-            "re-run with `docker exec -u hermes <container> ...` and "
-            "chown the existing file to the hermes user, or restart the "
+            "If you ran `docker exec <container> hermes pairing approve ...` as root, "  # rebrand: keep
+            "re-run with `docker exec -u hermes <container> ...` and "  # rebrand: keep
+            "chown the existing file to the hermes user, or restart the "  # rebrand: keep
             "container so the entrypoint can fix ownership.",
             path, euid, owner_info, e,
         )

@@ -2736,7 +2736,7 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
     "GEMINI_BASE_URL": _base_url("Google AI Studio", "Gemini"),
     "VERTEX_CREDENTIALS_PATH": _prov(
         "Path to a Google Cloud service account JSON for Vertex AI (Gemini). Vertex uses "
-        "OAuth2, not a static API key — this points at the credentials Hermes mints short-lived "
+        "OAuth2, not a static API key — this points at the credentials ARGUS mints short-lived "
         "tokens from. Falls back to GOOGLE_APPLICATION_CREDENTIALS, then to ADC (gcloud auth "
         "application-default login). Set project/region under vertex: in config.yaml.",
         "Vertex service account JSON path (leave empty to use ADC / "
@@ -2827,7 +2827,7 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
     "AZURE_FOUNDRY_API_KEY": _prov("Azure Foundry API key for custom Azure endpoints",
         "Azure Foundry API Key", "https://ai.azure.com/", advanced=False),
     "AZURE_FOUNDRY_BASE_URL": _prov(
-        "Azure Foundry base URL (set via 'hermes model' for endpoint-specific config)",
+        "Azure Foundry base URL (set via 'argus model' for endpoint-specific config)",
         "Azure Foundry base URL", None, password=False),
     # ── Tool API keys ──
     "EXA_API_KEY": _tool("Exa API key for AI-native web search and contents", "Exa API key",
@@ -2860,7 +2860,7 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
         None, password=False, advanced=True),
     "TOOL_GATEWAY_USER_TOKEN": _tool(
         "Explicit Nous Subscriber access token for tool-gateway requests (optional; otherwise "
-        "read from the Hermes auth store)", "Tool-gateway user token", None, advanced=True),
+        "read from the ARGUS auth store)", "Tool-gateway user token", None, advanced=True),
     "TAVILY_API_KEY": _tool(
         "Tavily API key for AI-native web search and extract (optional — keyless works when "
         "Tavily is selected)", "Tavily API key", "https://app.tavily.com/home",
@@ -2991,7 +2991,7 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
         help=("In your Slack app, enable Socket Mode, then create Basic Information > App-Level "
         "Tokens with the connections:write scope."), password=True),
     "SLACK_ALLOWED_USERS": _msg(
-        "Comma-separated Slack member IDs allowed to use Hermes, e.g. U01ABC2DEF3. Without "
+        "Comma-separated Slack member IDs allowed to use ARGUS, e.g. U01ABC2DEF3. Without "
         "this, Slack may connect but deny messages by default.", "Allowed Slack member IDs",
         "https://api.slack.com/apps",
         help=("In Slack, open your profile, choose More or the three-dot menu, then Copy member "
@@ -3088,13 +3088,13 @@ OPTIONAL_ENV_VARS = OptionalEnvVars({
         "for the default profile). Useful for multi-user setups with OpenWebUI.",
         "API server model name", None, advanced=True),
     "GATEWAY_PROXY_URL": _msg(
-        "URL of a remote Hermes API server to forward messages to (proxy mode). When set, the "
+        "URL of a remote ARGUS API server to forward messages to (proxy mode). When set, the "
         "gateway handles platform I/O only — all agent work is delegated to the remote server. "
         "Use for Docker E2EE containers that relay to a host agent. Also configurable via "
         "gateway.proxy_url in config.yaml.",
-        "Remote Hermes API server URL (e.g. http://192.168.1.100:8642)", None, advanced=True),
+        "Remote ARGUS API server URL (e.g. http://192.168.1.100:8642)", None, advanced=True),
     "GATEWAY_PROXY_KEY": _msg(
-        "Bearer token for authenticating with the remote Hermes API server (proxy mode). Must "
+        "Bearer token for authenticating with the remote ARGUS API server (proxy mode). Must "
         "match the API_SERVER_KEY on the remote host.", "Remote API server auth key", None,
         password=True, advanced=True),
     "WEBHOOK_ENABLED": _msg(

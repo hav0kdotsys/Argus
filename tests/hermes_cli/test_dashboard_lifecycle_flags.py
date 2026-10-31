@@ -33,16 +33,16 @@ class TestDashboardStatus:
             cmd_dashboard(_ns(status=True))
         assert exc.value.code == 0
         out = capsys.readouterr().out
-        assert "No hermes dashboard or serve processes running" in out
+        assert "No argus dashboard or serve processes running" in out
 
     def test_status_with_processes(self, capsys):
         # Includes a serve-mode backend: --status must LIST it, not hide it —
         # `--stop` kills serves, so hiding them let operators kill what they
         # couldn't see (#81564).
         processes = [
-            (12345, "hermes dashboard --port 9119"),
+            (12345, "argus dashboard --port 9119"),
             (12346, "python -m hermes_cli.main dashboard --host 0.0.0.0 --port 9120"),
-            (12347, "hermes serve --host 100.94.65.93 --port 9119"),
+            (12347, "argus serve --host 100.94.65.93 --port 9119"),
         ]
         with patch("hermes_cli.dashboard_procs._scan_dashboard_processes", return_value=processes), \
              patch("gateway.status._pid_exists", return_value=True), \

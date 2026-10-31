@@ -101,7 +101,7 @@ def _entry_problems(entry: dict, where: str) -> list[str]:
         if (required or name) and not (isinstance(name, str) and _ENV_RE.match(name)):
             problems.append(f"{where}.{field}: {name!r} must be an UPPER_SNAKE environment variable name")
         elif name and _hermes_owned_env(name):
-            problems.append(f"{where}.{field}: {name} is a variable Hermes uses itself; declare the plugin's own")
+            problems.append(f"{where}.{field}: {name} is a variable ARGUS uses itself; declare the plugin's own")
     hosts = entry.get("hosts")
     if not (isinstance(hosts, list) and hosts and all(isinstance(h, str) and _HOST_RE.match(h) for h in hosts)):
         problems.append(f"{where}.hosts: must list lowercase DNS host names (no scheme, port, path or IP address)")
@@ -169,8 +169,8 @@ def oauth_notice(manifest: Mapping[str, Any]) -> str:
     """Install/show text for the declared clients; empty when the plugin declares none."""
     name = str((manifest or {}).get("name") or "<plugin>")
     return "; ".join(
-        f"Signs in to {c.id} at {_idp_hosts(c)} for {', '.join(c.hosts)} with `hermes auth add {name}:{c.id}` "
-        "(Hermes stores and refreshes the token; the plugin never receives it)"
+        f"Signs in to {c.id} at {_idp_hosts(c)} for {', '.join(c.hosts)} with `argus auth add {name}:{c.id}` "
+        "(ARGUS stores and refreshes the token; the plugin never receives it)"
         for c in parse_oauth_clients(manifest)[0])
 
 
@@ -199,12 +199,12 @@ def oauth_admission_problems(manifest: Mapping[str, Any], plugin_dir: Path) -> l
     declared = _declared_env_names(manifest)
     for client in clients:
         if client.id in _PROVIDERS:
-            problems.append(f"oauth id {client.id!r} is a Hermes sign-in provider; pick another id")
+            problems.append(f"oauth id {client.id!r} is an ARGUS sign-in provider; pick another id")
         for name in filter(None, (client.client_id_env, client.client_secret_env)):
             if name not in declared:
                 problems.append(f"oauth {client.id!r}: {name} must be declared under requires_env or optional_env")
     if clients and plugin_dir.name == "custom":
-        problems.append("a plugin named 'custom' cannot declare oauth: `hermes auth add custom:<name>` is a custom provider")
+        problems.append("a plugin named 'custom' cannot declare oauth: `argus auth add custom:<name>` is a custom provider")
     return problems
 
 
@@ -228,7 +228,7 @@ def oauth_admission_warnings(manifest: Mapping[str, Any], plugin_dir: Path) -> l
             text = path.read_text(encoding="utf-8-sig", errors="replace")
         except OSError:
             continue
-        warnings += [f"oauth: {path.relative_to(plugin_dir).as_posix()} names the token URL {url}; Hermes "
+        warnings += [f"oauth: {path.relative_to(plugin_dir).as_posix()} names the token URL {url}; ARGUS "
                      "refreshes the grant, so the plugin should not call it" for url in urls if url in text]
     return warnings
 
@@ -364,19 +364,19 @@ def _not_signed_in(message: str):
 
 def _revoked(client: OAuthClient, key: str, code: str):
     return _not_signed_in(f"The {client.id} sign-in for plugin '{key.rsplit(':', 1)[0]}' was revoked ({code}). "
-                          f"Run `hermes auth add {key}` to sign in again.")
+                          f"Run `argus auth add {key}` to sign in again.")
 
 
 def _usable_grant(row: Optional[dict], client: OAuthClient, key: str) -> dict:
     plugin = key.rsplit(":", 1)[0]
     if row is None:
-        raise _not_signed_in(f"Not signed in to {client.id} for plugin '{plugin}' in this Hermes profile. "
-                             f"Run `hermes auth add {key}`.")
+        raise _not_signed_in(f"Not signed in to {client.id} for plugin '{plugin}' in this ARGUS profile. "
+                             f"Run `argus auth add {key}`.")
     if row.get("dead"):
         raise _revoked(client, key, str(row["dead"]))
     if row.get("fingerprint") != client.fingerprint:
         raise _not_signed_in(f"Plugin '{plugin}' changed its oauth entry '{client.id}' since you signed in. "
-                             f"Run `hermes auth add {key}` to sign in again.")
+                             f"Run `argus auth add {key}` to sign in again.")
     return row
 
 
@@ -472,7 +472,7 @@ def _cli_add(args: Any, client: OAuthClient, key: str) -> bool:
     from hermes_cli.auth_oauth_pkce_plugin import login
 
     if _unattended():
-        raise SystemExit(f"`hermes auth add {key}` signs you in through a browser; run it in your own terminal, "
+        raise SystemExit(f"`argus auth add {key}` signs you in through a browser; run it in your own terminal, "
                          "not from a gateway, cron job or agent session.")
     secret = " and the client secret" if client.client_secret_env else ""
     print(f"Plugin '{key.rsplit(':', 1)[0]}' signs in to {client.id} at {urlparse(client.authorize_url).hostname}. "
@@ -484,7 +484,7 @@ def _cli_add(args: Any, client: OAuthClient, key: str) -> bool:
     except AuthError as exc:
         raise SystemExit(f"Login failed: {exc}") from None
     _write_grant(key, {**fields, "fingerprint": client.fingerprint})
-    print(f"Signed in to {client.id} for plugin '{key.rsplit(':', 1)[0]}'; the grant is stored in this Hermes profile.")
+    print(f"Signed in to {client.id} for plugin '{key.rsplit(':', 1)[0]}'; the grant is stored in this ARGUS profile.")
     return True
 
 

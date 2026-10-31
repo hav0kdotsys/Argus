@@ -145,7 +145,7 @@ def test_local_directory_plugin_is_refused(world, caplog):
     (plugin / "__init__.py").write_text(_PLUGIN)
     with caplog.at_level(logging.WARNING):
         assert world["load"]() is None
-    assert RULE in caplog.text and "not installed from the Hermes plugin catalog" in caplog.text
+    assert RULE in caplog.text and "not installed from the ARGUS plugin catalog" in caplog.text
 
 
 def test_url_install_with_forged_in_tree_catalog_file_is_refused(world, caplog):

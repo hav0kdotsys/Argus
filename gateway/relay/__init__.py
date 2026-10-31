@@ -244,7 +244,7 @@ def relay_display_name() -> Optional[str]:
         # prefix every reply "**Hermes Agent:**" and shadow the connector's
         # linked-owner fallback, which actually disambiguates. Only a customized
         # name is forwarded.
-        if value == "Hermes Agent":
+        if value == "ARGUS":
             value = ""
     # Mirror the connector's ingest sanitization (trim + 64-char cap).
     return value[:64] or None

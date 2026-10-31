@@ -48,7 +48,7 @@ def _run_dump(image: str) -> str:
         check=False,
     )
     assert r.returncode == 0, (
-        f"hermes dump exited {r.returncode}: "
+        f"argus dump exited {r.returncode}: "
         f"stderr={r.stderr[-1000:]!r}\nstdout={r.stdout[-1000:]!r}"
     )
     return r.stdout

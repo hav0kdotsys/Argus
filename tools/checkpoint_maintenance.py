@@ -466,8 +466,8 @@ def checkpoint_footprint_notice() -> Optional[str]:
         from hermes_cli.sizefmt import format_bytes
         return (f"Filesystem checkpoints (/rollback) are on: {format_bytes(size)} across "
                 f"{project_count} project(s), above the {cap_mb} MB cap (one snapshot per project is "
-                f"always kept). Not using /rollback? `hermes config set checkpoints.enabled false` then "
-                f"`hermes checkpoints clear`; or lower `checkpoints.retention_days`.")
+                f"always kept). Not using /rollback? `argus config set checkpoints.enabled false` then "
+                f"`argus checkpoints clear`; or lower `checkpoints.retention_days`.")
     except Exception as exc:
         logger.debug("checkpoint footprint notice skipped: %s", exc)
         return None

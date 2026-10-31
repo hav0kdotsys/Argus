@@ -117,12 +117,12 @@ def backend_status(name: str) -> tuple[Optional[DelegationProvider], str]:
     if registered is None:
         return None, (
             f"Delegation backend '{name}' is not installed: no enabled plugin provides it. Install or enable the "
-            f"plugin that does (`hermes plugins list`), or switch back to the default backend "
-            f"(`hermes config set delegation.backend default`).")
+            f"plugin that does (`argus plugins list`), or switch back to the default backend "
+            f"(`argus config set delegation.backend default`).")
     return registered, (
         f"Delegation backend '{name}' is unavailable here (its plugin reports it cannot run). Fix its setup, or "
         f"switch back to the default backend: `/delegation default` for this session, or "
-        f"`hermes config set delegation.backend default`.")
+        f"`argus config set delegation.backend default`.")
 
 
 def get_active_provider(config: Mapping[str, Any]) -> DelegationProvider:

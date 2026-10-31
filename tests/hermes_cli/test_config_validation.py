@@ -181,7 +181,7 @@ class TestQuotedContainerValues:
         })
         flagged = {i.message.split(" ", 1)[0]: i for i in issues if "quoted string" in i.message}
         assert set(flagged) == {"plugins.enabled", "model_catalog.excluded_providers"}
-        assert "hermes config set plugins.enabled '[\"a\",\"b\"]'" in flagged["plugins.enabled"].hint
+        assert "argus config set plugins.enabled '[\"a\",\"b\"]'" in flagged["plugins.enabled"].hint
 
     def test_string_typed_and_tolerant_slots_are_not_flagged(self):
         """`approvals.mode` is a string in the schema; `model: name` is the documented shorthand;

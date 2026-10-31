@@ -363,7 +363,7 @@ def _fenced_verdict(home: Path, timeout: float) -> GatewayDiscovery:
     return GatewayDiscovery("draining", reason_code="update_paused")
 
 
-_REPLACE_FAILED_DETAIL = "an older Hermes gateway still owns this profile after a stop; run: hermes gateway stop"
+_REPLACE_FAILED_DETAIL = "an older ARGUS gateway still owns this profile after a stop; run: argus gateway stop"
 # ``draining`` reasons after which the owner is going away by itself: its own idle exit, or the
 # older-Hermes owner this call just stopped. Ensure waits it out and starts the current owner.
 _RETIRING = frozenset({"idle_exit", "replaced"})

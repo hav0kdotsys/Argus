@@ -483,7 +483,7 @@ class MCPServerRunMixin:
             # Deterministic failure (bad command, non-MCP URL, 401/403): park at once; auth
             # failures park (not return) so the task can pick up fresh tokens later.
             detail = (f"authentication, parking until credentials change; re-authenticate with "
-                      f"`hermes mcp login {self.name}`" if _errors._is_auth_error(root)
+                      f"`argus mcp login {self.name}`" if _errors._is_auth_error(root)
                       else "connection with a permanent error, parking without retries")
             self._log_park("MCP server '%s' failed initial %s (state: connecting → parked): %s: %s",
                            self.name, detail, type(root).__name__, root)

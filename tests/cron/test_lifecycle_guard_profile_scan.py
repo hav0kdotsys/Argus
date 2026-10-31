@@ -22,7 +22,7 @@ for selector in (f"-p {profile}", f"--profile {profile}", f"--profile={profile}"
         assert guard.contains_gateway_lifecycle_command(command) is expected
         assert guard.contains_gateway_lifecycle_command_or_referenced_script(command) is expected
     for before, after in (("--usage-file - ", ""), ("", "--usage-file - ")):
-        command = f"hermes {before}{selector} {after}gateway stop"
+        command = f"argus {before}{selector} {after}gateway stop"
         assert guard.contains_gateway_lifecycle_command(command) is expected
         assert guard.contains_gateway_lifecycle_command_or_referenced_script(command) is expected
 '''.replace("PROFILE", repr(profile))
@@ -43,7 +43,7 @@ from cron import lifecycle_guard as guard
 for command in (
     "rclone lsf $HOME/.hermes --recursive --files-only " + "--exclude " * 58,
     "hermes " + "--quiet " * 1000,
-    "hermes -p default " + "--quiet " * 1000 + "gateway status",
+    "argus -p default " + "--quiet " * 1000 + "gateway status",
     "hermes " + ("--option" + " " * 100 + "value " ) * 58,
 ):
     assert guard.contains_gateway_lifecycle_command(command) is False

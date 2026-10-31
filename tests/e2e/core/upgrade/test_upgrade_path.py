@@ -217,7 +217,7 @@ QUICK_CMD = "echo 'deploy: step one' && echo \"step two # still a string\" && pr
 
 def user_config(base_url: str, version: int) -> str:
     return (
-        "# Hand-edited by the user. Every comment and value below must survive `hermes update`.\n"
+        "# Hand-edited by the user. Every comment and value below must survive `argus update`.\n"
         "model:\n"
         "  provider: custom\n"
         f"  base_url: {base_url}  # local fake provider\n"
@@ -473,7 +473,7 @@ def migrate_oracle(leg: Leg, name: str, before: bytes) -> bytes:
 def assert_healthy_at_head(leg: Leg, provider: FakeLLMServer, final: subprocess.CompletedProcess) -> None:
     before = leg.snapshot
     # 1. exit code matches reality
-    assert final.returncode == 0, "final `hermes update` failed:\n" + H.describe(final)
+    assert final.returncode == 0, "final `argus update` failed:\n" + H.describe(final)
     assert _git("rev-parse", "HEAD", cwd=leg.install) == _refs().head, "update exited 0 but HEAD is not the target"
     assert not (leg.install / ".git" / "index.lock").exists(), "update left .git/index.lock behind"
     # The active interpreter must serve the pulled tree (stale editable finder, #119466):
@@ -696,9 +696,9 @@ def test_kill_mid_pull_then_retry_heals(leg, provider, torn):
     final = _update(leg)
     # Merge-order safe (see _pending_fixes.known_failure): only the import-time death excuses torn-tree.
     gate = known_failure(
-        r"(?s)^final `hermes update` failed:.*(cannot import name|No module named)",
+        r"(?s)^final `argus update` failed:.*(cannot import name|No module named)",
         "#120339 (merged; passes once N-1 is a release carrying it): a fast-forward killed half-way leaves a prefix of the changed files at HEAD while "
-        "HEAD still names N-1; every entry point, including `hermes update`, then dies at import (cannot import "
+        "HEAD still names N-1; every entry point, including `argus update`, then dies at import (cannot import "
         "name ... from 'utils'), so nothing can heal the install without manual git") if torn else contextlib.nullcontext()
     with gate:
         assert_healthy_at_head(leg, provider, final)

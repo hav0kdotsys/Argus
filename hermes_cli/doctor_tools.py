@@ -83,7 +83,7 @@ def _run_ok(cmd: list[str], timeout: int, **kw) -> bool:
 
 
 _TERMUX_INSTALL_ALL_FALLBACK_NOTES = (
-    "Termux uses the Hermes APT package: pkg install hermes-agent.",
+    "Termux uses the ARGUS APT package: pkg install hermes-agent.",
     "Matrix E2EE extra is excluded on Termux (python-olm currently fails to build).",
     "Local faster-whisper extra is excluded on Termux (ctranslate2/av build path unavailable).",
     "STT fallback: use Groq Whisper (set GROQ_API_KEY) or OpenAI Whisper (set VOICE_TOOLS_OPENAI_KEY).",
@@ -159,7 +159,7 @@ def _enabled_cli_toolsets_for_doctor() -> set[str] | None:
 # `requires_env`, so the generic branch would call a missing credential a "system dependency".
 # Name the real fix instead (#9516).
 _TOOLSET_SETUP_HINTS: dict[str, str] = {
-    "image_gen": "(image generation unavailable — check the provider selection and its key or SDK with 'hermes tools')",
+    "image_gen": "(image generation unavailable — check the provider selection and its key or SDK with 'argus tools')",
 }
 
 
@@ -192,7 +192,7 @@ def _check_docker_backend(terminal_env: str, running_in_container: bool, issues:
     if terminal_env == "docker":
         if not docker_exe:
             _fail_and_issue("Docker or Podman not installed", "(needed for the 'docker' terminal backend)",
-                            "Install Docker or Podman, or run `hermes setup terminal` to switch backend.", issues)
+                            "Install Docker or Podman, or run `argus setup terminal` to switch backend.", issues)
         else:
             runtime = docker_runtime_name(docker_exe)
             hint = docker_runtime_start_hint(docker_exe)
@@ -204,7 +204,7 @@ def _check_docker_backend(terminal_env: str, running_in_container: bool, issues:
             _require(_run_ok([docker_exe, "version"], timeout=10),
                      (runtime, "(daemon running)" if runtime == "Docker" else "(reachable)"),
                      (unreachable, "(needed for the 'docker' terminal backend)"),
-                     f"{hint[0].upper()}{hint[1:]}, or run `hermes setup terminal` to switch backend.", issues)
+                     f"{hint[0].upper()}{hint[1:]}, or run `argus setup terminal` to switch backend.", issues)
     elif docker_exe:
         check_ok(docker_runtime_name(docker_exe), "(optional)")
     elif _is_termux():
@@ -217,7 +217,7 @@ def _check_ssh_backend(issues: list[str]) -> None:
     ssh_host = os.getenv("TERMINAL_SSH_HOST")
     if not ssh_host:
         return _fail_and_issue("SSH host not configured", "(needed for the 'ssh' terminal backend)",
-                               "run `hermes setup terminal` and enter the SSH host and user.", issues)
+                               "run `argus setup terminal` and enter the SSH host and user.", issues)
     ssh_user, ssh_port, ssh_key = (os.getenv(f"TERMINAL_SSH_{k}") for k in ("USER", "PORT", "KEY"))
     cmd = ["ssh", "-o", "ConnectTimeout=5", "-o", "BatchMode=yes"]
     if ssh_port:
@@ -238,12 +238,12 @@ def _require(cond, ok, bad, issue: str, issues: list[str]) -> None:
 def _check_daytona_backend(issues: list[str]) -> None:
     _require(os.getenv("DAYTONA_API_KEY"), ("Daytona API key", "(configured)"),
              ("Daytona API key missing", "(needed for the 'daytona' terminal backend)"),
-             "run `hermes setup terminal` (Daytona) to enter it.", issues)
+             "run `argus setup terminal` (Daytona) to enter it.", issues)
     try:
         from daytona import Daytona
         check_ok("daytona SDK", "(installed)")
     except ImportError:
-        _fail_and_issue("daytona SDK not installed", "(run hermes setup terminal)", "Run hermes setup terminal and select Daytona, then restart Hermes", issues)
+        _fail_and_issue("daytona SDK not installed", "(run argus setup terminal)", "Run argus setup terminal and select Daytona, then restart ARGUS", issues)
 
 
 def _check_vercel_backend(issues: list[str]) -> None:
@@ -256,8 +256,8 @@ def _check_vercel_backend(issues: list[str]) -> None:
              ("Vercel disk setting", "(uses platform default)"), ("Vercel custom disk unsupported", "(reset terminal.container_disk to 51200)"),
              "Vercel Sandbox does not support custom container_disk; use the shared default 51200", issues)
     _require(importlib.util.find_spec("vercel") is not None, ("vercel SDK", "(installed)"),
-             ("vercel SDK not installed", "(run hermes setup terminal)"),
-             "Run hermes setup terminal and select Vercel Sandbox, then restart Hermes", issues)
+             ("vercel SDK not installed", "(run argus setup terminal)"),
+             "Run argus setup terminal and select Vercel Sandbox, then restart ARGUS", issues)
     auth_status = describe_vercel_auth()
     if auth_status.ok:
         check_ok("Vercel auth", f"({auth_status.label})")
@@ -363,7 +363,7 @@ def _check_lightpanda() -> None:
         used, reason = False, f"status check failed: {e}"
     if not used:
         check_warn("browser.engine=lightpanda is shadowed", f"({reason})")
-        check_info("Fix: pick Lightpanda in `hermes tools` → Browser Automation, or set browser.engine: auto")
+        check_info("Fix: pick Lightpanda in `argus tools` → Browser Automation, or set browser.engine: auto")
     elif not check_bool(find_lightpanda_binary(), ("Lightpanda", f"({reason})"),
                         ("Lightpanda selected but binary not found", "(browser tools will fail until it is installed)")):
         check_info(LIGHTPANDA_INSTALL_HINT)
@@ -378,7 +378,7 @@ def _check_node_and_browser(should_fix: bool, f: Finding) -> None:
     elif _is_termux():
         check_info("Node.js not found (optional; install on Termux with: pkg install nodejs)")
     else:
-        check_warn("Node.js not found", "(optional; run: hermes pm install node)")
+        check_warn("Node.js not found", "(optional; run: argus pm install node)")
     _check_chromium(should_fix)
     _check_lightpanda()
 
@@ -414,7 +414,7 @@ def _audit_one(npm_bin: str, npm_dir, label: str, audit_extra: list[str], manual
             check_ok(f"{label} deps", "(no known vulnerabilities)")
         elif critical > 0 or high > 0:
             remedy = ("fix is an upstream lockfile bump — a local manual fix does not persist"
-                      " (the next `hermes update` reinstalls from the committed lockfile)")
+                      " (the next `argus update` reinstalls from the committed lockfile)")
             check_warn(f"{label} deps", f"({critical} critical, {high} high, {moderate} moderate — {remedy})")
             if workspace_scoped:
                 check_info("  ^ workspace audit includes runtime and build dependencies; if manual npm remediation "
@@ -497,7 +497,7 @@ def _check_tool_availability(should_fix: bool, f: Finding) -> None:
     # disabled toolsets may warn above but must not pollute it.
     api_disabled = _missing_api_key_toolsets_for_summary(unavailable)
     if api_disabled or any(status != "ok" for status, _, _ in web_rows):
-        f.issues.append("Run 'hermes setup' to configure missing API keys for full tool access")
+        f.issues.append("Run 'argus setup' to configure missing API keys for full tool access")
     _warn_partially_stripped_toolsets(f)
 
 

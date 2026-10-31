@@ -62,7 +62,7 @@ def test_conftest_does_not_import_hermes_state_at_collection():
             blocked.append(name)
             raise AssertionError(
                 "conftest._wal_is_usable imported hermes_state — this caches "
-                "DEFAULT_DB_PATH from the real ~/.hermes during collection"
+                "DEFAULT_DB_PATH from the real ~/.argus during collection"
             )
         return real_import(name, *args, **kwargs)
 

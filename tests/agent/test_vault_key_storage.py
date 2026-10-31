@@ -137,12 +137,12 @@ def test_missing_key_with_an_existing_vault_explains_recovery_and_mints_nothing(
     with pytest.raises(VaultError) as excinfo:
         VaultStore().list_items()
     message = str(excinfo.value)
-    assert "hermes vault key" in message and "vault.json.enc" in message
+    assert "argus vault key" in message and "vault.json.enc" in message
     assert (h / "vault" / "vault.json.enc").read_bytes() == blob, "the ciphertext must be left alone"
     assert not (h / "vault" / "vault.key").exists(), "no fresh key may be minted over an existing vault"
     assert len(keychain.entries) == 0
     if lose == "keychain entry":  # and a rerun of the move must not report the lost entry as fine
-        with pytest.raises(VaultError, match="hermes vault key"):
+        with pytest.raises(VaultError, match="argus vault key"):
             VaultStore().migrate_key("keychain")
 
 

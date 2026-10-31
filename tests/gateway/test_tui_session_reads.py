@@ -51,7 +51,7 @@ async def test_tui_status_is_main_tui_status(owner):
     sid = (await owner.call('session.create', request_id='t', source='tui', cwd=str(owner.workdir)))['session_id']
     out = await _exec(owner, sid, 'status')
     lines = out.splitlines()
-    assert lines[0] == 'Hermes TUI Status' and lines[1] == '', out
+    assert lines[0] == 'ARGUS TUI Status' and lines[1] == '', out
     assert lines[2].startswith('Session ID: ') and lines[3].startswith('Path: ')
     labels = [line.split(':')[0] for line in lines[4:]]
     assert labels == ['Model', 'Created', 'Last Activity', 'Tokens', 'Agent Running'], out

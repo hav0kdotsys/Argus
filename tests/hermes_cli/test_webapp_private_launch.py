@@ -56,14 +56,14 @@ def test_a_private_link_reaches_the_browser_in_a_page_only_the_user_can_read(pri
     out = capsys.readouterr().out
     assert "Opened the Webapp in your browser" in out and "ticket=" not in out
     # macOS can report a browser that opened where the user never sees it (osascript over SSH).
-    assert "If no browser opened, run `hermes webapp --no-open` for a link." in out
+    assert "If no browser opened, run `argus webapp --no-open` for a link." in out
 
 
 @pytest.mark.platforms("posix")
 @pytest.mark.parametrize(("flag", "sticky", "command"), [
-    ("work", None, "hermes -p work webapp --no-open"),
-    ("default", "work", "hermes -p default webapp --no-open"),
-    ("work", "work", "hermes webapp --no-open"),
+    ("work", None, "argus -p work webapp --no-open"),
+    ("default", "work", "argus -p default webapp --no-open"),
+    ("work", "work", "argus webapp --no-open"),
 ])
 def test_the_no_open_hint_keeps_the_profile_a_bare_rerun_would_not_pick(private, capsys, flag, sticky, command):
     """``-p`` re-homes only this process: a bare ``hermes webapp --no-open`` gets the sticky profile."""

@@ -268,7 +268,7 @@ def _run_composite_ui(curses, plugin_keys, plugin_labels, plugin_selected, disab
         console.print(f"[red]✗[/red] Plugin selection refused, not saved: {exc}")
         console.print(
             "[dim]config.yaml and the active environment are unchanged. "
-            "Run `hermes pm install` to resolve, then retry.[/dim]"
+            "Run `argus pm install` to resolve, then retry.[/dim]"
         )
         return
     if turned_on or turned_off:

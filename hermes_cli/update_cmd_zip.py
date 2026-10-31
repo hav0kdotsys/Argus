@@ -47,7 +47,7 @@ _ZIP_PRESERVED_NESTED = {
     "web": ("node_modules",),
 }
 
-_STASH_HINT = "  Stash or commit your changes, then rerun `hermes update`."
+_STASH_HINT = "  Stash or commit your changes, then rerun `argus update`."
 
 
 def _remove_path(path: str, *, ignore_errors: bool = False) -> None:
@@ -459,7 +459,7 @@ def _drop_journal_if_clean(root: Path, entries: list[str], suffixes=(".hermes-up
     every one of them is gone, else the next launch's recovery could not tell them from a user's file."""
     left = [item for item in entries if any(os.path.lexists(os.path.join(root, item + x)) for x in suffixes)]
     if left:
-        print(f"  ⚠ Could not remove the update's own copies of {', '.join(left)}; the next `hermes` launch "
+        print(f"  ⚠ Could not remove the update's own copies of {', '.join(left)}; the next `argus` launch "
               "removes them.")
         return
     (root / ZIP_SWAP_JOURNAL).unlink(missing_ok=True)
@@ -478,7 +478,7 @@ def _journaled_stage_and_swap(extracted: str, entries: list[str], root: Path, ta
         raise RuntimeError("an interrupted ZIP update could not be settled; see the warning above")
     with zip_swap_owner_lock(root, wait=10.0) as owned:
         if not owned:
-            raise RuntimeError("another `hermes update` is swapping this install right now"
+            raise RuntimeError("another `argus update` is swapping this install right now"
                                if owned.reason == "busy" else f"no ZIP swap lock, no swap ({owned.reason})")
         # A leftover backup counts: _stage_replacement puts it back as the entry before the swap.
         # Each entry also carries the identities recovery needs before it may delete anything (review
@@ -605,7 +605,7 @@ def _download_and_swap_zip(branch: str, zip_url: str, target_sha: str | None = N
         print(f"✗ ZIP update failed: {e}")
         # Two-phase replace commits all or rolls all back, so no mixed tree here — don't push a needless reinstall.
         print("  Your existing install was left in place.")
-        print("  Re-run `hermes update` to retry; if the agent won't start, reinstall from https://hermes-agent.nousresearch.com")
+        print("  Re-run `argus update` to retry; if the agent won't start, reinstall from https://hermes-agent.nousresearch.com")
         _record_stop(_zip_stop_class(e, downloaded=downloaded))
         _m().sys.exit(1)
     finally:
@@ -629,8 +629,8 @@ def _update_via_zip(args, *, had_desktop_app_before_update: bool = False,
         print(
             "  This path runs when git file I/O is broken on the system. "
             "Either resolve the git-side breakage (typically an antivirus "
-            "or NTFS filter holding files open) and rerun `hermes update "
-            f"--branch {branch}`, or update against main with `hermes update`."
+            "or NTFS filter holding files open) and rerun `argus update "
+            f"--branch {branch}`, or update against main with `argus update`."
         )
         _record_stop("branch_unsupported")
         _m().sys.exit(1)

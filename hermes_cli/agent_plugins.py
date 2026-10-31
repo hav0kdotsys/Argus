@@ -118,7 +118,7 @@ def _server_declarations(
         if unknown:
             if diagnostics is not None:
                 diagnostics.append(AgentPluginDiagnostic(
-                    f"server:{name}", f"ignored unknown keys {sorted(unknown)} (needs a newer Hermes)"))
+                    f"server:{name}", f"ignored unknown keys {sorted(unknown)} (needs a newer ARGUS)"))
             raw = {key: value for key, value in raw.items() if key not in unknown}
             if not raw:
                 continue

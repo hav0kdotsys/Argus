@@ -192,7 +192,7 @@ class RemoteBackend:
         name = profile_name_for_home(home)
         if not name or not PROFILE_ID_RE.match(name):
             raise ConfigBackendUnavailable(
-                f"Remote Config: {home} is not a Hermes profile home, so it has no remote config "
+                f"Remote Config: {home} is not an ARGUS profile home, so it has no remote config "
                 "(HERMES_CONFIG_BACKEND=remote serves profile homes only).")
         return name
 
@@ -212,7 +212,7 @@ class RemoteBackend:
             raise ConfigBackendUnavailable(
                 f"Remote Config: a config read for {home} re-entered the load of that profile's config "
                 "on the same thread (code on the boot path read config before it was loaded). This is "
-                "a Hermes bug; refusing the read instead of deadlocking.")
+                "an ARGUS bug; refusing the read instead of deadlocking.")
         with self._lock:
             fetch_lock = self._fetch_locks.setdefault(key, threading.Lock())
         booting = self._booting()
@@ -244,8 +244,8 @@ class RemoteBackend:
         profile = self._profile_for(home)
         if not client.instance_id():
             raise ConfigBackendUnavailable(
-                f"Remote Config: {client.INSTANCE_ENV} is not set, so Hermes cannot identify this agent "
-                "to the config plane. Hermes does not start without its remote config.")
+                f"Remote Config: {client.INSTANCE_ENV} is not set, so ARGUS cannot identify this agent "
+                "to the config plane. ARGUS does not start without its remote config.")
         delays = list(BOOT_RETRY_DELAYS)
         while True:
             notes: list[str] = []
@@ -270,7 +270,7 @@ class RemoteBackend:
                     continue
                 raise ConfigBackendUnavailable(
                     f"Remote Config: cannot load the config for profile {profile!r} from "
-                    f"{client.shown_url()}: {exc}. Hermes does not start without its remote config "
+                    f"{client.shown_url()}: {exc}. ARGUS does not start without its remote config "
                     "(HERMES_CONFIG_BACKEND=remote has no local fallback).") from exc
 
     @staticmethod
@@ -400,7 +400,7 @@ class RemoteBackend:
         for key in sorted(set(doc) - _known_top_level_keys() - {"_config_version"}):
             if key not in self._unknown_warned:
                 self._unknown_warned.add(key)
-                logger.warning("Remote Config: unknown config key %r is ignored by this Hermes version", key)
+                logger.warning("Remote Config: unknown config key %r is ignored by this ARGUS version", key)
         latest = _latest_config_version()
         if SUPPORT_FLOOR_VERSION <= current < latest:
             self._migrate_in_memory(st, seen, current, doc)

@@ -87,7 +87,7 @@ def _pause_owner(home, control_home, identity):
         accepted = pause_acked(pause_gateway_for_update(control_home, timeout=8), identity)
     if not accepted:
         # Stopping the host gateway would take down every profile it multiplexes.
-        retry = (f"Park the profile with `hermes -p {home.name} gateway stop` and retry."
+        retry = (f"Park the profile with `argus -p {home.name} gateway stop` and retry."
                  if satellite else "Stop the gateway and retry.")
         raise GatewayClientError(f"Gateway refused the snapshot maintenance handoff; nothing was restored. {retry}")
     return ours

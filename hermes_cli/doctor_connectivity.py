@@ -126,7 +126,7 @@ _OPENROUTER_STATUS = {
     401: ("(invalid API key)", "Check OPENROUTER_API_KEY in .env"),
     402: ("(out of credits — payment required)",
           "OpenRouter account has insufficient credits. "
-          "Fix: run 'hermes config set model.provider <provider>' "
+          "Fix: run 'argus config set model.provider <provider>' "
           "to switch providers, or fund your OpenRouter account "
           "at https://openrouter.ai/settings/credits"),
     429: ("(rate limited)", "OpenRouter rate limit hit — consider switching to a different provider or waiting"),
@@ -279,7 +279,7 @@ def _probe_bedrock() -> ProbeResult:
         n = len(client.list_foundation_models().get("modelSummaries", []))
         return _row(name, "ok", f"({auth_var}, {region}, {n} models)", label=label)
     except ImportError:
-        hint = ("From the Hermes environment, run: "
+        hint = ("From the ARGUS environment, run: "
                 f"{install_hint('bedrock')}. "
                 "Then restart Hermes.")
         return _row(name, "warn", "(boto3 not installed)", [hint], label=label)
@@ -313,7 +313,7 @@ def _probe_azure_entra() -> ProbeResult:
     except Exception as exc:
         return _row(name, "warn", f"(adapter import failed: {exc})", [f"Azure Foundry adapter import failed: {exc}"], label=label)
     if not has_azure_identity_installed():
-        return _row(name, "warn", "(azure-identity not installed)", ["From the Hermes environment, run: "
+        return _row(name, "warn", "(azure-identity not installed)", ["From the ARGUS environment, run: "
                      f"{install_hint('azure-identity')}. "
                      "Then restart Hermes."], label=label)
     entra_cfg = model_cfg.get("entra") or {}

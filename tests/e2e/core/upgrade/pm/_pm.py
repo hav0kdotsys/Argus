@@ -241,6 +241,6 @@ def turn(sb: I.Sandbox, provider, marker: str) -> subprocess.CompletedProcess:
     cp = run_env(sb, [sb.hermes, "-z", marker], lazy_env(sb), timeout=600)
     new = provider.main_requests()[n:]
     assert cp.returncode == 0 and len(new) == 1 and marker in json.dumps(new[0]["messages"]), (
-        f"`hermes -z` did not reach the provider ({len(new)} requests)\n"
+        f"`argus -z` did not reach the provider ({len(new)} requests)\n"
         + diagnostics(sb, cp))
     return cp

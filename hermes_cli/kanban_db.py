@@ -3510,7 +3510,7 @@ def promote_task(
             f"unsatisfied parent dependencies: {', '.join(unsatisfied)} "
             f"(the ready -> running claim re-checks parents, so promotion cannot "
             f"bypass them; complete the parents or drop the link with "
-            f"`hermes kanban unlink <parent_id> {task_id}`)"
+            f"`argus kanban unlink <parent_id> {task_id}`)"
         )
 
     if dry_run:

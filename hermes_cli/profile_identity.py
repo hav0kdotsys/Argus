@@ -110,7 +110,7 @@ def _purge_profile_identity(canon: str, live_mux: bool) -> bool:
         print(
             "⚠ Profile was deleted, but the live gateway could not purge its session identity"
             f" ({reason}). Restart the gateway, then run:\n"
-            f"    hermes profile purge-identity {canon}",
+            f"    argus profile purge-identity {canon}",
             file=sys.stderr)
         return False
 
@@ -176,7 +176,7 @@ def _migrate_checkpoint_identity(old_canon: str, new_canon: str) -> bool:
     print(
         "⚠ Profile was renamed, but checkpoint identity migration failed for "
         f"{result['errors']} project(s). Retry with:\n"
-        f"    hermes profile migrate-identity {old_canon} {new_canon}",
+        f"    argus profile migrate-identity {old_canon} {new_canon}",
         file=sys.stderr,
     )
     return False
@@ -210,7 +210,7 @@ def _migrate_profile_identity(old_canon: str, new_canon: str, live_mux: bool) ->
         print(
             "⚠ Profile was renamed, but the live gateway could not migrate session identity"
             f" ({reason}). Restart the gateway, then run:\n"
-            f"    hermes profile migrate-identity {old_canon} {new_canon}",
+            f"    argus profile migrate-identity {old_canon} {new_canon}",
             file=sys.stderr)
         return False
 

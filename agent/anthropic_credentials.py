@@ -142,7 +142,7 @@ _SPENT_ROTATION_FINGERPRINTS: OrderedDict[str, None] = OrderedDict()
 _SPENT_ROTATION_MAX_TRACKED = 64
 _SPENT_ROTATION_SIDECAR_COMMENT = (
     "Non-secret one-way fingerprints of Anthropic OAuth credentials whose rotation was "
-    "consumed server-side but never durably committed. Written by Hermes so sibling "
+    "consumed server-side but never durably committed. Written by ARGUS so sibling "
     "processes sharing this credential source fail closed instead of replaying a spent "
     "single-use refresh token."
 )
@@ -496,7 +496,7 @@ def _refresh_oauth_token(creds: dict[str, Any]) -> Optional[str]:
             # Another process may have spent this token and lost the commit; its sidecar verdict is authoritative.
             if is_rotation_consumed_uncommitted(refresh_token, source_path=cred_path):
                 logger.debug("Refresh token was already consumed by an uncommitted rotation "
-                             "- refusing to replay it; run 'hermes auth add anthropic'")
+                             "- refusing to replay it; run 'argus auth add anthropic'")
                 return None
             fingerprint = hashlib.sha256(refresh_token.encode("utf-8")).hexdigest()[:32]
             if fingerprint in _DEAD_REFRESH_TOKEN_FINGERPRINTS:
@@ -508,8 +508,8 @@ def _refresh_oauth_token(creds: dict[str, Any]) -> Optional[str]:
                 if is_terminal_anthropic_refresh_error(e):
                     _DEAD_REFRESH_TOKEN_FINGERPRINTS.add(fingerprint)
                     logger.warning(
-                        "Claude Code OAuth refresh token is terminally invalid (%s); Hermes cannot use this "
-                        "login. Run 'hermes auth add anthropic' to give Hermes its own login.", e)
+                        "Claude Code OAuth refresh token is terminally invalid (%s); ARGUS cannot use this "
+                        "login. Run 'argus auth add anthropic' to give ARGUS its own login.", e)
                 else:
                     logger.debug("Failed to refresh Claude Code token: %s", e)
                 return None
@@ -524,7 +524,7 @@ def _refresh_oauth_token(creds: dict[str, Any]) -> Optional[str]:
                 logger.error(
                     "Anthropic OAuth refresh rotated the single-use token but could not "
                     "commit it to %s (%s) — treating the refresh as failed; "
-                    "run 'hermes auth add anthropic' to give Hermes its own login",
+                    "run 'argus auth add anthropic' to give ARGUS its own login",
                     cred_path, e,
                 )
                 mark_rotation_consumed_uncommitted(
@@ -632,7 +632,7 @@ def _resolve_claude_code_token_from_credentials(creds: Optional[dict[str, Any]] 
     logger.debug("Claude Code credentials expired — attempting refresh")
     refreshed = _refresh_oauth_token(creds)
     if not refreshed:
-        logger.debug("Token refresh failed — run 'hermes auth add anthropic' to give Hermes its own login")
+        logger.debug("Token refresh failed — run 'argus auth add anthropic' to give ARGUS its own login")
     return refreshed or None
 
 
@@ -772,7 +772,7 @@ def run_hermes_oauth_login_pure() -> Optional[dict[str, Any]]:
     }
     auth_url = f"https://claude.ai/oauth/authorize?{urlencode(params)}"
     print("\n".join([
-        "", "Authorize Hermes with your Claude Pro/Max subscription.", "",
+        "", "Authorize ARGUS with your Claude Pro/Max subscription.", "",
         "╭─ Claude Pro/Max Authorization ────────────────────╮",
         "│                                                   │",
         "│  Open this link in your browser:                  │",
@@ -817,7 +817,7 @@ def run_hermes_oauth_login_pure() -> Optional[dict[str, Any]]:
 
 def read_hermes_oauth_credentials() -> Optional[dict[str, Any]]:
     """Read Hermes-managed OAuth credentials from ~/.hermes/.anthropic_oauth.json."""
-    data = _load_json_if_exists(_get_hermes_oauth_file(), "Hermes OAuth credentials")
+    data = _load_json_if_exists(_get_hermes_oauth_file(), "ARGUS OAuth credentials")
     return data if data is not None and data.get("accessToken") else None
 
 
@@ -831,5 +831,5 @@ def _write_hermes_oauth_credentials(
     _commit_private_json(
         target if target is not None else _get_hermes_oauth_file(),
         {"accessToken": access_token, "refreshToken": refresh_token, "expiresAt": expires_at_ms},
-        "Hermes OAuth credentials",
+        "ARGUS OAuth credentials",
     )

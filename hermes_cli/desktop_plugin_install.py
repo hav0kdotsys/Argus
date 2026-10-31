@@ -72,7 +72,7 @@ def _resolve_source(identifier: str, catalog_name: Optional[str]) -> tuple[str, 
         from hermes_cli import plugins_cmd_catalog as catalog
         entry = catalog.get_live_catalog_entry(catalog_name)
         if entry is None:
-            raise pc.PluginOperationError(f"'{catalog_name}' is not in the Hermes plugin catalog.")
+            raise pc.PluginOperationError(f"'{catalog_name}' is not in the ARGUS plugin catalog.")
         identifier, revision = entry.install_identifier, entry.sha or None
     try:
         git_url, subdir = pc._resolve_git_url(identifier)

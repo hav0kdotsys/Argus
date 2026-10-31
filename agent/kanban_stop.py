@@ -81,7 +81,7 @@ def build_kanban_stop_nudge(
     # The transcript is the status source: this text is only reached when the session made no
     # handoff call, so it never tells a worker to close a card it already sent to review.
     return (
-        "[System: You are a Hermes kanban worker. A plain-text reply is NOT a "
+        "[System: You are an ARGUS kanban worker. A plain-text reply is NOT a "
         "terminal state for the board.\n\n"
         f"Task `{tid}` has not been handed off: this session made no terminal board "
         "call (`kanban_complete` / `kanban_request_review` / `kanban_block`). Ending now "

@@ -111,9 +111,9 @@ def _print_tui_exit_summary(session_id: Optional[str], active_session_file: Opti
     from hermes_cli.profiles import get_active_profile_name
     active_profile = get_active_profile_name()
     profile_flag = "" if active_profile in ("default", "custom") else f" -p {active_profile}"
-    print(f"\n{t('cli.session.exit_resume_hint')}\n  hermes --tui --resume {resume_id}{profile_flag}")
+    print(f"\n{t('cli.session.exit_resume_hint')}\n  argus --tui --resume {resume_id}{profile_flag}")
     if title:
-        print(f'  hermes --tui -c "{title}"{profile_flag}')
+        print(f'  argus --tui -c "{title}"{profile_flag}')
     print(f"\nSession:        {resume_id}")
     if title:
         print(f"Title:          {title}")
@@ -180,14 +180,14 @@ def _ensure_tui_workspace(tui_dir: Path) -> None:
         return
 
     print(
-        "Error: the TUI workspace is missing from this Hermes checkout.\n"
+        "Error: the TUI workspace is missing from this ARGUS checkout.\n"
         f"Expected directory: {tui_dir}\n"
-        "This usually means `hermes update` left tracked ui-tui files deleted.\n"
+        "This usually means `argus update` left tracked ui-tui files deleted.\n"
         "Recovery:\n"
-        "  1. From the Hermes checkout, run `git restore -- ui-tui`\n"
+        "  1. From the ARGUS checkout, run `git restore -- ui-tui`\n"
         "  2. Run `npm install --silent --no-fund --no-audit --progress=false`\n"
-        "  3. Retry `hermes --tui`\n"
-        "If the checkout is still inconsistent, run `hermes update --force`.",
+        "  3. Retry `argus --tui`\n"
+        "If the checkout is still inconsistent, run `argus update --force`.",
         file=sys.stderr)
     sys.exit(1)
 
@@ -203,8 +203,8 @@ def _tui_node_bin(bin: str) -> str:
     if not path:
         print(
             f"Node.js is required for the TUI but `{bin}` was not found. Install it from "
-            "https://nodejs.org (run `hermes doctor` for the install hint for your OS), then "
-            "retry `hermes --tui`. To keep working now, run `hermes --cli`."
+            "https://nodejs.org (run `argus doctor` for the install hint for your OS), then "
+            "retry `argus --tui`. To keep working now, run `argus --cli`."
         )
         sys.exit(1)
     return path
@@ -439,7 +439,7 @@ def _require_bypass_model(env: dict, model: Optional[str], resume_session_id: Op
     if bypass and not resume_session_id and not (model or env.get("HERMES_MODEL", "").strip()):
         print("Error: --safe-mode / --ignore-user-config (or HERMES_IGNORE_USER_CONFIG=1) read no profile "
               "default model: pass --model explicitly.\n"
-              "  Example: hermes --tui --safe-mode --provider openrouter --model anthropic/claude-sonnet-4",
+              "  Example: argus --tui --safe-mode --provider openrouter --model anthropic/claude-sonnet-4",
               file=sys.stderr)
         raise SystemExit(1)
 
@@ -454,10 +454,74 @@ def _refuse_unforwarded_tui_flags(args) -> None:
     flags = [flag for name, flag in _TUI_UNFORWARDED.items() if getattr(args, name, None)]
     if flags:
         print(f"Error: Unsupported --tui options: {', '.join(flags)}. No session was started.\n"
-              f"  Use classic chat for this launch: hermes chat --cli {' '.join(flags)} ...\n"
+              f"  Use classic chat for this launch: argus chat --cli {' '.join(flags)} ...\n"
               "  Or set model.base_url / agent.reasoning_effort in config.yaml (/reasoning in the TUI).",
               file=sys.stderr)
         raise SystemExit(2)
+
+
+def _terminal_gone() -> bool:
+    """True once this process's controlling terminal no longer exists (its window was closed).
+
+    Linux names a vanished pty "/dev/pts/N (deleted)" in /proc; elsewhere a vanished terminal shows up as
+    stdin no longer being a tty. Never True for a launch that had no terminal to begin with."""
+    try:
+        return os.readlink("/proc/self/fd/0").endswith(" (deleted)")
+    except OSError:
+        try:
+            return not os.isatty(0)
+        except (OSError, ValueError):
+            return True
+
+
+def _child_pids() -> list[int]:
+    """This process's direct children (Linux /proc; empty elsewhere)."""
+    me, out = os.getpid(), []
+    with contextlib.suppress(OSError):
+        for entry in os.listdir("/proc"):
+            if not entry.isdigit():
+                continue
+            with contextlib.suppress(OSError, ValueError, IndexError):
+                with open(f"/proc/{entry}/stat", encoding="utf-8") as f:
+                    stat = f.read()
+                if int(stat[stat.rindex(")") + 2:].split()[1]) == me:
+                    out.append(int(entry))
+    return out
+
+
+def _exit_when_terminal_closes() -> None:
+    """End the TUI (and this launcher) when the terminal it was drawn in is gone.
+
+    A closed terminal normally sends SIGHUP and everything exits. It does not always: a launcher once kept
+    running for 20+ minutes at ~90% CPU on a deleted pty, reparented to init. This watcher makes that state
+    impossible whatever its cause: every few seconds it checks the terminal, and once it is gone it stops the
+    TUI (TERM, then KILL) and exits the process. Only armed when the launch had a real terminal.
+    Started before the TUI child exists; it finds the child through /proc when it fires."""
+    try:
+        if not os.isatty(0) or _terminal_gone():
+            return
+    except (OSError, ValueError):
+        return
+    import threading
+    import time
+
+    def watch() -> None:
+        while True:
+            time.sleep(3)
+            if not _terminal_gone():
+                continue
+            import signal
+            for sig in (signal.SIGTERM, signal.SIGKILL):
+                kids = _child_pids()
+                for pid in kids:
+                    with contextlib.suppress(OSError):
+                        os.kill(pid, sig)
+                if not kids:
+                    break
+                time.sleep(3)
+            os._exit(129)  # 128 + SIGHUP: the terminal hung up
+
+    threading.Thread(target=watch, name="tui-terminal-watch", daemon=True).start()
 
 
 def _launch_tui(
@@ -567,6 +631,7 @@ def _launch_tui(
     code: Optional[int] = None
     try:
         try:
+            _exit_when_terminal_closes()  # a closed terminal window must take the TUI with it
             code = subprocess.call(argv, cwd=str(cwd), env=env)
         except KeyboardInterrupt:
             code = 130

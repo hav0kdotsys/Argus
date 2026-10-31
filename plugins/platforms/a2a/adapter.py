@@ -38,7 +38,7 @@ _DEFAULT_PORT = 9900
 _MIN_ORPHAN_TIMEOUT, _MAX_ORPHAN_TIMEOUT, _WATCHDOG_INTERVAL = 300, 86400, 60
 _MAX_BODY = 1_048_576  # 1MB max request body — prevents DoS via memory exhaustion
 _SSE_KEEPALIVE = 5  # seconds between SSE keepalive comments
-_DEFAULT_DESCRIPTION = "Hermes Agent — a general-purpose agent reachable over A2A."
+_DEFAULT_DESCRIPTION = "ARGUS — a general-purpose agent reachable over A2A."
 
 _ok = protocol.jsonrpc_result
 _err = protocol.jsonrpc_error
@@ -114,7 +114,7 @@ def _profile_home(profile: str) -> Optional[str]:
         from hermes_cli.profiles import get_profile_dir
         return str(get_profile_dir(profile))
     if profile and profile != "default":
-        return os.path.expanduser(f"~/.hermes/profiles/{profile}")
+        return os.path.expanduser(f"~/.argus/profiles/{profile}")
     with contextlib.suppress(Exception):
         from hermes_cli.config import get_hermes_home
         return str(get_hermes_home())
@@ -432,8 +432,8 @@ class A2AAdapter(BasePlatformAdapter):
             agents[slug] = {
                 "slug": slug, "path": "/" + path_segment, "tenant": tenant, "profile": profile or slug,
                 "local": bool(val.get("local")) or profile in ("", "default", self._active_profile),
-                "name": str(val.get("name") or f"Hermes {slug}"),
-                "description": str(val.get("description") or f"Hermes profile '{profile or slug}' exposed over A2A."),
+                "name": str(val.get("name") or f"ARGUS {slug}"),
+                "description": str(val.get("description") or f"ARGUS profile '{profile or slug}' exposed over A2A."),
                 "advertised_toolsets": list(toolsets or []),
                 "timeout": int(val.get("timeout") or _reply_timeout()),
             }

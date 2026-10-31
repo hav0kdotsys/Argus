@@ -62,7 +62,7 @@ def exec_in_container(container_info: dict, cli_args: list):
         if not sudo_path:
             print(
                 f"Error: container '{container_name}' not found via {backend}.\n"
-                f"The container may be running under root. Try: sudo hermes {' '.join(cli_args)}",
+                f"The container may be running under root. Try: sudo argus {' '.join(cli_args)}",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -83,7 +83,7 @@ def exec_in_container(container_info: dict, cli_args: list):
                 f'    commands = [{{ command = "{runtime}"; options = [ "NOPASSWD" ]; }}];\n'
                 f"  }}];\n"
                 f"\n"
-                f"Or run: sudo hermes {' '.join(cli_args)}",
+                f"Or run: sudo argus {' '.join(cli_args)}",
                 file=sys.stderr,
             )
             sys.exit(1)

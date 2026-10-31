@@ -72,7 +72,7 @@ def test_default_handoff_asks_for_the_local_gateway(tmp_path):
     calls = _run_handoff(tmp_path, [])
 
     update_calls = [c for c in calls if " update " in f" {c} "]
-    assert update_calls, "hand-off never ran hermes update"
+    assert update_calls, "hand-off never ran argus update"
     assert "--gateway" in update_calls[0].split()
 
 @requires_posix_handoff
@@ -86,7 +86,7 @@ def test_no_gateway_flag_omits_gateway_from_update(tmp_path):
     calls = _run_handoff(tmp_path, ["--no-gateway"])
 
     update_calls = [c for c in calls if " update " in f" {c} "]
-    assert update_calls, "hand-off never ran hermes update"
+    assert update_calls, "hand-off never ran argus update"
     for call in update_calls:
         argv = call.split()
         assert "--gateway" not in argv, f"--gateway reappeared in update argv: {call}"
@@ -123,7 +123,7 @@ def test_every_owed_followup_reaches_the_desktop_result(tmp_path, step):
     assert result["exit_code"] == 0 and result["ok"] is True
     assert result["manual"] is True
     assert step in result["message"]
-    assert ("hermes gateway restart" in result["message"]) is (step == "gateway_restart")
+    assert ("argus gateway restart" in result["message"]) is (step == "gateway_restart")
 
 
 @requires_posix_handoff
@@ -136,7 +136,7 @@ def test_dashboard_only_gateway_restart_followup_gets_no_gateway_hint(tmp_path):
 
     result = json.loads((tmp_path / ".hermes-update-result.json").read_text(encoding="utf-8-sig"))
     assert result["manual"] is True and "gateway_restart" in result["message"]
-    assert "hermes gateway restart" not in result["message"]
+    assert "argus gateway restart" not in result["message"]
 
 
 @requires_posix_handoff

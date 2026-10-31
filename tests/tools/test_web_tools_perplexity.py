@@ -22,7 +22,7 @@ def _assert_hermes_identity_headers(headers):
     from hermes_cli.version_info import get_version_info
 
     assert headers["HTTP-Referer"] == "https://hermes-agent.nousresearch.com"
-    assert headers["X-Title"] == "Hermes Agent"
+    assert headers["X-Title"] == "ARGUS"
     assert headers["User-Agent"] == f"HermesAgent/{get_version_info().base_version}"
     assert headers["X-Pplx-Integration"] == "hermes-agent"
 

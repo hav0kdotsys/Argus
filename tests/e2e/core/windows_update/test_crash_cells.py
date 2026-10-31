@@ -462,7 +462,7 @@ def _direct_update_child(proc) -> psutil.Process | None:
 # Printed by ``_cmd_update_impl``, which hermes_cli/main.py enters only after
 # ``UpdateLock.acquire()`` returned: once update.log gains one, the update child has
 # taken its place under the script's claim (and named itself in it, where it does).
-UPDATE_BANNER = "Updating Hermes Agent..."
+UPDATE_BANNER = "Updating ARGUS Agent..."
 
 
 UPDATE_DONE = "Update complete!"
@@ -567,12 +567,12 @@ def _orphan(machine, srv, label: str) -> dict:
             child = None
             if proc.poll() is not None:
                 raise AssertionError(fail_with(
-                    machine, f"{label}: the hand-off exited rc={proc.returncode} before its hermes update "
+                    machine, f"{label}: the hand-off exited rc={proc.returncode} before its argus update "
                              f"child ran (transcript {proc.transcript.name})"))
             time.sleep(0.05)
         if child is None:
             taskkill_tree(proc.pid)
-            raise AssertionError(fail_with(machine, f"{label}: no hermes update child within {UPDATE_TIMEOUT:.0f}s"))
+            raise AssertionError(fail_with(machine, f"{label}: no argus update child within {UPDATE_TIMEOUT:.0f}s"))
         # Held from before the kill, while the update is minutes from done.
         exit_code = _ExitCode(child.pid)
         marker_at_kill = _read_marker(machine)
@@ -865,10 +865,10 @@ def test_desktop_handoff_script_killed_alone_keeps_the_marker_live_until_its_upd
         journey: Journey) -> None:
     m, r = journey.machine, journey["orphaned_update"]
     assert r["orphan_finished"], fail_with(
-        m, f"orphaned_update: the orphaned hermes update was still running {UPDATE_TIMEOUT:.0f}s after "
+        m, f"orphaned_update: the orphaned argus update was still running {UPDATE_TIMEOUT:.0f}s after "
            f"the script died")
     assert _orphan_completed(r), fail_with(
-        m, f"orphaned_update: the hermes update orphaned by the dead script did not finish the update "
+        m, f"orphaned_update: the argus update orphaned by the dead script did not finish the update "
            f"(rc={r['orphan_rc']}, '{UPDATE_DONE}' logged={r['orphan_reported_done']}, "
            f"its receipt's outcome={r['orphan_receipt']}, "
            f"tree {_tree_text(r['tree_after_orphan'])}, target {r['target']}; marker holders seen: {r['holders']})")
@@ -886,7 +886,7 @@ def test_desktop_handoff_script_killed_alone_keeps_the_marker_live_until_its_upd
     gaps = []
     if r["dead_while_running"] is not None:
         gaps.append(f"{MARKER} read DEAD {r['dead_while_running'][0]}s after the script died while its "
-                    f"hermes update still ran: {r['dead_while_running'][1]} (at kill: {r['marker_at_kill']!r})")
+                    f"argus update still ran: {r['dead_while_running'][1]} (at kill: {r['marker_at_kill']!r})")
     if r["marker_after_orphan"] is not None:
         gaps.append(f"{MARKER} survived the orphaned update's exit: {r['marker_after_orphan_text']}")
     with _orphan_gap_excuse():

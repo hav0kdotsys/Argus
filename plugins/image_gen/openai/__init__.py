@@ -161,7 +161,7 @@ class OpenAIImageGenProvider(StaticImageGenProvider):
         if not api_key:
             return error_factory("openai", aspect)(
                 "OPENAI_API_KEY not set (or the variable named by image_gen.openai.key_env is empty). "
-                "Run `hermes tools` → Image Generation → OpenAI to configure, or `hermes setup` "
+                "Run `argus tools` → Image Generation → OpenAI to configure, or `argus setup` "
                 "to add the key.",
                 "auth_required")
 

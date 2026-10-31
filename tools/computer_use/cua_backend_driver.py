@@ -89,8 +89,8 @@ def cua_driver_binary_available() -> bool:
     return resolve_cua_driver_cmd() is not None
 
 def cua_driver_install_hint() -> str:
-    return ("cua-driver is not installed. Install the pinned driver with:\n  hermes computer-use install\n"
-            "Or run `hermes tools` and enable the Computer Use toolset to install it automatically.")
+    return ("cua-driver is not installed. Install the pinned driver with:\n  argus computer-use install\n"
+            "Or run `argus tools` and enable the Computer Use toolset to install it automatically.")
 
 def _mcp_args_with_overlay_flag(args: list[str], driver_cmd: str = _CUA_DRIVER_DEFAULT_CMD) -> list[str]:
     """Return *args* with ``--no-overlay`` appended when configured and supported."""
@@ -144,7 +144,7 @@ def _manifest_contract_reason(manifest: Optional[dict[str, Any]]) -> str:
     if not match:
         return "driver manifest does not report a semantic version"
     if tuple(int(part) for part in match.groups()) < _CUA_DRIVER_RUNTIME_CONTRACT_MIN:
-        return "Hermes computer use requires cua-driver 0.20.0 or newer"
+        return "ARGUS computer use requires cua-driver 0.20.0 or newer"
     if not _valid_mcp_args(manifest.get("mcp_invocation")):
         return "driver manifest does not provide an MCP launch command"
     advertised: dict[str, set[str]] = {

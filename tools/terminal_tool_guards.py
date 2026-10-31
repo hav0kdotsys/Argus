@@ -103,7 +103,7 @@ _FOREGROUND_GUIDANCE = (
         _SHELL_LEVEL_BACKGROUND_RE.search,
         "Foreground command uses shell-level background wrappers (nohup/disown/setsid). "
         "Re-send WITHOUT the wrapper as terminal(command=\"<cmd>\", background=true, "
-        "notify_on_complete=true) so Hermes tracks the process, then run readiness "
+        "notify_on_complete=true) so ARGUS tracks the process, then run readiness "
         "checks and tests in separate commands.",
     ),
     (
@@ -333,7 +333,7 @@ def gateway_lifecycle_block(
             "Blocked: command or referenced script cannot restart, stop, or "
             "uninstall the gateway from inside the gateway process. The gateway would "
             "kill this command before it could complete (SIGTERM propagates "
-            "to child processes). Run `hermes gateway restart` from a "
+            "to child processes). Run `argus gateway restart` from a "
             "separate shell outside the running gateway.",
             "error",
         )

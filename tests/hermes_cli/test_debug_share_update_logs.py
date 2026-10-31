@@ -16,7 +16,7 @@ import pytest
 # Lines the writers really produce (main.py _UpdateOutputStream mirror and
 # scripts/desktop-update/windows.ps1 Write-HandoffLog / posix.sh log()).
 UPDATE_LOG_BODY = (
-    "=== hermes update started 2026-09-02T03:21:09 ===\n"
+    "=== argus update started 2026-09-02T03:21:09 ===\n"
     "→ Fetching updates...\n"
     "→ Building desktop packaged app...\n"
     "✗ Desktop GUI build failed\n"

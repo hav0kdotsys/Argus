@@ -299,7 +299,7 @@ def test_reaps_the_child_when_the_registering_parent_is_sigkilled(tmp_path):
         parent.wait(timeout=10)
 
         assert _wait_gone(victim_pid), (
-            "owned child survived kill -9 of its Hermes parent"
+            "owned child survived kill -9 of its ARGUS parent"
         )
     finally:
         for pid in (victim_pid, supervisor_pid):

@@ -333,7 +333,7 @@ class TestCronTimezone:
 
         due = get_due_jobs()
         assert len(due) == 1, (
-            "Naive past timestamp should be due regardless of Hermes timezone"
+            "Naive past timestamp should be due regardless of ARGUS timezone"
         )
 
     def test_create_job_stores_tz_aware_timestamps(self, tmp_path, monkeypatch):

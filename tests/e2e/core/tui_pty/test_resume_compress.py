@@ -41,7 +41,7 @@ TAIL = [TURNS]  # the protected tail: the last turn survives compression verbati
 # to two thirds of landed attempts (it is decided on the gateway's RPC pool), so the pinned bug
 # almost always shows within these; a lucky run just passes, which the known-failure pin allows.
 STARTUP_TRIES = 8
-STARTING = "summoning hermes…"  # status bar before the gateway is up
+STARTING = "opening its eyes…"  # status bar before the gateway is up
 
 CELLS = [
     "compress_happened", "compress_reported_once", "summary_persisted_once", "first_exits_clean",

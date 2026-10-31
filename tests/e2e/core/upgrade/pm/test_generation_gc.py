@@ -98,18 +98,18 @@ def test_repeated_updates_collect_superseded_generations(home, provider):
     results = []
     for n in (1, 2):
         target = P.publish_dependency_release(home["origin"], home["root"], n)
-        results.append(_rebuild_collects(sb, provider, f"`hermes update` #{n}",
+        results.append(_rebuild_collects(sb, provider, f"`argus update` #{n}",
                                          lambda: P.update(sb, env=P.lazy_env(sb))))
         assert I.git("rev-parse", "HEAD", cwd=sb.checkout) == target
     for n, result in enumerate(results, 1):
-        _assert_collected(sb, f"`hermes update` #{n}", result)
+        _assert_collected(sb, f"`argus update` #{n}", result)
 
 
 def test_repeated_repairs_collect_superseded_generations(home, provider):
     sb = home["sb"]
-    results = [_rebuild_collects(sb, provider, f"`hermes pm repair` #{n}",
+    results = [_rebuild_collects(sb, provider, f"`argus pm repair` #{n}",
                                  lambda: P.run_env(sb, [sb.hermes, "pm", "repair"], P.lazy_env(sb),
                                                    timeout=P.UPDATE_TIMEOUT))
                for n in (1, 2)]
     for n, result in enumerate(results, 1):
-        _assert_collected(sb, f"`hermes pm repair` #{n}", result)
+        _assert_collected(sb, f"`argus pm repair` #{n}", result)

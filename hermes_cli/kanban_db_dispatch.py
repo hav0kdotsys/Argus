@@ -988,7 +988,7 @@ _PROTOCOL_VIOLATION_ERROR = (
 
 
 # Rich panel/rule chrome around the rendered response, and the CLI's own preamble lines.
-_LOG_CHROME = re.compile(r"[─━═╭╮╰╯│┃┌┐└┘]+|☤\s*Hermes")
+_LOG_CHROME = re.compile(r"[─━═╭╮╰╯│┃┌┐└┘]+|[☤◉]\s*(?:ARGUS|Hermes Agent)")  # rebrand: keep
 
 
 def _exit_summary_marker() -> str:
@@ -2888,8 +2888,8 @@ def _default_spawn(task: Task, workspace: str, *, board: Optional[str] = None) -
     except FileNotFoundError:
         log_f.close()
         raise RuntimeError(
-            "`hermes` executable not found on PATH. "
-            "Install Hermes Agent or activate its venv before running the kanban dispatcher."
+            "`argus` executable not found on PATH. "
+            "Install ARGUS or activate its venv before running the kanban dispatcher."
         )
     # Intentionally NOT closing log_f: the child keeps writing after return;
     # the OS-level FD stays open in the child until it exits.

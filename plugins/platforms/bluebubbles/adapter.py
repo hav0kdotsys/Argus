@@ -658,7 +658,7 @@ def interactive_setup() -> None:
     print_header("BlueBubbles (iMessage)")
     if declines_reconfigure("BlueBubbles", "Reconfigure BlueBubbles?", "BLUEBUBBLES_SERVER_URL"):
         return
-    _info("Connects Hermes to iMessage via BlueBubbles — a free, open-source",
+    _info("Connects ARGUS to iMessage via BlueBubbles — a free, open-source",
           "macOS server that bridges iMessage to any device.",
           "   Requires a Mac running BlueBubbles Server v1.0.0+",
           "   Download: https://bluebubbles.app/", None,
@@ -705,7 +705,7 @@ def register(ctx) -> None:
     from . import gateway_env  # env -> GatewayConfig bridge (gateway.config_env)
     ctx.register_platform(
         name="bluebubbles", label="BlueBubbles (iMessage)", adapter_factory=BlueBubblesAdapter,
-        dashboard_description="Use Hermes through iMessage via a BlueBubbles server.",
+        dashboard_description="Use ARGUS through iMessage via a BlueBubbles server.",
         docs_url="https://bluebubbles.app/",
         dashboard_env_vars=("BLUEBUBBLES_SERVER_URL", "BLUEBUBBLES_PASSWORD", "BLUEBUBBLES_ALLOWED_USERS"),
         check_fn=check_bluebubbles_requirements, is_connected=_is_connected,

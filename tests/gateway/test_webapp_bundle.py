@@ -24,16 +24,16 @@ def test_an_unbuilt_webapp_is_unavailable_and_says_how_to_build_it(unbuilt):
     assert unbuilt["start_error"] is None, unbuilt.get("start_traceback")
     status = unbuilt["status"]
     assert (status["state"], status["url"]) == ("unavailable", None)
-    assert "hermes webapp" in status["reason"] and "index.html" in status["reason"]
+    assert "argus webapp" in status["reason"] and "index.html" in status["reason"]
 
 
 def test_an_unbuilt_webapp_mints_no_launch_link(unbuilt):
-    assert "hermes webapp" in unbuilt["launch"]["refused"]
+    assert "argus webapp" in unbuilt["launch"]["refused"]
 
 
 def test_an_unbuilt_webapp_page_names_the_webapps_build(unbuilt):
     assert unbuilt["index"]["status"] == 404
-    assert "hermes webapp" in unbuilt["index"]["body"]
+    assert "argus webapp" in unbuilt["index"]["body"]
     assert "npm run build" not in unbuilt["index"]["body"]
 
 
@@ -56,10 +56,10 @@ def test_a_bundle_hermes_update_could_not_rebuild_is_unavailable_and_says_how_to
     assert update_failed["start_error"] is None, update_failed.get("start_traceback")
     status = update_failed["status"]
     assert (status["state"], status["url"]) == ("unavailable", None)
-    assert status["reason"].startswith(webapp_listener.NOT_BUILT) and "hermes webapp" in status["reason"]
-    assert "hermes webapp" in update_failed["launch"]["refused"]
+    assert status["reason"].startswith(webapp_listener.NOT_BUILT) and "argus webapp" in status["reason"]
+    assert "argus webapp" in update_failed["launch"]["refused"]
     assert update_failed["index"]["status"] == 503
-    assert "hermes webapp" in update_failed["index"]["body"]
+    assert "argus webapp" in update_failed["index"]["body"]
     assert "WEBAPP_BUNDLE" not in update_failed["index"]["body"]
 
 

@@ -16,7 +16,7 @@ from datetime import UTC
 # default_headers so they survive model switches and credential rotation.
 _ATTRIBUTION_HEADERS = {
     "HTTP-Referer": "https://hermes-agent.nousresearch.com",
-    "X-Title": "Hermes Agent",
+    "X-Title": "ARGUS",
     "User-Agent": lambda: hermes_user_agent("HermesAgent"),
 }
 

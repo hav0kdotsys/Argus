@@ -143,7 +143,7 @@ def resolve_argv(
         env.pop(key, None)
     env["COLORTERM"] = "truecolor"
     env["TERM"] = "xterm-256color"
-    env["TERM_PROGRAM"] = "Hermes"
+    env["TERM_PROGRAM"] = "ARGUS"
     env["TERM_PROGRAM_VERSION"] = __version__
     env["HERMES_DESKTOP_TERMINAL"] = "1"
     if lc_ctype := terminal_lc_ctype(env, os_family()):

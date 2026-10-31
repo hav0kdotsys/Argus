@@ -37,7 +37,7 @@ from agent.deadline import poll_until
 logger = logging.getLogger(__name__)
 
 MANIFEST_NAME = "gateway_migration.json"
-MIGRATE_COMMAND = "hermes gateway migrate --multiplex"
+MIGRATE_COMMAND = "argus gateway migrate --multiplex"
 _SERVED_WAIT_SECONDS = 90.0
 
 
@@ -661,7 +661,7 @@ def build_migration_plan() -> MigrationPlan:
     from hermes_cli.gateway_migrate_guards import auto_migration_blockers
     # Notices, not blockers: the explicit command is the operator's decision; only the update hook
     # refuses to cross these boundaries on its own.
-    plan.notices.extend(f"Not migrated automatically by `hermes update`: {b}" for b in auto_migration_blockers(plan))
+    plan.notices.extend(f"Not migrated automatically by `argus update`: {b}" for b in auto_migration_blockers(plan))
     plan.notices.append(
         "Profiles created after the migration are served by the running multiplexer as soon as "
         "they exist (it rescans profiles/ on create/delete and every 30s)."
@@ -816,7 +816,7 @@ def format_update_warning(plan: MigrationPlan, auto_blockers: list[str]) -> list
         "  setup, but this install cannot be migrated automatically yet:",
         *[f"    • {b}" for b in (*plan.blockers, *auto_blockers)],
         f"  After fixing the above, run:  {MIGRATE_COMMAND}",
-        "  (`hermes update` will migrate automatically once nothing blocks it.)",
+        "  (`argus update` will migrate automatically once nothing blocks it.)",
     ]
 
 
@@ -1092,7 +1092,7 @@ def apply_migration(plan: MigrationPlan, *, served_wait: float = _SERVED_WAIT_SE
         return True
     missing = sorted(expected - set(served or []))
     _print(["", f"⚠ Migration applied, but the default gateway has not confirmed serving: {', '.join(missing)}",
-            "  Check `hermes gateway status` and the gateway log; the flag and manifest are in place.",
+            "  Check `argus gateway status` and the gateway log; the flag and manifest are in place.",
             f"  Re-run {MIGRATE_COMMAND} once it is healthy — it resumes from the manifest."])
     return False
 
@@ -1190,7 +1190,7 @@ def rollback_migration(default_home: Optional[Path] = None) -> bool:
     live = _wait_for_live_gateway(default_home, _COMPENSATOR_WAIT_SECONDS)
     if live is None:
         print(f"  ✗ default: no gateway confirmed serving this host within {_COMPENSATOR_WAIT_SECONDS:.0f}s "
-              f"(check `hermes gateway status` and the gateway log)")
+              f"(check `argus gateway status` and the gateway log)")
         print(incomplete)
         return False
     _manifest_path(default_home).unlink(missing_ok=True)

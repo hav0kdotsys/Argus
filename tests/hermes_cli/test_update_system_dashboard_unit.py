@@ -91,7 +91,7 @@ def test_systemd_owned_ledger_dashboard_is_classified_systemd(monkeypatch):
     calls: list = []
     _systemd_owned_dashboard(monkeypatch, calls)
     entry = {"pid": DASH_PID, "create_time": 1000.0, "purpose": "dashboard", "profile": "",
-             "argv": "hermes dashboard --host 0.0.0.0 --port 9119 --no-open", "host": "0.0.0.0", "port": 9119}
+             "argv": "argus dashboard --host 0.0.0.0 --port 9119 --no-open", "host": "0.0.0.0", "port": 9119}
     fake_pi = SimpleNamespace(ledger_entries=lambda **k: [entry], spawner_is_dead=lambda e: None)
     monkeypatch.setitem(sys.modules, "hermes_cli.process_identity", fake_pi)
     plan = UpdatePlan()
@@ -108,7 +108,7 @@ def test_hand_started_dashboard_in_a_foreign_cgroup_stays_manual(monkeypatch):
     monkeypatch.setattr(main_dashboard, "_pid_unified_cgroup_entries", lambda pid: iter(["/system.slice/cron.service"]))
     monkeypatch.setattr(main_dashboard, "_run_probe",
                         lambda cmd, *, timeout: SimpleNamespace(returncode=0, stdout="991\n", stderr=""))
-    entry = {"pid": 4321, "create_time": 1.0, "purpose": "dashboard", "argv": "hermes dashboard"}
+    entry = {"pid": 4321, "create_time": 1.0, "purpose": "dashboard", "argv": "argus dashboard"}
     monkeypatch.setitem(sys.modules, "hermes_cli.process_identity",
                         SimpleNamespace(ledger_entries=lambda **k: [entry], spawner_is_dead=lambda e: None))
     plan = UpdatePlan()
@@ -163,7 +163,7 @@ def test_field_case_forwards_the_declined_unit_and_blames_only_the_dashboard(mon
     (followup,) = receipt["followups"]
     assert followup["step"] == "gateway_restart"  # Desktop hand-offs parse the step id
     assert "hermes-dashboard were not restarted onto the new code" in followup["reason"]
-    assert "hermes gateway restart" not in followup["reason"]
+    assert "argus gateway restart" not in followup["reason"]
     assert "gateways may still run" not in capsys.readouterr().out
     # The obligation stays armed: a stale dashboard unit is still owed (contract unchanged).
     assert update_cmd_fleet._fleet_restart_obligation_armed() is True
@@ -181,7 +181,7 @@ def test_gateway_debt_still_names_gateway_restart(monkeypatch, case):
         restart.phase_errors.append("boom")
     _refreshed, receipt = _verify(monkeypatch, restart, fleet_state=state)
     reason = receipt["followups"][0]["reason"]
-    assert "hermes gateway restart" in reason and "hermes-dashboard" in reason
+    assert "argus gateway restart" in reason and "hermes-dashboard" in reason
 
 
 def test_is_serve_unit_matches_the_fleet_loop_gate():
@@ -198,7 +198,7 @@ def test_dashboard_stopped_and_not_brought_back_is_not_called_still_running(monk
                                   dashboards_down={4242})
     reason = receipt["followups"][0]["reason"]
     assert "4242 were stopped during the update and not brought back" in reason
-    assert "still run pre-update code" not in reason and "hermes gateway restart" not in reason
+    assert "still run pre-update code" not in reason and "argus gateway restart" not in reason
 
 
 def test_incomplete_run_never_settles_the_host_obligation_mid_verification(monkeypatch):
@@ -346,7 +346,7 @@ def test_desktop_handoffs_add_the_gateway_hint_only_when_gateways_are_blamed(cap
     ps = (scripts / "windows.ps1").read_text(encoding="utf-8")
     line_pat = re.search(r'\$_ -cmatch "(Update follow-up [^"]+)"', ps).group(1)
     serve_pat = re.search(r'\$_ -cnotmatch "([^"]+)"', ps).group(1)
-    gw_pat = re.search(r'\(\$_ -cmatch "(hermes gateway restart)"\)', ps).group(1)
+    gw_pat = re.search(r'\(\$_ -cmatch "(argus gateway restart)"\)', ps).group(1)
     lines = [ln for ln in out.splitlines() if re.search(line_pat, ln)]
     serve_only = bool(lines) and not [ln for ln in lines if not re.search(serve_pat, ln) or re.search(gw_pat, ln)]
     assert (not serve_only) is hinted

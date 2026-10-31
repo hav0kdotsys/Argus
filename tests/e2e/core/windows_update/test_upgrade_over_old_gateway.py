@@ -240,7 +240,7 @@ def _assert_update_replaced_gateway(j: Journey) -> None:
     m, run = j.machine, j["update"]
     failure = _RESTART_FAILURE.search(run.stdout)
     assert run.returncode == 0 and failure is None and m.installed_head() == m.next, fail_with(
-        m, f"hermes update over the running pre-runtime gateway failed (rc={run.returncode}, checkout "
+        m, f"argus update over the running pre-runtime gateway failed (rc={run.returncode}, checkout "
            f"{m.installed_head()}, expected {m.next}): "
            f"{failure.group(0).strip() if failure else '<no restart message>'}", run)
     state = j["new_state"]
@@ -254,7 +254,7 @@ def _assert_status_sees(j: Journey, status_key: str, state_key: str, who: str) -
     m, status, state = j.machine, j[status_key], j[state_key]
     line = _status_line(status.stdout)
     assert status.returncode == 0 and line.startswith("✓") and str(_pid(state)) in line, fail_with(
-        m, f"`hermes gateway status` ({who}) does not see the running gateway (pid {_pid(state)}): {line!r}",
+        m, f"`argus gateway status` ({who}) does not see the running gateway (pid {_pid(state)}): {line!r}",
         status)
 
 
@@ -303,7 +303,7 @@ def test_elevated_upgrade_then_user_gateway_takes_lock(elevated: Journey) -> Non
     m = elevated.machine
     stop = elevated["stop_admin"]
     assert stop.returncode == 0 and elevated["admin_stopped"], fail_with(
-        m, f"`hermes gateway stop` left the elevated gateway (pid {_pid(elevated['new_state'])}) running", stop)
+        m, f"`argus gateway stop` left the elevated gateway (pid {_pid(elevated['new_state'])}) running", stop)
     elevated["spawn_user"]
     state = elevated["user_state"]
     sha = str(state.get("code_sha") or "")
@@ -312,7 +312,7 @@ def test_elevated_upgrade_then_user_gateway_takes_lock(elevated: Journey) -> Non
     _assert_status_sees(elevated, "user_status", "user_state", "same user, not elevated")
     _assert_turn(elevated, "user_turn", "same user, not elevated")
     assert elevated["stop_user"].returncode == 0 and elevated["user_stopped"], fail_with(
-        m, f"the unelevated `hermes gateway stop` left its gateway (pid {_pid(state)}) running",
+        m, f"the unelevated `argus gateway stop` left its gateway (pid {_pid(state)}) running",
         elevated["stop_user"])
 
 
@@ -336,5 +336,5 @@ def test_standard_user_status_and_turn_after_update(standard_user: Journey) -> N
     _assert_turn(standard_user, "user_turn", "standard user")
     m = standard_user.machine
     assert standard_user["stop_user"].returncode == 0 and standard_user["user_stopped"], fail_with(
-        m, f"`hermes gateway stop` left the gateway (pid {_pid(standard_user['new_state'])}) running",
+        m, f"`argus gateway stop` left the gateway (pid {_pid(standard_user['new_state'])}) running",
         standard_user["stop_user"])

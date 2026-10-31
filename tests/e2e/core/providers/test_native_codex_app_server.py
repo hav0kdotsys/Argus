@@ -36,7 +36,7 @@ KNOWN: dict[str, tuple[str, str]] = {
 }
 
 YOLO = ["--yolo"]
-SEED_MARKER = "Prior conversation from this Hermes session"
+SEED_MARKER = "Prior conversation from this ARGUS session"
 
 SCENARIOS = {
     # a + b: reasoning, a command needing approval, usage, final answer; then --resume in a new process.
@@ -191,7 +191,7 @@ def test_native_compaction_keeps_thread_and_transcript(runs):
     assert [r["params"]["threadId"] for r in run.process_requests(1, "thread/resume")] == [thread_id], \
         "codex-native compaction must not retire the thread"
     assert run.process_requests(1, "thread/start") == []
-    assert run.fake.requests("thread/compact/start") == [], "native mode: Hermes must not compact on top of codex"
+    assert run.fake.requests("thread/compact/start") == [], "native mode: ARGUS must not compact on top of codex"
     rows = _rows(run)
     assert {r["session_id"] for r in messages(run.home)} == {run.session_id}, "session was split"
     texts = [r["content"] for r in rows if r["role"] == "assistant" and r["content"] in ("C-ONE", "C-TWO", "C-THREE")]

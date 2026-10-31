@@ -35,7 +35,7 @@ _DESCENDANTS_SQL = f"""
 # Desktop 0.22.2's ``readableError`` keeps the HTTP ``detail`` and shows its "app and backend are
 # on different versions" toast (with an Update action) for "out of sync (different versions)".
 CLIENT_UPGRADE_REQUIRED = ('client_upgrade_required: this app is out of sync (different versions) '
-                           'with the Hermes backend; update the app to edit sessions')
+                           'with the ARGUS backend; update the app to edit sessions')
 
 
 def _session_latest_descendant(session_id: str, db):
@@ -414,7 +414,7 @@ def _open_session_db_at_path(db_path: Path, *, read_only: bool):
         else:
             detail = (
                 "Session store schema is unavailable or corrupt. Start or restart this profile's "
-                "gateway to reconcile it; if it persists, run `hermes doctor` for diagnosis. "
+                "gateway to reconcile it; if it persists, run `argus doctor` for diagnosis. "
                 "Browsing does not repair the store.")
         raise HTTPException(status_code=503, detail=detail) from exc
 

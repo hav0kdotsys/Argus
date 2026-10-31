@@ -671,7 +671,7 @@ def _validate_portable_plugin(report: ValidationReport, plugin_dir: Path) -> Val
     for server_name, config in package.mcp_servers.items():
         if config.get("trust") == "untrusted":
             report.add(f"server trust: {server_name}", True,
-                       "untrusted (Hermes asks before every write-capable tool call)")
+                       "untrusted (ARGUS asks before every write-capable tool call)")
         if config.get("tool_costs"):
             limit = config.get("spend_limit") or 0
             report.add(f"server costs: {server_name}", True,

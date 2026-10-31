@@ -169,7 +169,7 @@ def _resolve_session_id(db, session_id: str) -> Optional[str]:
             detail=(
                 "Session store is corrupt (database disk image is malformed). "
                 "Sessions cannot be read until it is repaired — run "
-                "`hermes doctor` for diagnosis."),
+                "`argus doctor` for diagnosis."),
         ) from exc
     except StateDbReplacedError:
         # RuntimeError family, not sqlite3: same 503 payload as the analytics reads (#110054).

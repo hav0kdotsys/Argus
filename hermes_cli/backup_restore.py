@@ -199,7 +199,7 @@ def _restore_destination_epoch(dst: Path) -> int:
     except (OSError, sqlite3.Error, ValueError) as exc:
         raise OSError(
             f"Cannot read the canonical runtime epoch at {dst}; refusing in-place restore. "
-            "Use `hermes sessions recover --source <snapshot> --output <separate-path>` "
+            "Use `argus sessions recover --source <snapshot> --output <separate-path>` "
             "to salvage transcripts into a separate output."
         ) from exc
 
@@ -356,7 +356,7 @@ def _restore_db_pages(src: Path, dst: Path) -> bool:
         except LiveConnectionError as exc2:
             logger.error(
                 "Refusing unlink+move restore of %s: %s Close the in-process "
-                "database handles (or restart Hermes) and retry.",
+                "database handles (or restart ARGUS) and retry.",
                 dst, exc2,
             )
             return False
@@ -385,7 +385,7 @@ def _validate_backup_zip(zf: zipfile.ZipFile) -> tuple[bool, str]:
 
     if not found:
         return False, (
-            "zip does not appear to be a Hermes backup "
+            "zip does not appear to be an ARGUS backup "
             "(no config.yaml, .env, or state databases found)"
         )
 

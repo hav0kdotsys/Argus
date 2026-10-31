@@ -170,7 +170,7 @@ class TestVersionRequires:
         if ok:
             check_hermes_requires(spec, cur)
         else:
-            with pytest.raises(DistributionError, match="requires Hermes"):
+            with pytest.raises(DistributionError, match="requires ARGUS"):
                 check_hermes_requires(spec, cur)
 
     def test_parse_semver_handles_prerelease(self):
@@ -416,7 +416,7 @@ class TestInstall:
             hermes_requires=">=99.0.0",
         )
         staged = _make_staging_dir(profile_env, "future", manifest=mf)
-        with pytest.raises(DistributionError, match="requires Hermes"):
+        with pytest.raises(DistributionError, match="requires ARGUS"):
             install_distribution(str(staged), name="future")
 
 
@@ -691,7 +691,7 @@ class TestDescribe:
 
 
     def test_describe_missing_profile_raises(self, profile_env):
-        with pytest.raises(DistributionError, match="No profile named .*hermes profile list"):
+        with pytest.raises(DistributionError, match="No profile named .*argus profile list"):
             describe_distribution("nonexistent")
 
 

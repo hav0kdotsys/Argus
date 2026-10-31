@@ -130,7 +130,7 @@ def remove_path_from_shell_configs():
             
             for line in content.split('\n'):
                 # Skip the "# Hermes Agent" comment and following line
-                if '# Hermes Agent' in line or '# hermes-agent' in line:
+                if '# Hermes Agent' in line or '# ARGUS' in line or '# hermes-agent' in line:  # rebrand: keep
                     skip_next = True
                     continue
                 if skip_next and ('hermes' in line.lower() and 'PATH' in line):
@@ -652,7 +652,7 @@ def run_data_uninstall(args):
         log_warn(str(exc))
         raise SystemExit(1) from exc
     if not plan.remove:
-        print(f"No Hermes user data found in {home}.")
+        print(f"No ARGUS user data found in {home}.")
         return
     print("Data-only removal: installed code and other profiles stay intact.")
     print("Will remove:")
@@ -678,11 +678,11 @@ def run_data_uninstall(args):
     for path in removed:
         log_success(f"Removed {path}")
     if failed:
-        print("Hermes data was only partially removed. Surviving targets:")
+        print("ARGUS data was only partially removed. Surviving targets:")
         for path, reason in failed:
             log_warn(f"{path}: {reason}")
         raise SystemExit(1)
-    log_success("Hermes data removed.")
+    log_success("ARGUS data removed.")
 
 
 def run_gui_uninstall(args):
@@ -707,15 +707,15 @@ def run_gui_uninstall(args):
     skip_confirm = bool(getattr(args, "yes", False))
 
     print()
-    _print_box("│         ☤ Hermes Chat GUI Uninstaller                  │", Colors.MAGENTA)
+    _print_box("│         ☤ ARGUS Chat GUI Uninstaller                  │", Colors.MAGENTA)
     print()
 
     if not summary["gui_installed"]:
-        print("No Hermes Chat GUI installation was found.")
+        print("No ARGUS Chat GUI installation was found.")
         print(f"  Checked: {hermes_home}, and the standard app locations for this OS.")
         return
 
-    print(color("This removes the Chat GUI only. The Hermes agent stays installed.", Colors.CYAN))
+    print(color("This removes the Chat GUI only. The ARGUS stays installed.", Colors.CYAN))
     print()
     print(color("Will remove:", Colors.YELLOW, Colors.BOLD))
     for p in (*summary["source_built_artifacts"], *summary["packaged_app_paths"]):
@@ -727,7 +727,7 @@ def run_gui_uninstall(args):
     print()
     if agent_is_installed(hermes_home):
         print(color("Kept intact:", Colors.GREEN, Colors.BOLD))
-        print(f"  • The Hermes agent at {hermes_home / 'hermes-agent'}")
+        print(f"  • The ARGUS at {hermes_home / 'hermes-agent'}")
         print(f"  • Your config, sessions, and secrets under {hermes_home}")
         if (shared_modules := hermes_home / "hermes-agent" / "node_modules").exists():
             print(f"  • Shared workspace dependencies at {shared_modules}")
@@ -748,8 +748,8 @@ def run_gui_uninstall(args):
     print()
     _print_box("│            ✓ Chat GUI Uninstalled!                      │", Colors.GREEN)
     print()
-    print("The Hermes agent is still installed. Run 'hermes' to use the CLI,")
-    print("or 'hermes uninstall' to remove the agent too.")
+    print("The ARGUS is still installed. Run 'hermes' to use the CLI,")
+    print("or 'argus uninstall' to remove the agent too.")
     print()
 
 
@@ -786,7 +786,7 @@ def run_uninstall(args):
         return
 
     print()
-    _print_box("│            ☤ Hermes Agent Uninstaller                  │", Colors.MAGENTA)
+    _print_box("│            ☤ ARGUS Uninstaller                  │", Colors.MAGENTA)
     print()
 
     # Show what will be affected
@@ -846,12 +846,12 @@ def run_uninstall(args):
     # Final confirmation
     print()
     if full_uninstall:
-        print(color("⚠️  WARNING: This will permanently delete ALL Hermes data!", Colors.RED, Colors.BOLD))
+        print(color("⚠️  WARNING: This will permanently delete ALL ARGUS data!", Colors.RED, Colors.BOLD))
         print(color("   Including: configs, API keys, sessions, scheduled jobs, logs", Colors.RED))
         if remove_profiles:
             print(color(f"   Plus {n_profiles} profile(s): {profile_names}", Colors.RED))
     else:
-        print("This will remove the Hermes code but keep your configuration and data.")
+        print("This will remove the ARGUS code but keep your configuration and data.")
 
     print()
     if not _confirm_yes("to confirm"):
@@ -869,18 +869,18 @@ def _print_uninstall_dry_run(*, project_root: Path, hermes_home: Path, full_unin
     print()
     print(color("Would inspect/remove:", Colors.YELLOW, Colors.BOLD))
     print("  • Gateway services and standalone gateway processes")
-    print("  • Hermes PATH entries from shell configs / Windows User PATH")
-    print("  • Hermes wrapper scripts and Hermes-managed node/npm/npx symlinks")
+    print("  • ARGUS PATH entries from shell configs / Windows User PATH")
+    print("  • ARGUS wrapper scripts and Hermes-managed node/npm/npx symlinks")
     print("  • Desktop Chat GUI artifacts")
     print(f"  • Code checkout: {project_root}")
     from hermes_cli.gui_uninstall import desktop_userdata_dir
     userdata = desktop_userdata_dir()
     if not full_uninstall:
-        print(f"  • Keep Hermes config/data: {hermes_home}")
+        print(f"  • Keep ARGUS config/data: {hermes_home}")
         if userdata.exists():
             print(f"  • Keep desktop app data: {userdata}")
     else:
-        print(f"  • Hermes config/data: {hermes_home}")
+        print(f"  • ARGUS config/data: {hermes_home}")
         if sys.platform == "darwin":
             print("  • macOS: dashboard/serve launchd jobs, Electron + setup caches")
         if userdata.exists():
@@ -923,7 +923,7 @@ def _macos_cache_leftover_dirs() -> list[Path]:
     (``Application Support/Hermes``) but never these (#62209)."""
     caches = Path.home() / "Library" / "Caches"
     return [
-        caches / "Hermes",
+        caches / "ARGUS",
         caches / "com.nousresearch.hermes",
         caches / "hermes-setup",
         caches / "com.nousresearch.hermes.setup",
@@ -1033,9 +1033,9 @@ def _perform_uninstall(
          "Removed from User PATH: {}", "No Hermes-owned PATH entries in User environment"),
         (windows, "Removing HERMES_HOME / HERMES_GIT_BASH_PATH User env vars...",
          remove_hermes_env_vars_windows, "Removed User env var: {}", "No Hermes-set User env vars to remove"),
-        (True, "Removing hermes command...", remove_wrapper_script, "Removed {}", "No wrapper script found"),
-        (windows, "Removing Windows hermes launchers...",
-         remove_windows_bin_launchers, "Removed {}", "No Windows hermes launchers found"),
+        (True, "Removing argus command...", remove_wrapper_script, "Removed {}", "No wrapper script found"),
+        (windows, "Removing Windows argus launchers...",
+         remove_windows_bin_launchers, "Removed {}", "No Windows argus launchers found"),
         (True, "Removing Hermes-managed node/npm/npx symlinks...",
          lambda: remove_node_symlinks(hermes_home), "Removed {}", "No Hermes-managed node/npm/npx symlinks found"),
     ):
@@ -1138,7 +1138,7 @@ def _perform_uninstall(
     for line, col in _RELOAD_HINT[windows]:
         print(color(line, col) if col else line)
     print()
-    print("Thank you for using Hermes Agent! ☤")
+    print("Thank you for using ARGUS! ☤")
     print()
 
 

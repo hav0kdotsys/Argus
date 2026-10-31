@@ -77,7 +77,7 @@ def resolve() -> Placement:
             return Placement(TERMINAL, backend)
         return Placement(REFUSED, backend, (
             f"terminal.backend is {backend}, a plugin that runs in the plugin host (plugins.isolation: host), "
-            f"and the host cannot hand its sandbox's exec channel to Hermes, so the screen cannot follow it. "
+            f"and the host cannot hand its sandbox's exec channel to ARGUS, so the screen cannot follow it. "
             f"Set plugins.isolation: in_process, or bot_desktop.placement: gateway to run the desktop on the "
             f"gateway host."))
     reason = (f"terminal.backend is {backend}, which cannot host a screen yet, and running the desktop on the "

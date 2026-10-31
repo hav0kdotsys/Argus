@@ -244,7 +244,7 @@ class TestStoredPromptReuse:
         model reads old `Model:` metadata ("what model are you?" lies).
         """
         stored = (
-            "You are Hermes Agent.\n\n"
+            "You are ARGUS Agent.\n\n"
             "Conversation started: Tuesday, June 16, 2026\n"
             "Session ID: test-session-id\n"
             "Model: anthropic/claude-opus-4.8-fast\n"
@@ -255,7 +255,7 @@ class TestStoredPromptReuse:
         agent = _make_agent(
             session_db=db,
             prebuilt_prompt=(
-                "You are Hermes Agent.\n\n"
+                "You are ARGUS Agent.\n\n"
                 "Conversation started: Tuesday, June 16, 2026\n"
                 "Session ID: test-session-id\n"
                 "Model: openai/gpt-5.5\n"

@@ -247,7 +247,7 @@ def _recover_renamed_skill(st: "_SyncState", skill_name: str, dest: Path) -> Opt
             st.say(
                 f"  ⚠ {skill_name}: upstream moved this skill to {_rel_skills_posix(dest)}, but your "
                 f"modified copy at {rel} was kept — it will not receive updates. "
-                f"Run `hermes skills reset {skill_name} --restore` to move to the new location.")
+                f"Run `argus skills reset {skill_name} --restore` to move to the new location.")
             continue
         try:
             _move_dir(candidate, dest)
@@ -317,7 +317,7 @@ def _install_new_skill(st: _SyncState, skill_name: str, skill_src: Path, dest: P
             else:
                 st.say(
                     f"  ⚠ {skill_name}: bundled version shipped but you already have a local skill "
-                    f"by this name — yours was kept. Run `hermes skills reset {skill_name}` to "
+                    f"by this name — yours was kept. Run `argus skills reset {skill_name}` to "
                     f"replace it with the bundled version.")
         else:
             _copy_dir(skill_src, dest)
@@ -481,7 +481,7 @@ def _rmtree_writable(path: Path) -> None:
 
 
 if __name__ == "__main__":
-    print("Syncing bundled skills into ~/.hermes/skills/ ...")
+    print("Syncing bundled skills into ~/.argus/skills/ ...")
     result = sync_skills(quiet=False)
     parts = [f"{len(result['copied'])} new", f"{len(result['updated'])} updated", f"{result['skipped']} unchanged"]
     if names := result["user_modified"]:

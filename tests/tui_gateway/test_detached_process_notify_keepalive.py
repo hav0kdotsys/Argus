@@ -92,7 +92,7 @@ def _spawn(registry, owner: str, **kw):
     """A background process as the TUI turn spawns it: owner_task_id is the turn's task id (the session key)."""
     from tools.process_registry import ProcessSession
 
-    proc = ProcessSession(id=f"proc_{len(registry._running)}", command="hermes -p reviewer chat",
+    proc = ProcessSession(id=f"proc_{len(registry._running)}", command="argus -p reviewer chat",
                           session_key=owner, owner_task_id=owner, started_at=time.time(), **kw)
     registry._running[proc.id] = proc
     return proc

@@ -488,7 +488,7 @@ def _append_entry(entry: LedgerEntry) -> bool:
             if not _ledger_lock_warned:
                 _ledger_lock_warned = True
                 logger.warning("spawn ledger lock unavailable (a stalled holder, or no file locks here); writing "
-                               "without it, so concurrent Hermes processes may drop each other's rows")
+                               "without it, so concurrent ARGUS processes may drop each other's rows")
             logger.debug("spawn ledger lock unavailable", exc_info=True)
         entries = _read_ledger_or_quarantine(path) or []
         # Drop malformed entries, our own stale entry, and provably dead pids.

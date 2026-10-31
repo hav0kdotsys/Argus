@@ -24,7 +24,7 @@ def sample_repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
     repo.mkdir()
     _git(repo, "init")
-    _git(repo, "config", "user.name", "Hermes Tests")
+    _git(repo, "config", "user.name", "ARGUS Tests")
     _git(repo, "config", "user.email", "tests@example.com")
 
     (repo / "src").mkdir()
@@ -516,7 +516,7 @@ def test_ssh_backend_staged_binary_attachment_points_at_the_synced_remote_path(t
 
     assert result.expanded
     assert "binary file, not inlined" in result.message
-    assert "~/.hermes/attachments/archive.zip" in result.message
+    assert "~/.argus/attachments/archive.zip" in result.message
 
 
 def test_ref_outside_workspace_and_staging_dirs_is_still_refused(tmp_path: Path, monkeypatch):
@@ -557,7 +557,7 @@ def test_local_backend_staged_attachment_keeps_the_host_path(tmp_path: Path, mon
 
     assert result.expanded
     assert "binary file, not inlined" in result.message
-    assert "~/.hermes/attachments/" not in result.message
+    assert "~/.argus/attachments/" not in result.message
 
 
 
@@ -719,7 +719,7 @@ async def test_side_thread_expansion_guards_the_served_profile_home(tmp_path: Pa
         reset_hermes_home_override(token)
 
     assert "HUB-CACHE-BODY" not in result.message
-    assert any("internal Hermes path" in w for w in result.warnings)
+    assert any("internal ARGUS path" in w for w in result.warnings)
 
 
 @pytest.mark.asyncio

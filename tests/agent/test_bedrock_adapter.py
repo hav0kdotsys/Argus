@@ -1661,7 +1661,7 @@ class TestRequireBoto3VersionCheck:
         from agent.bedrock_adapter import _require_boto3
         from pm.package import InstallError
 
-        restart = InstallError("venv", "bedrock installed; restart Hermes to activate the new dependency environment")
+        restart = InstallError("venv", "bedrock installed; restart ARGUS to activate the new dependency environment")
 
         def ensure_import(extra):
             raise restart

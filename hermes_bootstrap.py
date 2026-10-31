@@ -606,7 +606,7 @@ if not _pm_repair:
         # usable Hermes plus a warning. Activation below is the real gate — a tree whose
         # dependencies cannot load still exits with the repair remedy.
         print(f"hermes: source-update completion failed: {exc}; "
-              "running with the previous dependencies — run `hermes update` to finish it",
+              "running with the previous dependencies — run `argus update` to finish it",
               file=sys.stderr)
     try:
         recover_if_needed(_root)
@@ -616,7 +616,7 @@ if not _pm_repair:
             print(f"hermes: {message}", file=sys.stderr)
             raise SystemExit(1) from None
         if command_argv(sys.argv[1:])[:1] != ["pm"]:
-            print(f"hermes: {exc}; run `hermes pm repair`", file=sys.stderr)
+            print(f"hermes: {exc}; run `argus pm repair`", file=sys.stderr)
             raise SystemExit(1) from None
 install_happy_eyeballs_socket_connect()
 export_scratch_tmp_env()

@@ -125,7 +125,7 @@ def test_passive_checks_do_not_push_the_next_update_into_orphan_divergence(runs)
     w: G.World = run["w"]
     cp1 = run["cp1"]
     for cp in run["checks"]:
-        assert cp.returncode == 0 and G.TRACEBACK not in G.output(cp), f"`hermes update --check` failed:\n{w.diag(cp)}"
+        assert cp.returncode == 0 and G.TRACEBACK not in G.output(cp), f"`argus update --check` failed:\n{w.diag(cp)}"
     assert cp1.returncode == 0 and run["head1"] == I.head_sha(), f"N-1 -> HEAD update failed:\n{w.diag(cp1)}"
     with known_failure(r"claims orphan divergence",
                        "#124645: each depth-1 `--check` appends a graft the fetch reflog pins, and N-1's "

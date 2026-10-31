@@ -25,7 +25,7 @@ def _by_label(sources):
 def test_manifest_matches_what_the_prompt_actually_loads(project, tmp_path_factory):
     """Every context type present at once; the ladder picks .hermes.md, the chain lists both AGENTS files,
     CLAUDE.md/.cursorrules/.cursor/rules/*.mdc are shadowed, an empty file never wins, SOUL.md rides along."""
-    (project / ".hermes.md").write_text("hermes rules")
+    (project / ".hermes.md").write_text("argus rules")
     (project / "AGENTS.md").write_text("root agents rules")
     sub = project / "pkg"
     sub.mkdir()

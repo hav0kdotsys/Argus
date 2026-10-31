@@ -30,7 +30,7 @@ _STATUS_DISPLAY = {
     "flagged": ("⚠", "loaded — matched prompt-injection pattern(s); review the file"),
     "empty": ("○", "not loaded — empty file"),
     "unreadable": ("✗", "not loaded — could not be read"),
-    "suppressed": ("○", "not loaded — cwd fell back to the Hermes install tree"),
+    "suppressed": ("○", "not loaded — cwd fell back to the ARGUS install tree"),
 }
 
 

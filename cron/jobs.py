@@ -2234,7 +2234,7 @@ def trigger_job(job_id: str, extra_prompt: Optional[str] = None) -> Optional[dic
         name = job.get("name", job_id)
         raise ValueError(
             f"Cannot run: job '{name}' is {job.get('state')} (terminal). "
-            f"Create a new occurrence with 'hermes cron resume {name} "
+            f"Create a new occurrence with 'argus cron resume {name} "
             "--run-now' or '--at <ISO-8601>'.")
     manual_run_at = _hermes_now().isoformat()
     return update_job(job["id"], {
@@ -3138,7 +3138,7 @@ def _oneshot_dispatch_limit_reached(job: dict[str, Any], scan: _DueScan) -> bool
             "Job '%s': one-shot dispatch limit reached (%d/%d) on a record that already completed "
             "a run (last_run_at=%s) — removing it WITHOUT firing. This record was re-armed "
             "without a budget reset (pre-#93615 store or hand edit); re-run it with "
-            "'hermes cron resume <job> --run-now' (#93524).",
+            "'argus cron resume <job> --run-now' (#93524).",
             name, completed, times, job.get("last_run_at"))
     else:
         logger.info(

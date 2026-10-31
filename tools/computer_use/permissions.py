@@ -34,7 +34,7 @@ def stale_tcc_grant_hint(*missing: str) -> str:
     if not resets:
         return ""
     return ("If System Settings already shows CuaDriver ON, the stored grant is stale (it no longer matches the installed "
-            f"driver's signature): run `{resets}`, then `hermes computer-use permissions grant`.")
+            f"driver's signature): run `{resets}`, then `argus computer-use permissions grant`.")
 
 def _child_env() -> dict[str, str]:
     """cua-driver child env (telemetry policy + provider secrets stripped); ``os.environ`` on import error.
@@ -127,7 +127,7 @@ def request_permissions_grant(driver_cmd: Optional[str] = None) -> int:
     from tools.computer_use.cua_backend_driver import resolve_cua_driver_cmd
     binary = resolve_cua_driver_cmd(driver_cmd)
     if not binary:
-        print("cua-driver: not installed. Run: hermes computer-use install")
+        print("cua-driver: not installed. Run: argus computer-use install")
         return 2
     print("Requesting Accessibility + Screen Recording for CuaDriver.\n"
           f"macOS will show a dialog attributed to CuaDriver ({CUA_DRIVER_BUNDLE_ID}) — approve it, then return here.")

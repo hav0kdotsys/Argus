@@ -83,6 +83,6 @@ class TestLogIsolation:
         offenders = [p for p in _all_file_destinations() if p.startswith(real_logs)]
 
         assert offenders == [], (
-            "the test session is writing into the operator's real Hermes logs:\n  "
+            "the test session is writing into the operator's real ARGUS logs:\n  "
             + "\n  ".join(offenders)
         )

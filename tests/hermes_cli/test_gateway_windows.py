@@ -668,7 +668,7 @@ def test_scheduled_task_drift_names_missing_hardening_leaves(monkeypatch):
     monkeypatch.setattr("builtins.print", lambda *a, **k: printed.append(" ".join(map(str, a))))
     gateway_windows._print_scheduled_task_drift("Hermes_Gateway")
     assert printed[0].startswith("⚠ Scheduled Task registration predates the current template (missing: RestartOnFailure")
-    assert "hermes gateway install" in printed[1]
+    assert "argus gateway install" in printed[1]
 
 
 def test_scheduled_task_drift_is_silent_when_aligned_or_unqueryable(monkeypatch):
@@ -759,7 +759,7 @@ def test_start_with_nul_stdin_starts_the_gateway_but_never_installs_login_persis
     gateway_windows.start()
 
     assert installs == [] and spawns == [1]
-    assert "hermes gateway install" in capsys.readouterr().out
+    assert "argus gateway install" in capsys.readouterr().out
 
 
 def test_start_with_captured_stdout_never_asks_even_on_a_console_stdin(monkeypatch, capsys):
@@ -773,7 +773,7 @@ def test_start_with_captured_stdout_never_asks_even_on_a_console_stdin(monkeypat
     gateway_windows.start()
 
     assert installs == [] and spawns == [1]
-    assert "hermes gateway install" in capsys.readouterr().out
+    assert "argus gateway install" in capsys.readouterr().out
 
 
 def test_start_without_tty_starts_the_gateway_but_never_installs_login_persistence(monkeypatch, capsys):
@@ -787,7 +787,7 @@ def test_start_without_tty_starts_the_gateway_but_never_installs_login_persisten
 
     assert installs == [] and spawns == [1]
     out = capsys.readouterr().out
-    assert "hermes gateway install" in out and "did not complete" not in out
+    assert "argus gateway install" in out and "did not complete" not in out
 
 
 def test_start_on_tty_hands_both_answers_to_install_and_honours_the_env_opt_out(monkeypatch):

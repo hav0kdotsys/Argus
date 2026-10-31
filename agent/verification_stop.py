@@ -208,13 +208,13 @@ def build_verify_on_stop_nudge(
         if has_recipe:
             command_instruction += (
                 " For a full check including a runtime boot (build + test + "
-                "start + readiness), prefer `hermes verify --json` — a passing "
+                "start + readiness), prefer `argus verify --json` — a passing "
                 "run records verification evidence for this workspace."
             )
     elif has_recipe:
         command_instruction = (
             "No canonical test/lint/build command was detected, but the "
-            "project has a runnable verification recipe. Run `hermes verify "
+            "project has a runnable verification recipe. Run `argus verify "
             "--json` (detect -> build -> test -> boot -> readiness poll); a "
             "passing run records verification evidence for this workspace. "
             "Read any failure, repair the code, and summarize what passed."

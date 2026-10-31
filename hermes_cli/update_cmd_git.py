@@ -251,7 +251,7 @@ def _print_parked_branch_skip_warning(git_cmd: list[str], cwd: Path, current_bra
     print(
         f"\n  To resolve, inspect the branch and switch back yourself:\n"
         f"    git -C {cwd} status\n"
-        f"    git -C {cwd} checkout {target_branch} && hermes update\n"
+        f"    git -C {cwd} checkout {target_branch} && argus update\n"
         f"  (commit or stash your work on the branch first if you want to keep it)\n{_BAR}"
     )
 
@@ -341,7 +341,7 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     ``--yes`` means "don't block", not "mutate my remotes", so a non-interactive skip is NOT persisted."""
     from hermes_cli.update_cmd import _add_upstream_remote, _mark_skip_upstream_prompt
     print(
-        "\nℹ Your fork is not tracking the official Hermes repository.\n"
+        "\nℹ Your fork is not tracking the official ARGUS repository.\n"
         "  This means you may miss updates from NousResearch/hermes-agent.\n"
     )
     if assume_yes or (input_fn is None and not (sys.stdin.isatty() and sys.stdout.isatty())):
@@ -507,7 +507,7 @@ def _damaged_checkout_message(root: Path) -> str:
                   f" -InstallDir {quoted}")
     else:
         repair = f"curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
-    return (f"✗ This Hermes checkout's git data is damaged (git no longer recognizes {root / '.git'}),"
+    return (f"✗ This ARGUS checkout's git data is damaged (git no longer recognizes {root / '.git'}),"
             " so it cannot be updated in place.\n"
             "  Run the installer again to repair it; it moves the damaged checkout aside and keeps"
             f" your config and chats:\n    {repair}")

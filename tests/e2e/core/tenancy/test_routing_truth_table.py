@@ -305,7 +305,7 @@ def test_cli_routing_truth_table(case: Case, cli_outcomes: dict[str, Any]) -> No
     fleet, outcomes = cli_outcomes[case.id].result(timeout=900)
     for i, out in enumerate(outcomes):
         leg, run = out.leg, out.run
-        ctx = (f"[{case.id} leg {i}: hermes {' '.join(leg.argv)}] rc={run.rc} ({run.seconds:.1f}s)\n"
+        ctx = (f"[{case.id} leg {i}: argus {' '.join(leg.argv)}] rc={run.rc} ({run.seconds:.1f}s)\n"
                f"requests:\n{describe(out.log)}\nstdout tail:\n{run.stdout[-1500:]}\nstderr tail:\n{run.stderr[-1500:]}")
         assert_routing(check_routing(fleet, out.log, {h: fleet.keys[h] for h in leg.hosts}, leg.must_hit), ctx)
         leaked = [t for _m, t in out.egress if urlparse(t).hostname in inference_hosts()]

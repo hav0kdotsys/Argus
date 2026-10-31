@@ -143,7 +143,7 @@ def test_save_config_set_bridges_every_cli_terminal_key():
     exempt = _CLI_ONLY_OK | {"cwd", "home_mode"}
     missing = (set(_cli_env_map()) - exempt) - save_keys
     assert not missing, (
-        f"`hermes config set terminal.X` doesn't sync these keys to .env: "
+        f"`argus config set terminal.X` doesn't sync these keys to .env: "
         f"{sorted(missing)}.  Add them to TERMINAL_CONFIG_ENV_MAP in "
         f"hermes_cli/config.py (set_config_value bridges through it)."
     )

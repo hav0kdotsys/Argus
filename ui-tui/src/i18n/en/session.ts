@@ -88,10 +88,10 @@ export const sessionEn = {
       dangerousCommand: 'dangerous command'
     },
     handoff: {
-      launching: (command: string) => `launching \`hermes ${command}\`…`,
+      launching: (command: string) => `launching \`argus ${command}\`…`,
       launchError: (error: string) => `error launching hermes: ${error}`,
       // {0}=subcommand {1}=exit code
-      exitedWithCode: (subcommand: string, code: string) => `hermes ${subcommand} exited with code ${code}`,
+      exitedWithCode: (subcommand: string, code: string) => `argus ${subcommand} exited with code ${code}`,
       stillNoProvider: 'still no provider configured'
     }
   }

@@ -56,7 +56,7 @@ def _require_azure_identity():
         try:
             from pm import InstallError, ensure_import
         except ImportError as exc:
-            raise ImportError(_INSTALL_MSG + "Run: hermes pm repair") from exc
+            raise ImportError(_INSTALL_MSG + "Run: argus pm repair") from exc
         try:
             ensure_import(_AZURE_IDENTITY_FEATURE)
         except InstallError as exc:
@@ -331,7 +331,7 @@ def build_bearer_http_client(
             # WARNING so the misconfiguration is visible at default levels.
             logger.warning("Bearer hook: Entra ID token provider returned empty (%s) "
                            "— stripping Authorization headers. Azure will respond 401. "
-                           "Run `hermes doctor` or `az login` to recover.", exc)
+                           "Run `argus doctor` or `az login` to recover.", exc)
             _strip_auth_headers(request)
             return
         _strip_auth_headers(request)

@@ -166,10 +166,10 @@ class TestBuildSessionContextPrompt:
         )
         ctx = build_session_context(source, config)
 
-        with patch("hermes_constants.display_hermes_home", return_value="~/.hermes/profiles/coder"):
+        with patch("hermes_constants.display_hermes_home", return_value="~/.argus/profiles/coder"):
             prompt = build_session_context_prompt(ctx)
 
-        assert "~/.hermes/profiles/coder/cron/output/" in prompt
+        assert "~/.argus/profiles/coder/cron/output/" in prompt
 
 
     def test_prompt_quotes_untrusted_metadata_labels(self):

@@ -241,7 +241,7 @@ class TestSignInFailures:
         assert state.retryable is retryable
         assert state.retry_after == retry_after
         assert needle in state.copy
-        assert "Hermes " not in state.copy and "http" not in state.copy
+        assert "ARGUS " not in state.copy and "http" not in state.copy
 
     def test_the_wire_failing_reads_as_unreachable(self):
         state = anon_sign_in._failed_from_exception(httpx.ReadTimeout("slow"))

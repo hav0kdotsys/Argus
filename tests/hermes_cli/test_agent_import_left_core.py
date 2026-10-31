@@ -34,9 +34,9 @@ def test_old_spelling_without_the_plugin_names_the_install(argv, tmp_path, monke
         parser.parse_args(sys.argv[1:])
     err = capsys.readouterr().err
     assert exc.value.code == 2
-    assert f"`hermes {argv[0]}` moved out of core into the 'agent-importers' plugin, which is not loaded" in err
-    assert "hermes plugins install agent-importers" in err
-    assert lcm.moved_command_hint("hermes auth", argv[0]) == ""  # never a `hermes auth` login spelling
+    assert f"`argus {argv[0]}` moved out of core into the 'agent-importers' plugin, which is not loaded" in err
+    assert "argus plugins install agent-importers" in err
+    assert lcm.moved_command_hint("argus auth", argv[0]) == ""  # never a `hermes auth` login spelling
 
 
 def test_only_a_home_with_registered_imports_gets_the_plugin(tmp_path):
@@ -58,7 +58,7 @@ def test_only_a_home_with_registered_imports_gets_the_plugin(tmp_path):
     assert calls == [] and said == []
     assert lcm.migrate_home(synced, install=install, say=said.append) == ["agent-importers"]
     assert calls == ["agent-importers"]
-    assert "✓ `hermes import-agent` moved out of core" in said[0]
+    assert "✓ `argus import-agent` moved out of core" in said[0]
 
 
 def test_a_scheduled_sync_on_a_home_nothing_migrated_installs_the_plugin_and_runs(tmp_path, monkeypatch, capsys):

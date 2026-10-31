@@ -34,4 +34,4 @@ def test_left_alone_notice_prints_once_across_the_completion_handoff(monkeypatch
     assert contextvars.Context().run(completion_process) == []
     out = capsys.readouterr().out
     for pid, home in homes.items():
-        assert out.count(f"↷ PID {pid}: gateway process of another Hermes home ({home})") == 1, out
+        assert out.count(f"↷ PID {pid}: gateway process of another ARGUS home ({home})") == 1, out

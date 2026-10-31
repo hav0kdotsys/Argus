@@ -1526,7 +1526,7 @@ class SessionSearchMixin:
                         if is_malformed_db_error(exc):
                             logger.error(
                                 "FTS rebuild failed with a corruption-class error for %s: %s; "
-                                "run 'hermes sessions repair' (or 'hermes doctor --fix') to rebuild the index offline",
+                                "run 'argus sessions repair' (or 'argus doctor --fix') to rebuild the index offline",
                                 tbl, exc)
                         else:
                             logger.warning("FTS rebuild failed for %s: %s", tbl, exc)

@@ -68,7 +68,7 @@ def test_blocked_swap_names_the_foreign_holder_and_leaves_it_running(swap_fixtur
     assert promoted is None
     assert f"pid {helper.pid}" in error, error  # the update failure names the holder
     assert f"Desktop app folder held by: {psutil.Process(helper.pid).name()} (pid {helper.pid}, " in out, out
-    assert helper.poll() is None, "a program outside Hermes was closed without consent"
+    assert helper.poll() is None, "a program outside ARGUS was closed without consent"
     assert (live_root / "Hermes.exe").read_text(encoding="utf-8") == "old"
 
 

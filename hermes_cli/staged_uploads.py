@@ -183,7 +183,7 @@ def parse_staged_upload(descriptor: object) -> tuple[str, str]:
         raise ValueError("invalid staged upload")
     install_id = get_install_id()
     if not install_id or descriptor.get("install_id") != install_id:
-        raise ValueError("Staged attachment belongs to another Hermes backend; select the file again")
+        raise ValueError("Staged attachment belongs to another ARGUS backend; select the file again")
     raw_home = descriptor.get("profile_home")
     raw_path = descriptor.get("path")
     if not isinstance(raw_home, str) or not raw_home or not isinstance(raw_path, str) or not raw_path:

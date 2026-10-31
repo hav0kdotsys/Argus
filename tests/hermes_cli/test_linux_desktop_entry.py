@@ -148,7 +148,7 @@ def test_install_icon_copy_failure_falls_back_to_absolute(
     assert values["Icon"] == str(lde.icon_path(root))
 
     assert values["Type"] == "Application"
-    assert values["Name"] == "Hermes"
+    assert values["Name"] == "ARGUS"
     assert values["Terminal"] == "false"
 
 
@@ -696,7 +696,7 @@ def test_installed_entry_carries_the_window_app_id(tmp_path, xdg_home, monkeypat
     assert entry.name == f"{lde.APP_ID}.desktop"
     values = _parse(entry.read_text(encoding="utf-8"))
     assert values["StartupWMClass"] == lde.APP_ID
-    assert values["Name"] == "Hermes"  # the menu label is not part of the identity
+    assert values["Name"] == "ARGUS"  # the menu label is not part of the identity
 
 
 def test_install_keeps_the_legacy_entry_as_a_hidden_alias(tmp_path, xdg_home, monkeypatch):
@@ -714,7 +714,7 @@ def test_install_keeps_the_legacy_entry_as_a_hidden_alias(tmp_path, xdg_home, mo
     legacy = xdg_home / "applications" / lde.LEGACY_DESKTOP_ENTRY_NAME
     legacy.parent.mkdir(parents=True)
     legacy.write_text(
-        "[Desktop Entry]\nType=Application\nName=Hermes\nExec=hermes desktop\n",
+        "[Desktop Entry]\nType=Application\nName=ARGUS\nExec=argus desktop\n",
         encoding="utf-8",
     )
 
@@ -736,7 +736,7 @@ def test_unchanged_entry_still_aliases_a_legacy_entry(tmp_path, xdg_home, monkey
     root = _make_project(tmp_path)
     assert lde.install_desktop_entry(root) is not None
     legacy = xdg_home / "applications" / lde.LEGACY_DESKTOP_ENTRY_NAME
-    legacy.write_text("[Desktop Entry]\nType=Application\nName=Hermes\nExec=hermes desktop\n", encoding="utf-8")
+    legacy.write_text("[Desktop Entry]\nType=Application\nName=ARGUS\nExec=argus desktop\n", encoding="utf-8")
 
     lde.install_desktop_entry(root)
 
@@ -777,7 +777,7 @@ def test_install_opt_out_preserves_the_legacy_entry(tmp_path, xdg_home, monkeypa
     legacy = xdg_home / "applications" / lde.LEGACY_DESKTOP_ENTRY_NAME
     legacy.parent.mkdir(parents=True)
     legacy.write_text(
-        "[Desktop Entry]\nType=Application\nName=Hermes\nExec=hermes desktop\n",
+        "[Desktop Entry]\nType=Application\nName=ARGUS\nExec=argus desktop\n",
         encoding="utf-8",
     )
 
@@ -785,7 +785,7 @@ def test_install_opt_out_preserves_the_legacy_entry(tmp_path, xdg_home, monkeypa
 
     assert entry == xdg_home / "applications" / lde.DESKTOP_ENTRY_NAME
     assert legacy.read_text(encoding="utf-8") == (
-        "[Desktop Entry]\nType=Application\nName=Hermes\nExec=hermes desktop\n"
+        "[Desktop Entry]\nType=Application\nName=ARGUS\nExec=argus desktop\n"
     ), "the opt-out must leave the legacy entry byte-for-byte untouched"
 
 

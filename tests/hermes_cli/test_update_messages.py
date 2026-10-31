@@ -24,7 +24,7 @@ class TestFleetMatrixVerdict:
         ]
         assert ur.print_fleet_version_matrix(fleet) is True
         out = capsys.readouterr().out
-        assert "hermes gateway restart" in out
+        assert "argus gateway restart" in out
 
     def test_unknown_rows_print_no_verdict(self, capsys):
         fleet = [{"profile": "default", "pid": 1, "code_sha": None, "state": "unknown"}]

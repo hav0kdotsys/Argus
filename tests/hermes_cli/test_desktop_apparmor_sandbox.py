@@ -34,7 +34,7 @@ def _packaged_app(tmp_path, script: str):
     (dist / "electron-main.mjs").write_text(
         f"if (process.argv.includes('{main_desktop_apparmor.SANDBOX_PROBE_SWITCH}')) process.exit(0)\n",
         encoding="utf-8")
-    exe = unpacked / "Hermes"
+    exe = unpacked / "ARGUS"
     exe.write_text(script, encoding="utf-8")
     exe.chmod(0o755)
     helper = unpacked / "chrome-sandbox"
@@ -151,7 +151,7 @@ def test_install_stages_loads_then_replaces_the_old_profile(tmp_path, monkeypatc
     monkeypatch.setattr(main_desktop_apparmor, "RESTRICT_SYSCTL", sysctl)
     exe = _packaged_app(tmp_path, _ALLOWED)
     target = main_desktop_apparmor.profile_path(exe)
-    target.write_text("# an older Hermes profile\n", encoding="utf-8")
+    target.write_text("# an older ARGUS profile\n", encoding="utf-8")
 
     assert main_desktop_apparmor.install_profile(exe) is True
     calls = [call.split() for call in sudo_log.read_text(encoding="utf-8").splitlines()]

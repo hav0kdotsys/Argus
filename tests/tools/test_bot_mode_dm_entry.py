@@ -113,7 +113,7 @@ def test_delivery_runner_that_cannot_activate_names_the_repair_remedy(tmp_path, 
                    sys.executable, "-c", "pass"], env)
 
     assert result.returncode == 1, result
-    assert "hermes pm repair" in result.stderr
+    assert "argus pm repair" in result.stderr
     assert "No module named" not in result.stdout + result.stderr
     assert result.stdout == ""  # nothing was handed over, so no "do not resend" outcome
     assert dm_file.read_text(encoding="utf-8") == "hello teammate"
@@ -133,7 +133,7 @@ def test_delivery_runner_that_cannot_activate_after_live_admission_stays_ambiguo
                    "--profile-home", str(tmp_path), sys.executable, "-c", "pass"], env)
 
     assert result.returncode == 1, result
-    assert "hermes pm repair" in result.stderr
+    assert "argus pm repair" in result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "ambiguous"
     assert payload["delivery_id"] == _dm_delivery_id(str(dm_file))

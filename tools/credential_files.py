@@ -371,7 +371,7 @@ def to_agent_visible_cache_path(host_path: str, container_base: str = "/root/.he
     """
     backend = _terminal_backend()
     if backend in _HOME_RELATIVE_BACKENDS:
-        container_base = "~/.hermes"
+        container_base = "~/.argus"
     elif backend not in ("docker", "modal"):
         try:
             from agent.terminal_env_registry import provider_flag

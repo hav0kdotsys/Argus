@@ -393,7 +393,7 @@ def _refuse_gateway_ancestor_tree_kill(pids: list[int], *, gateway_mode: bool) -
         "✗ Refusing to stop the gateway process tree because this updater "
         f"is running inside it (gateway PID(s): {', '.join(str(pid) for pid in ancestors)}).\n"
         "  On Windows, taskkill /T would terminate the updater before the update can run.\n"
-        "  From a chat platform, use `/update` instead.\n  Otherwise, run `hermes update` from a separate terminal."
+        "  From a chat platform, use `/update` instead.\n  Otherwise, run `argus update` from a separate terminal."
     )
     return True
 
@@ -456,7 +456,7 @@ def _relaunch_stopped_serves(token: dict) -> None:
         print("  ⟲ Relaunching stopped serve/dashboard backend(s)")
         failed = _m()._respawn_dashboard_processes(commands)
     if skipped or failed:
-        print("  ⚠ Some stopped backends could not be relaunched automatically; restart them manually (hermes serve --host <ip> --port <port>).")
+        print("  ⚠ Some stopped backends could not be relaunched automatically; restart them manually (argus serve --host <ip> --port <port>).")
     _record_update_step(
         "serve_relaunch", not failed and not skipped,
         f"relaunched={len(commands) - len(failed)} failed={len(failed)} skipped={skipped}",
@@ -960,7 +960,7 @@ def _pause_windows_gateways_for_update() -> dict | None:
     # record, whose argv-only match lets another home's gateway retire this debt.
     homes = {int(pid): gateway_pid_home(int(pid)) for pid in unmapped_pids}
     if None in homes.values():
-        raise RuntimeError("Could not prove the Hermes home of unmapped gateway PID(s) "
+        raise RuntimeError("Could not prove the ARGUS home of unmapped gateway PID(s) "
                            + ", ".join(str(p) for p, h in homes.items() if h is None) + "; nothing was stopped")
     unmapped = [
         {"pid": int(pid), "argv": _try_call(lambda p=int(pid): _capture_gateway_argv(p),
@@ -1054,7 +1054,7 @@ def _stop_windows_gateways(running_pids, profile_processes, service_gateway_pids
     if unmapped_pids:
         print(f"  → Stopped {len(unmapped_pids)} gateway process(es) without profile mapping")
         if any(not u.get("argv") for u in unmapped):  # no recoverable cmdline (psutil missing, denied, gone)
-            print("    Restart manually after update: hermes gateway run")
+            print("    Restart manually after update: argus gateway run")
     return profiles
 
 
@@ -1552,7 +1552,7 @@ def _verify_relaunched_gateways_alive(token: dict, profiles: dict, unmapped: lis
         print(
             "\n  ⚠ Windows gateway restart could not be verified for: " + ", ".join(unready) + "\n"
             "    (The respawned gateway may have been killed by a parent Job Object during updater teardown, #48820.)\n"
-            "    Recover with: hermes gateway restart"
+            "    Recover with: argus gateway restart"
         )
         raise RuntimeError("Windows gateway relaunch after update was not verified alive: " + ", ".join(unready))
 
@@ -1589,7 +1589,7 @@ def _resume_unless_torn(token: dict) -> None:
             # dependencies. The durable record keeps the obligation for the next launch, which
             # runs after the interrupted-pull restore and the dependency sync.
             print(f"  ⚠ Paused gateway(s) left stopped: {why}.\n"
-                  "    The next `hermes` command (or `hermes update`) restarts them.")
+                  "    The next `argus` command (or `argus update`) restarts them.")
             token["resume_needed"] = False
             token["resume_deferred"] = why
             pause_record.sync(token)

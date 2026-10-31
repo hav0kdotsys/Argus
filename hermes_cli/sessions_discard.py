@@ -20,7 +20,7 @@ async def _resume(client, name):
         except GatewayClientError as exc:
             if str(exc) != "not_found":
                 raise
-    raise GatewayClientError(f"No session found matching '{name}'. Use 'hermes sessions list' to see available sessions.")
+    raise GatewayClientError(f"No session found matching '{name}'. Use 'argus sessions list' to see available sessions.")
 
 
 def _confirm(session_id, rows):
@@ -68,7 +68,7 @@ def add_discard_parser(sessions_subparsers) -> None:
     parser = sessions_subparsers.add_parser(
         "discard", help="Acknowledge turns lost in a gateway crash (unknown admissions) so the session runs again",
         description="After a gateway crash mid-turn, the lost turn is fenced 'unknown' and blocks the "
-            "session: `hermes chat --resume <id> -q` exits 3 until it is acknowledged. This is the "
+            "session: `argus chat --resume <id> -q` exits 3 until it is acknowledged. This is the "
             "non-interactive form of `/discard <admission>`. The lost input is not replayed.")
     parser.add_argument("session", help="Session ID or title")
     parser.add_argument("--admission", action="append", metavar="ID",

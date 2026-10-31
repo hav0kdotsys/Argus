@@ -107,7 +107,7 @@ def _doctor_runtime(plugin_path: Path):
     try:
         manifests = manager._scan_directory(plugins_root, source="user")
         if not manifests:
-            raise _DoctorLoadError(f"Hermes discovery found no valid plugin manifest under {staging_root}")
+            raise _DoctorLoadError(f"ARGUS discovery found no valid plugin manifest under {staging_root}")
         if len(manifests) != 1:
             raise _DoctorLoadError(
                 f"Expected one plugin manifest, discovered {len(manifests)} under {staging_root}")
@@ -345,7 +345,7 @@ def _check_manifest_v2(report: DoctorReport, manifest: Any) -> None:
     mv = getattr(manifest, "manifest_version", 1)
     if mv > SUPPORTED_MANIFEST_VERSION:
         report.warning(
-            f"manifest_version {mv} is newer than this Hermes supports "
+            f"manifest_version {mv} is newer than this ARGUS supports "
             f"({SUPPORTED_MANIFEST_VERSION}); unknown fields are ignored")
 
     api_version = getattr(manifest, "api_version", None)
@@ -385,8 +385,8 @@ def _check_manifest_v2(report: DoctorReport, manifest: Any) -> None:
     if missing:
         report.warning(
             "declared python_dependencies not installed: " + ", ".join(missing)
-            + " — install and enable the plugin with hermes plugins. "
-            "For an enabled plugin, run hermes pm repair, then restart Hermes.")
+            + " — install and enable the plugin with argus plugins. "
+            "For an enabled plugin, run argus pm repair, then restart Hermes.")
 
     schema = getattr(manifest, "config_schema", {}) or {}
     if schema:

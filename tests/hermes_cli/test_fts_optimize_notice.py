@@ -51,7 +51,7 @@ def test_update_notice_offers_v1_trigram_tool_calls_rebuild(tmp_path, monkeypatc
 
     update_cmd._print_fts_optimize_available_notice()
 
-    assert "hermes sessions optimize-storage" in capsys.readouterr().out
+    assert "argus sessions optimize-storage" in capsys.readouterr().out
     conn.close()
 
 
@@ -96,7 +96,7 @@ def test_doctor_collects_structural_fts_upgrade_status(
     # Exercise the size gate without allocating a GiB database or forging collected stats.
     monkeypatch.setattr(doctor_state, "STATE_DB_SIZE_WARN_BYTES", 0 if large else stats["logical_size_bytes"])
     rows = doctor_state._render_state_db_stats(stats)
-    offered = any("hermes sessions optimize-storage" in detail for _, _, detail in rows)
+    offered = any("argus sessions optimize-storage" in detail for _, _, detail in rows)
     assert offered is (large and needed)
     assert db_path.read_bytes() == before
 
@@ -122,4 +122,4 @@ def test_doctor_collects_pending_rebuild_with_settled_layout(tmp_path, monkeypat
     assert stats["fts_rebuild_pending"] is pending
     monkeypatch.setattr(doctor_state, "STATE_DB_SIZE_WARN_BYTES", 0)
     rows = doctor_state._render_state_db_stats(stats)
-    assert any("hermes sessions optimize-storage" in detail for _, _, detail in rows) is pending
+    assert any("argus sessions optimize-storage" in detail for _, _, detail in rows) is pending

@@ -103,7 +103,7 @@ def _profile_to_dict(info) -> dict[str, Any]:
 def _profile_setup_command(name: str) -> str:
     """Return the shell command used to configure a profile in the CLI."""
     _resolve_profile_dir(name)
-    return "hermes setup" if name == "default" else f"{name} setup"
+    return "argus setup" if name == "default" else f"{name} setup"
 
 
 def _scope_profile_name(path: Path) -> Optional[str]:

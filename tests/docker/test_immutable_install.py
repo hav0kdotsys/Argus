@@ -73,7 +73,7 @@ for relative in ('.venv/.lock', 'pm-runtime/.lock'):
         timeout=10,
     )
     assert "WRITE_FAILED" in r.stdout, (
-        f"hermes user can write to /opt/hermes (install tree not immutable): "
+        f"argus user can write to /opt/hermes (install tree not immutable): "
         f"{r.stdout}"
     )
 
@@ -85,7 +85,7 @@ for relative in ('.venv/.lock', 'pm-runtime/.lock'):
         timeout=10,
     )
     assert "WRITE_FAILED" in r.stdout, (
-        f"hermes user can write to /opt/hermes/.venv: {r.stdout}"
+        f"argus user can write to /opt/hermes/.venv: {r.stdout}"
     )
 
 

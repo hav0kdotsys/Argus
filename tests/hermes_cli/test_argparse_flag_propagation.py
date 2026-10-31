@@ -234,7 +234,7 @@ class TestChatSubparserInheritedValueFlags:
         assert not offenders, (
             "Chat subparser redeclares these top-level flags without "
             "default=argparse.SUPPRESS; they will silently clobber the "
-            "top-level value when used as `hermes <flag> <value> chat`:\n  "
+            "top-level value when used as `argus <flag> <value> chat`:\n  "
             + "\n  ".join(f"{opts} dest={dest} default={d!r}"
                           for opts, dest, d in offenders)
         )

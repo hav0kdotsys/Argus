@@ -46,7 +46,7 @@ GEMINI_DEFAULT_MAX_OUTPUT_TOKENS = 65535
 
 _FREE_TIER_GUIDANCE = (
     "\n\nYour Google API key is on the free tier (a few hundred requests/day for Gemini Flash models). "
-    "Hermes typically makes 3-10 API calls per user turn, so the free tier is exhausted in a handful of "
+    "ARGUS typically makes 3-10 API calls per user turn, so the free tier is exhausted in a handful of "
     "messages and cannot sustain an agent session. Enable billing on your Google Cloud project and "
     "regenerate the key in a billing-enabled project: https://aistudio.google.com/apikey"
 )
@@ -55,7 +55,7 @@ _STANDARD_KEY_GUIDANCE = (
     "'Standard' Google Cloud keys for the Gemini API on June 19, 2026, and all Standard keys stop working in "
     "September 2026. Open https://aistudio.google.com/api-keys, check the key's type and status, and create a "
     "replacement Gemini API key (or, as a temporary bridge, restrict the Standard key to "
-    "generativelanguage.googleapis.com). Then update GEMINI_API_KEY / GOOGLE_API_KEY in ~/.hermes/.env, "
+    "generativelanguage.googleapis.com). Then update GEMINI_API_KEY / GOOGLE_API_KEY in ~/.argus/.env, "
     "delete any leftover Windows/system copy of those variables, and restart. A stale shell key can hide "
     "the .env value. Details: https://ai.google.dev/gemini-api/docs/api-key"
 )
@@ -91,7 +91,7 @@ _FINISH_REASON_MAP = {
 _HTTP_ERROR_CODES = {401: "gemini_unauthorized", 429: "gemini_rate_limited", 404: "gemini_model_not_found"}
 _MISSING_KEY_ERROR = (
     "Gemini native client requires an API key, but none was provided. Set GOOGLE_API_KEY or GEMINI_API_KEY in your "
-    "environment / ~/.hermes/.env (get one at https://aistudio.google.com/app/apikey), or run `hermes setup` to "
+    "environment / ~/.argus/.env (get one at https://aistudio.google.com/app/apikey), or run `argus setup` to "
     "configure the Google provider."
 )
 

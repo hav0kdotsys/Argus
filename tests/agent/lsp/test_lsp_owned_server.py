@@ -158,7 +158,7 @@ def test_a_sigkilled_owner_takes_its_whole_server_tree_with_it(tmp_path):
         owner.kill()
         owner.wait(timeout=10)
         wait_until(lambda: not _alive(leader) and not _alive(child), timeout=15,
-                   what="the LSP server and its descendant to die with the kill -9'd Hermes process")
+                   what="the LSP server and its descendant to die with the kill -9'd ARGUS process")
     finally:
         _cleanup(owner, leader, child)
 

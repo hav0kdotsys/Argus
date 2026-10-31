@@ -187,8 +187,8 @@ def _build_child_env(*, rpc_endpoint: str, rpc_token: str, tmpdir: str,
     elif child_python not in _external_env_logged:
         # Surface once per interpreter so "import hermes_constants fails" is diagnosable.
         _external_env_logged.add(child_python)
-        logger.info("execute_code: child interpreter %s is outside the Hermes "
-                    "environment; hermes root omitted from PYTHONPATH", child_python)
+        logger.info("execute_code: child interpreter %s is outside the ARGUS "
+                    "environment; argus root omitted from PYTHONPATH", child_python)
     if _existing_pp:
         _pp_parts.append(_existing_pp)
     child_env["PYTHONPATH"] = os.pathsep.join(_pp_parts)

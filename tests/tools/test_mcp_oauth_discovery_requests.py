@@ -62,7 +62,7 @@ async def _make_flow(tmp_path, monkeypatch, *, registered=True):
         server_url="https://example.com/mcp",
         client_metadata=OAuthClientMetadata(
             redirect_uris=[AnyUrl("http://127.0.0.1:12345/callback")],
-            client_name="Hermes Agent",
+            client_name="ARGUS",
         ),
         storage=storage,
         redirect_handler=_noop_redirect,

@@ -185,7 +185,7 @@ def login(provider: str, cfg: OAuthPKCEConfig, *, open_browser: bool = True) -> 
         params["audience"] = cfg.audience
     authorize_url = f"{cfg.authorize_url}{'&' if urlparse(cfg.authorize_url).query else '?'}{urlencode(params)}"
 
-    print(f"\nOpen this URL to authorize Hermes with {cfg.label or provider}:\n  {authorize_url}\n")
+    print(f"\nOpen this URL to authorize ARGUS with {cfg.label or provider}:\n  {authorize_url}\n")
     print(f"Waiting for callback on {redirect_uri} (timeout {int(cfg.timeout_seconds)}s, Ctrl+C to cancel)...")
     _print_loopback_ssh_hint(redirect_uri)
     if open_browser and _can_open_graphical_browser():
@@ -242,7 +242,7 @@ def pkce_auth_handler(cfg: OAuthPKCEConfig) -> Callable[[str, Any], bool]:
             elif any(_is_usable(e.access_token, e.expires_at_ms, now_ms) for e in entries):
                 print(f"{provider}: logged in\n  auth_type: oauth (pkce)\n  credentials: {len(entries)}")
             else:
-                print(f"{provider}: expired (needs refresh) — run `hermes auth refresh {provider}`")
+                print(f"{provider}: expired (needs refresh) — run `argus auth refresh {provider}`")
             return True
         if action == "logout":
             pool = load_pool(provider)

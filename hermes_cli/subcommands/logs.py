@@ -10,25 +10,25 @@ def build_logs_parser(subparsers, *, cmd_logs: Callable) -> None:
     """Attach the ``logs`` subcommand to ``subparsers``."""
     logs_parser = subparsers.add_parser(
         "logs",
-        help="View and filter Hermes log files",
+        help="View and filter ARGUS log files",
         description="View, tail, and filter agent.log / errors.log / gateway.log / gui.log / desktop.log / update.log / desktop-update-handoff.log",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
-    hermes logs                    Show last 50 lines of agent.log
-    hermes logs -f                 Follow agent.log in real time
-    hermes logs errors             Show last 50 lines of errors.log
-    hermes logs gateway -n 100     Show last 100 lines of gateway.log
-    hermes logs gui -f             Follow gui.log in real time
-    hermes logs desktop -f         Follow desktop.log (Electron app boot/backend)
-    hermes logs update             Show last 50 lines of update.log (hermes update mirror)
-    hermes logs handoff            Show last 50 lines of desktop-update-handoff.log
-    hermes logs --level WARNING    Only show WARNING and above
-    hermes logs --session abc123   Filter by session ID
-    hermes logs --component tools  Only show tool-related lines
-    hermes logs --since 1h         Lines from the last hour
-    hermes logs --since 30m -f     Follow, starting from 30 min ago
-    hermes logs list               List available log files with sizes
+    argus logs                    Show last 50 lines of agent.log
+    argus logs -f                 Follow agent.log in real time
+    argus logs errors             Show last 50 lines of errors.log
+    argus logs gateway -n 100     Show last 100 lines of gateway.log
+    argus logs gui -f             Follow gui.log in real time
+    argus logs desktop -f         Follow desktop.log (Electron app boot/backend)
+    argus logs update             Show last 50 lines of update.log (argus update mirror)
+    argus logs handoff            Show last 50 lines of desktop-update-handoff.log
+    argus logs --level WARNING    Only show WARNING and above
+    argus logs --session abc123   Filter by session ID
+    argus logs --component tools  Only show tool-related lines
+    argus logs --since 1h         Lines from the last hour
+    argus logs --since 30m -f     Follow, starting from 30 min ago
+    argus logs list               List available log files with sizes
 """)
     logs_parser.add_argument(
         "log_name",

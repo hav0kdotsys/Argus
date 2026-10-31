@@ -70,7 +70,7 @@ def test_gateway_stop_under_s6_is_planned(built_image: str, container_name: str)
     )
     _wait(lambda: "Press Ctrl+C to stop" in _agent_log(container_name), "gateway startup done")
 
-    r = docker_exec_sh(container_name, "hermes gateway stop", timeout=90)
+    r = docker_exec_sh(container_name, "argus gateway stop", timeout=90)
     assert r.returncode == 0, f"gateway stop failed: stdout={r.stdout!r} stderr={r.stderr!r}"
 
     _wait(lambda: _svstat_field(container_name, "up") == "false", "gateway-default down")

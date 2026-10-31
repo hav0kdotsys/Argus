@@ -103,7 +103,7 @@ async def _run_flow(tmp_path, monkeypatch, issuer_doc):
     storage = HermesTokenStorage("srv")
     provider = _HERMES_PROVIDER_CLS(
         server_name="srv", server_url=RESOURCE, storage=storage,
-        client_metadata=OAuthClientMetadata(redirect_uris=[AnyUrl("http://127.0.0.1:1/cb")], client_name="Hermes Agent"),
+        client_metadata=OAuthClientMetadata(redirect_uris=[AnyUrl("http://127.0.0.1:1/cb")], client_name="ARGUS"),
         redirect_handler=redirect, callback_handler=callback)
     standin = _StandIn(httpx, issuer_doc)
     async with httpx.AsyncClient(auth=provider, transport=httpx.MockTransport(standin)) as client:

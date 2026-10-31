@@ -48,7 +48,7 @@ def mark_webapp_stale(project_root: Path) -> bool:
     dist = webapp_dist_dir(project_root)
     if packaged_webapp_dist() is not None or not (dist / "index.html").is_file():
         return False
-    (dist / STALE_MARKER).write_text("hermes update could not rebuild this bundle\n", encoding="utf-8")
+    (dist / STALE_MARKER).write_text("argus update could not rebuild this bundle\n", encoding="utf-8")
     return True
 
 
@@ -78,7 +78,7 @@ def _exclusive_build_lock(path: Path):
     try:
         try:
             if not lock_fd(handle.fileno(), wait=False):
-                print("→ Another Hermes Webapp build is running; waiting for it...")
+                print("→ Another ARGUS Webapp build is running; waiting for it...")
                 if not lock_fd(handle.fileno(), wait=True, timeout=_LOCK_WAIT_SECONDS):
                     raise WebappBuildError(f"Timed out waiting for another Webapp build ({path})")
         except OSError as exc:
@@ -111,7 +111,7 @@ def prepare_webapp_renderer(
             raise WebappBuildError(f"{DIST_ENV} is set but no Webapp renderer exists at {dist}")
         if force:
             raise WebappBuildError(f"The Webapp renderer at {dist} comes from {DIST_ENV} and cannot be rebuilt here")
-        print(f"→ Using Hermes Webapp renderer from {DIST_ENV}: {dist}")
+        print(f"→ Using ARGUS Webapp renderer from {DIST_ENV}: {dist}")
         return dist
     if skip_build:
         # Reuse takes no build lock, like `hermes dashboard --skip-build`: the
@@ -120,22 +120,22 @@ def prepare_webapp_renderer(
             raise WebappBuildError(
                 f"--skip-build was passed but no Webapp renderer exists at {dist}"
             )
-        print(f"→ Reusing Hermes Webapp renderer at {dist} (--skip-build)")
+        print(f"→ Reusing ARGUS Webapp renderer at {dist} (--skip-build)")
         return dist
     # A current, unmarked bundle needs no lock either, so a read-only install
     # (the Docker image) reuses the one baked at build time.
     if not force and not webapp_bundle_stale(dist) and source_product_current(project_root, "webapp", dist):
-        print(f"✓ Hermes Webapp renderer is up to date: {dist}")
+        print(f"✓ ARGUS Webapp renderer is up to date: {dist}")
         return dist
     with _exclusive_build_lock(project_root / _LOCK_NAME):
         if not force and source_product_current(project_root, "webapp", dist):
             _clear_stale_mark(dist)
-            print(f"✓ Hermes Webapp renderer is up to date: {dist}")
+            print(f"✓ ARGUS Webapp renderer is up to date: {dist}")
             return dist
         try:
             build_source_webapp(project_root, env=source_build_env(explicit=explicit), explicit=explicit)
         except (OSError, subprocess.SubprocessError, RuntimeError) as exc:
             raise WebappBuildError(f"Browser-hosted Desktop build failed: {exc}") from exc
         _clear_stale_mark(dist)
-        print(f"✓ Hermes Webapp renderer built: {dist}")
+        print(f"✓ ARGUS Webapp renderer built: {dist}")
         return dist

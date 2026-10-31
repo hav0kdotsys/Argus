@@ -958,7 +958,7 @@ def _resume_fenced(claim_path: Path, body: dict) -> None:
     token.update(resume_needed=True, recovery=True)
     try:
         if _has_work(token):
-            print("→ Restarting gateway(s) paused by an interrupted `hermes update`...", file=sys.stderr)
+            print("→ Restarting gateway(s) paused by an interrupted `argus update`...", file=sys.stderr)
             from hermes_cli.update_cmd_windows import _resume_windows_gateways_after_update
             # Whatever command this launch runs owns stdout (``--json`` output, a Desktop pipe).
             with redirect_stdout(sys.stderr):
@@ -966,8 +966,8 @@ def _resume_fenced(claim_path: Path, body: dict) -> None:
         else:
             token["resume_needed"] = False
     except Exception as exc:  # health: allow BLE001 -- recovery boundary: any resume error is reported and the claim handed back (finally), never raised into the launch
-        print(f"  ⚠ Could not restart every paused gateway: {exc}. Run `hermes update` or "
-              "`hermes gateway start`.", file=sys.stderr)
+        print(f"  ⚠ Could not restart every paused gateway: {exc}. Run `argus update` or "
+              "`argus gateway start`.", file=sys.stderr)
     finally:
         _back_off_unready(token, attempted, draining)
         _hand_back(claim_path, body, token, draining)

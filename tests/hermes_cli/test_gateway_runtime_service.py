@@ -231,7 +231,7 @@ def _installed_vbs(home, configured):
     """The current installed launcher grammar; no script is executed."""
     script = home / 'gateway.vbs'
     script.write_text("\n".join([
-        "' Hermes Agent Gateway", "Option Explicit", "Dim sh, env, existing_pp",
+        "' ARGUS Gateway", "Option Explicit", "Dim sh, env, existing_pp",
         'Set sh = CreateObject("WScript.Shell")', 'Set env = sh.Environment("PROCESS")',
         f'env.Item("HERMES_HOME") = "{configured}"',
         'env.Item("HERMES_SUPERVISED_CHILD") = "1"',

@@ -200,13 +200,13 @@ def check_hermes_requires(spec: str, current_version: str) -> None:
     m = _VERSION_OP_RE.match(spec)
     op, target = m.groups() if m else (">=", spec.strip())
     if not _VERSION_OPS[op](_parse_semver(current_version), _parse_semver(target)):
-        raise DistributionError(f"This distribution requires Hermes {op}{target}, but you have {current_version}.")
+        raise DistributionError(f"This distribution requires ARGUS {op}{target}, but you have {current_version}.")
 
 
 def _env_template_from_manifest(manifest: DistributionManifest) -> str:
     """Generate a ``.env.template`` body from env_requires."""
     lines = [
-        "# Environment variables required by this Hermes distribution.",
+        "# Environment variables required by this ARGUS distribution.",
         "# Copy to `.env` and fill in your own values before running.", "",
     ]
     for req in manifest.env_requires:
@@ -262,7 +262,7 @@ def _stage_source(source: str, workdir: Path) -> tuple[Path, str]:
         rmtree_readonly(staged / ".git")
         missing = (
             f"No {MANIFEST_FILENAME} at the root of {src_str!r}. "
-            "This repository is not a Hermes profile distribution."
+            "This repository is not an ARGUS profile distribution."
         )
     elif (path_guess := Path(src_str).expanduser()).is_dir():
         staged = path_guess.resolve()
@@ -320,14 +320,14 @@ def plan_install(source: str, workdir: Path, override_name: Optional[str] = None
     manifest = read_manifest(staged)
     if manifest is None:
         raise DistributionError(
-            f"No {MANIFEST_FILENAME} found at the distribution root — this source is not a Hermes distribution."
+            f"No {MANIFEST_FILENAME} found at the distribution root — this source is not an ARGUS distribution."
         )
     check_hermes_requires(manifest.hermes_requires, get_version_info().base_version)  # fail fast
     canon = _canon_valid(override_name or manifest.name)
     if canon == "default":
         raise DistributionError(
             "Cannot install a distribution as 'default' — that is the built-in "
-            "root profile (~/.hermes).  Pass --name <name> to install under a new profile."
+            "root profile (~/.argus).  Pass --name <name> to install under a new profile."
         )
     manifest.name = canon
     manifest.source = provenance
@@ -594,7 +594,7 @@ def install_distribution(
         if plan.existing and not force:
             raise DistributionError(
                 f"Profile '{plan.manifest.name}' already exists at {plan.target_dir}. "
-                "Use `hermes profile update` to upgrade in place, or pass --force to overwrite."
+                "Use `argus profile update` to upgrade in place, or pass --force to overwrite."
             )
 
         # Fresh install (or --force): config.yaml comes from the distribution. Roots the
@@ -624,12 +624,12 @@ def update_distribution(profile_name: str, force_config: bool = False) -> Instal
     if existing_manifest is None:
         raise DistributionError(
             f"Profile '{canon}' is not a distribution (no {MANIFEST_FILENAME}). "
-            "Only profiles installed via `hermes profile install` can be updated."
+            "Only profiles installed via `argus profile install` can be updated."
         )
     if not existing_manifest.source:
         raise DistributionError(
             f"Profile '{canon}' has no recorded source.  Re-install with "
-            "`hermes profile install <source> --name {canon} --force`."
+            "`argus profile install <source> --name {canon} --force`."
         )
     with tempfile.TemporaryDirectory(prefix="hermes_dist_update_") as tmp:
         plan = plan_install(existing_manifest.source, Path(tmp), override_name=canon)

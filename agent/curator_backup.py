@@ -159,7 +159,7 @@ def snapshot_skills(reason: str = "manual", *, protect_ids: Optional[set[str]] =
         return None
     skills, backups = _skills_dir(), _backups_dir()
     if not skills.exists():
-        logger.debug("No ~/.hermes/skills/ directory — nothing to back up")
+        logger.debug("No ~/.argus/skills/ directory — nothing to back up")
         return None
     if not _mkdir(backups, "backups dir", exist_ok=True):
         return None
@@ -409,7 +409,7 @@ def rollback(backup_id: Optional[str] = None) -> tuple[bool, str, Optional[Path]
     target = _resolve_backup(backup_id)
     if target is None:
         return (False, "no matching backup found" + (f" for id '{backup_id}'" if backup_id else "")
-                + " (use `hermes curator rollback --list` to see available snapshots)", None)
+                + " (use `argus curator rollback --list` to see available snapshots)", None)
     archive = target / _ARCHIVE_NAME
     if not archive.exists():
         return (False, f"snapshot {target.name} has no skills.tar.gz — corrupted?", None)

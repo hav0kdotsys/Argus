@@ -210,7 +210,7 @@ def test_satellite_gateway_identity_does_not_imply_cron_health(served_root, monk
         in buf.getvalue()
     # The remediation this rung prints must run for a served NAMED profile (`hermes gateway
     # restart` exits 78 there).
-    assert "restart: hermes --profile default gateway restart" in buf.getvalue()
+    assert "restart: argus --profile default gateway restart" in buf.getvalue()
     # A live scheduler host alone does not prove this satellite's ticker is healthy.
     assert "has not reported a heartbeat" in buf.getvalue()
     assert "will fire automatically" not in buf.getvalue()

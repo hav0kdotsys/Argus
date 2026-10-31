@@ -23,7 +23,7 @@ UPGRADE_SERVICE_BUSY = ("Signing in couldn't finish because the Nous service is 
 UPGRADE_SERVICE_UNREACHABLE = ("The Nous service couldn't be reached to finish signing you in. "
                                "Check your internet connection and try again. Your session is still here.")
 
-UPGRADE_NO_DEFAULT_TERMINAL = "No default model is set yet; run `hermes model` to pick one."
+UPGRADE_NO_DEFAULT_TERMINAL = "No default model is set yet; run `argus model` to pick one."
 UPGRADE_NO_DEFAULT_CHAT = "No default model is set yet; run /model to pick one."
 UPGRADE_WAITING = "Waiting for sign-in..."
 UPGRADE_WAITING_UP_TO = "Waiting for sign-in, up to {minutes}."
@@ -32,7 +32,7 @@ LOGIN_COMMAND = "/login"
 LOGIN_STARTING = "Starting sign-in..."
 LOGIN_DM_ONLY = "Sign in from a direct message with Hermes."
 LOGIN_BUSY_ELSEWHERE = "Another sign-in is already running on this Hermes. Try again in a few minutes."
-LOGIN_NOT_ALLOWED = "Only an operator of this Hermes can sign it in."
+LOGIN_NOT_ALLOWED = "Only an operator of this ARGUS can sign it in."
 # The card form (a surface with its own sign-in button) and the chat form (names /login).
 FREE_TIER_RATE_LIMIT_CARD = (
     "You've used up the allowance for chatting without signing in. It refreshes in {reset}. "

@@ -18,7 +18,7 @@ def gated_webapp(monkeypatch, tmp_path):
     """The gateway's Webapp behind the sign-in gate, serving a renderer dist with its icons."""
     dist = tmp_path / "dist-webapp"
     dist.mkdir()
-    (dist / "index.html").write_text("<!doctype html><title>Hermes</title>", encoding="utf-8")
+    (dist / "index.html").write_text("<!doctype html><title>ARGUS</title>", encoding="utf-8")
     for name in ("apple-touch-icon.png", "favicon.ico", "hermes.png"):
         (dist / name).write_bytes(b"\x89PNG icon bytes")
     clear_providers()

@@ -263,7 +263,7 @@ def _configured_features_missing_deps() -> list[tuple[str, str, str]]:
         for platform in load_gateway_config().get_connected_platforms():
             entry = platform_registry.get(platform.value)
             if entry is not None and not entry.check_fn():
-                missing.append((entry.label, entry.install_hint or "Run `hermes setup` to install support.",
+                missing.append((entry.label, entry.install_hint or "Run `argus setup` to install support.",
                                 entry.name))
     except Exception as exc:
         logger.debug("configured-platform dependency check skipped: %s", exc)
@@ -272,7 +272,7 @@ def _configured_features_missing_deps() -> list[tuple[str, str, str]]:
         from hermes_cli.config import load_config_readonly
 
         if (load_config_readonly().get("mcp_servers") or {}) and importlib.util.find_spec("mcp") is None:
-            missing.append(("MCP servers", "Run `hermes pm install` to install MCP support.", "mcp"))
+            missing.append(("MCP servers", "Run `argus pm install` to install MCP support.", "mcp"))
     except Exception as exc:
         logger.debug("configured-MCP dependency check skipped: %s", exc)
     return missing

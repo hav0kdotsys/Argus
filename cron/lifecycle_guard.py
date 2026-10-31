@@ -104,7 +104,7 @@ HOST_INTERPRETER_KILL_REJECTION = (
     "Blocked: this command kills every process whose image/name matches the Python "
     "interpreter, which is the process hosting this gateway (and this command). "
     "Stop only the process you own instead: process(action=\"kill\", session_id=\"proc_…\") "
-    "for a background job Hermes started, or kill/taskkill by its explicit PID."
+    "for a background job ARGUS started, or kill/taskkill by its explicit PID."
 )
 
 
@@ -1251,7 +1251,7 @@ def check_gateway_lifecycle(prompt: Optional[str], script: Optional[str] = None)
                 "evicted FileProvider placeholder can hang the guard's "
                 "preflight scan indefinitely, so it is refused without "
                 "being read. Move the script to a local, non-cloud path "
-                "(e.g. ~/.hermes/scripts/) and recreate the job."
+                "(e.g. ~/.argus/scripts/) and recreate the job."
             )
         python_script = resolved_script is not None and resolved_script.suffix == ".py"
         script_text, refusal = _read_script_for_scanning(script)
@@ -1288,6 +1288,6 @@ def check_gateway_lifecycle(prompt: Optional[str], script: Optional[str] = None)
             "Blocked: cron job contains a gateway lifecycle command or persistent "
             "launchctl submit operation. This is blocked to prevent agent-driven "
             "SIGTERM-respawn loops under launchd/systemd supervision "
-            "(#30719). Run `hermes gateway restart` from a shell outside "
+            "(#30719). Run `argus gateway restart` from a shell outside "
             "the running gateway instead."
         )

@@ -91,8 +91,8 @@ def _mint_two_file_change(machine) -> str:
     """A target commit on top of the installed HEAD that rewrites two existing tracked files."""
     base = machine.installed_head()
     index = machine.root / "torn.index"
-    env = {"GIT_INDEX_FILE": str(index), "GIT_AUTHOR_NAME": "Hermes E2E", "GIT_AUTHOR_EMAIL": "e2e@hermes.invalid",
-           "GIT_COMMITTER_NAME": "Hermes E2E", "GIT_COMMITTER_EMAIL": "e2e@hermes.invalid"}
+    env = {"GIT_INDEX_FILE": str(index), "GIT_AUTHOR_NAME": "ARGUS E2E", "GIT_AUTHOR_EMAIL": "e2e@hermes.invalid",
+           "GIT_COMMITTER_NAME": "ARGUS E2E", "GIT_COMMITTER_EMAIL": "e2e@hermes.invalid"}
     harness_git("-C", str(machine.serve), "read-tree", base, env=env)
     for path in (_EARLY, _HELD):
         src = machine.root / ("torn-" + path.replace("/", "_"))
@@ -167,7 +167,7 @@ def test_killed_updater_gateway_resumed_by_next_launch(journey) -> None:
     assert journey["a_paused"] and journey["a_old_stopped"], fail_with(
         m, f"premise: the update never paused the gateway before the kill\n{journey['a_tail']}")
     assert journey["a_after"] is not None, fail_with(
-        m, "after `taskkill /F` of an updater that paused the gateway, the next `hermes` launch left it "
+        m, "after `taskkill /F` of an updater that paused the gateway, the next `argus` launch left it "
            f"stopped (pause record present after kill: {journey['a_record']})", journey["a_launch"])
 
 
@@ -177,7 +177,7 @@ def test_successful_update_gateway_outlives_the_updater(journey) -> None:
         m, f"premise: the update did not complete (rc={run.returncode}, HEAD {journey['c_pre']} -> {journey['c_head']})", run)
     assert journey["c_after"] is not None, fail_with(m, "the paused gateway was not restarted by a successful update", run)
     assert journey["c_alive_30s"], fail_with(
-        m, f"the restarted gateway (pid {journey['c_after'].get('pid')}) died after `hermes update` exited", run)
+        m, f"the restarted gateway (pid {journey['c_after'].get('pid')}) died after `argus update` exited", run)
     assert not journey["c_record"], fail_with(m, "a fully resumed pause left its record behind", run)
 
 
@@ -204,5 +204,5 @@ def test_failed_pull_does_not_start_gateway_on_torn_tree(journey) -> None:
     assert journey["b_after"] is not None, fail_with(
         m, f"the updater restored the pre-update tree but left the paused gateway stopped ({state})", run)
     assert journey["b_alive_15s"], fail_with(
-        m, f"the gateway restarted on the restored tree (pid {pid}) died after `hermes update` exited", run)
+        m, f"the gateway restarted on the restored tree (pid {pid}) died after `argus update` exited", run)
     assert not journey["b_record"], fail_with(m, "a fully resumed pause left its record behind", run)

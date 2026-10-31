@@ -36,7 +36,7 @@ from tests.fakes.fake_llm_provider import FakeLLMServer
 pytestmark = [pytest.mark.platforms("windows"), pytest.mark.integration,
               pytest.mark.live_system_guard_bypass, REQUIRES_OPT_IN]
 
-REFUSAL = "Another Hermes update is already running"
+REFUSAL = "Another ARGUS update is already running"
 SURVIVAL_SECONDS = 30
 
 # Runs on the INSTALLED venv against the installed checkout's own update_lock. Degrades to the
@@ -119,7 +119,7 @@ def test_second_home_update_is_refused_while_the_checkout_is_held(journey) -> No
     assert journey["held_status"] == "", fail_with(
         m, f"the held update lock shows in `git status` (autostash would take it): {journey['held_status']!r}")
     assert run.returncode == 2 and REFUSAL in run.stdout and journey["a_head"] == m.head, fail_with(
-        m, f"a second `hermes update` of one checkout ran while another home's update held it "
+        m, f"a second `argus update` of one checkout ran while another home's update held it "
            f"(rc={run.returncode}, checkout {journey['a_head']} vs HEAD {m.head}, "
            f"install-root lock in this tree: {journey['root_lock']})", run)
 
@@ -132,7 +132,7 @@ def test_killed_owner_takes_its_update_tree_down(journey) -> None:
 def test_free_lock_lets_the_next_update_land(journey) -> None:
     m, run = journey["machine"], journey["c_update"]
     assert run.returncode == 0 and journey["c_head"] == m.next, fail_with(
-        m, f"after the whole update tree exited, `hermes update` did not land NEXT "
+        m, f"after the whole update tree exited, `argus update` did not land NEXT "
            f"(rc={run.returncode}, checkout {journey['c_head']}, NEXT {m.next})", run)
 
 
@@ -163,8 +163,8 @@ def gateway_journey(tmp_path_factory):
 
 def test_restarted_gateway_outlives_the_update(gateway_journey) -> None:
     m, run, pid = gateway_journey["machine"], gateway_journey["update"], gateway_journey["relaunched"]
-    assert run.returncode == 0, fail_with(m, f"`hermes update` with a running gateway exited {run.returncode}", run)
+    assert run.returncode == 0, fail_with(m, f"`argus update` with a running gateway exited {run.returncode}", run)
     status = gateway_journey["status"]
     assert gateway_journey["alive_after"] and str(pid) in status.stdout, fail_with(
         m, f"the gateway the update restarted (pid {pid}) died with the update's job: alive "
-           f"{SURVIVAL_SECONDS}s after `hermes update` exited = {gateway_journey['alive_after']}", status)
+           f"{SURVIVAL_SECONDS}s after `argus update` exited = {gateway_journey['alive_after']}", status)

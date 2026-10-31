@@ -352,11 +352,11 @@ class TestHistoryDisplay:
         output = capsys.readouterr().out
 
         assert "[You #1]" in output
-        assert "[Hermes #2]" in output
+        assert "[ARGUS #2]" in output
         assert "(requested 2 tool calls)" in output
         assert "[Tools]" in output
         assert "(2 tool messages hidden)" in output
-        assert "[Hermes #3]" in output
+        assert "[ARGUS #3]" in output
         assert "[You #4]" in output
         assert "[You #5]" not in output
         assert "A" * 250 in output
@@ -376,8 +376,8 @@ class TestHistoryDisplay:
             },
             {
                 "id": "20260401_201329_d85961",
-                "title": "Checking Running Hermes Agent",
-                "preview": "check running gateways for hermes agent",
+                "title": "Checking Running ARGUS",
+                "preview": "check running gateways for argus agent",
                 "last_active": 0,
             },
         ]
@@ -386,7 +386,7 @@ class TestHistoryDisplay:
         output = capsys.readouterr().out
 
         assert t("cli.session.recent_header") in output
-        assert "Checking Running Hermes Agent" in output
+        assert "Checking Running ARGUS" in output
 
 
 
@@ -404,8 +404,8 @@ class TestHistoryDisplay:
         cli._session_db.list_sessions_rich.return_value = [
             {
                 "id": "20260401_201329_d85961",
-                "title": "Checking Running Hermes Agent",
-                "preview": "check running gateways for hermes agent",
+                "title": "Checking Running ARGUS",
+                "preview": "check running gateways for argus agent",
                 "last_active": 0,
             },
         ]
@@ -417,7 +417,7 @@ class TestHistoryDisplay:
 
         assert "Unknown command" not in output
         assert t("cli.session.recent_header") in output
-        assert "Checking Running Hermes Agent" in output
+        assert "Checking Running ARGUS" in output
         assert "20260401_201329_d85961" in output
 
 
@@ -430,10 +430,10 @@ class TestHistoryDisplay:
         """
         cli = _make_cli()
         with patch.object(cli, "_handle_resume_command") as mock_resume:
-            cli.process_command("/sessions Checking Running Hermes Agent")
+            cli.process_command("/sessions Checking Running ARGUS")
 
         mock_resume.assert_called_once_with(
-            "/resume Checking Running Hermes Agent"
+            "/resume Checking Running ARGUS"
         )
 
 

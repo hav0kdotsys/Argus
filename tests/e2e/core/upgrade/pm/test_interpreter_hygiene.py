@@ -94,7 +94,7 @@ def updated(tmp_path_factory, provider):
     logs = _seed_stray_venvs(sb)
     target = P.publish_dependency_release(origin, root, 1)
     up = P.update(sb, env=P.lazy_env(sb))
-    P.ok(up, "hermes update failed")
+    P.ok(up, "argus update failed")
     assert I.git("rev-parse", "HEAD", cwd=sb.checkout) == target
     return {"sb": sb, "logs": logs}
 
@@ -138,7 +138,7 @@ def test_gateway_after_update_never_touches_a_stray_venv(updated):
     stray_exes = {pid: exe for pid, exe in pythons.items() if any(exe.startswith(s) for s in strays)}
     hits = _stray_hits(logs, mark)
     assert not (hits or mapped or env_refs or stray_exes), (
-        "the gateway put a stray in-tree venv on an interpreter's path after `hermes update`:\n"
+        "the gateway put a stray in-tree venv on an interpreter's path after `argus update`:\n"
         f"hooks fired: {hits}\nmapped files: {mapped}\nenvironment: {env_refs}\nexecutables: {stray_exes}\n"
         f"--- gateway output ---\n{gw.output()[-4000:]}\n" + P.diagnostics(sb))
 
@@ -195,9 +195,9 @@ def test_kanban_worker_spawned_after_update_boots(updated, provider):
     worker_log = sb.hermes_home / "kanban" / "logs" / f"{task_id}.log"
     detail = (f"--- dispatcher ---\n{log.read_text(errors='replace')[-3000:]}\n--- worker log ---\n"
               + (worker_log.read_text(errors="replace")[-3000:] if task_id and worker_log.exists() else "(none)"))
-    assert task_id, "harness: `hermes kanban create` printed no task id\n" + detail
+    assert task_id, "harness: `argus kanban create` printed no task id\n" + detail
     assert reached, (
-        f"the Kanban worker for {task_id} spawned after `hermes update` never reached the provider "
+        f"the Kanban worker for {task_id} spawned after `argus update` never reached the provider "
         "(it died at spawn)\n" + detail)
     hits = _stray_hits(updated["logs"], mark)
     assert not hits, f"the worker loaded a stray venv: {hits}"

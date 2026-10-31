@@ -1147,7 +1147,7 @@ class TestSecondaryProfileConfigHandling:
         assert factory_calls == ([Platform.WHATSAPP, Platform.DISCORD] if paired else [Platform.DISCORD])
         if not paired:
             assert statuses[-1][1]["error_code"] == "whatsapp_unpaired"
-            assert "hermes -p clientbot whatsapp" in statuses[-1][1]["error_message"]
+            assert "argus -p clientbot whatsapp" in statuses[-1][1]["error_message"]
 
 
 class TestSecondaryProfileHookRegistration:
@@ -1172,7 +1172,7 @@ class TestSecondaryProfileHookRegistration:
         profile_cfg = {
             "hooks": {
                 "pre_tool_call": [
-                    {"matcher": "write_file", "command": "~/.hermes/deny.sh"}
+                    {"matcher": "write_file", "command": "~/.argus/deny.sh"}
                 ],
                 "outbound": [
                     {"url": "http://127.0.0.1:9000/hook", "events": ["on_session_end"]}

@@ -1971,7 +1971,7 @@ def _lower_threshold_to_aux_context(
             f"  To make this permanent, use a larger compression model in config.yaml:\n       auxiliary:\n"
             f"         compression:\n           model: <model-with-{old_threshold:,}+-context>\n"
             f"  (Lowering compression.threshold cannot help here — with {_main_label}'s {main_ctx:,}-token window, "
-            f"Hermes's small-context floor and output reservation would recompute the trigger to "
+            f"ARGUS's small-context floor and output reservation would recompute the trigger to "
             f"{recomputed_threshold:,} tokens, still above the compression model's {aux_context:,}.)"
         )
     _emit_feasibility_notice(agent, msg)
@@ -2027,8 +2027,8 @@ def check_compression_model_feasibility(agent: Any) -> None:
                 )
             else:
                 msg = (
-                    "⚠ No auxiliary LLM provider configured: Hermes has no helper model for summarising "
-                    "long chats, so older messages will be cut without a summary. Run `hermes setup` to add one."
+                    "⚠ No auxiliary LLM provider configured: ARGUS has no helper model for summarising "
+                    "long chats, so older messages will be cut without a summary. Run `argus setup` to add one."
                 )
             _emit_feasibility_notice(agent, msg)
             logger.warning("No auxiliary LLM provider for compression — summaries will be unavailable.")
@@ -2059,7 +2059,7 @@ def check_compression_model_feasibility(agent: Any) -> None:
             raise ValueError(
                 f"Auxiliary compression model {aux_model} has a context "
                 f"window of {aux_context:,} tokens, which is below the "
-                f"minimum {MINIMUM_CONTEXT_LENGTH:,} required by Hermes "
+                f"minimum {MINIMUM_CONTEXT_LENGTH:,} required by ARGUS "
                 f"Agent.  Choose a compression model with at least "
                 f"{MINIMUM_CONTEXT_LENGTH // 1000}K context (set "
                 f"auxiliary.compression.model in config.yaml), or set "
@@ -2761,7 +2761,7 @@ def _acquire_compression_lease(
                 agent._last_compression_lock_error_sid = _lock_sid
                 logger.warning(
                     "compression lock subsystem unavailable for session=%s — proceeding without lock. This usually means a stale "
-                    "in-memory module after an update; restart the process (or `hermes update`) to resync.",
+                    "in-memory module after an update; restart the process (or `argus update`) to resync.",
                     _lock_sid,
                 )
             _lock_acquired = True  # acquired-but-unlocked compatibility path
@@ -3343,7 +3343,7 @@ def _warn_summary_or_aux_fallback(agent: Any) -> None:
                 _aux_fail_model, _aux_fail_err or "unknown error",
             )
             agent._emit_warning(
-                f"ℹ Configured compression model '{_aux_fail_model}' failed, so Hermes summarised "
+                f"ℹ Configured compression model '{_aux_fail_model}' failed, so ARGUS summarised "
                 "with your main model instead. Check auxiliary.compression.model in your config."
             )
 

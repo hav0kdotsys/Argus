@@ -34,7 +34,7 @@ _ISOLATION_MODES = frozenset({ISOLATION_IN_PROCESS, ISOLATION_HOST})
 # launch-scope dashboard auth registry. A plugin calling one of these runs only in-process.
 HOST_UNSUPPORTED_CTX_METHODS: dict[str, str] = {
     "register_login_backend": "browser-vault fills hold a server-local context manager",
-    "register_browser_page_backend": "browser-vault fill scripts carry credentials that stay in the Hermes process",
+    "register_browser_page_backend": "browser-vault fill scripts carry credentials that stay in the ARGUS process",
     "register_platform": "platform adapters run on the gateway's event loop with native SDK clients",
     "register_platform_handler": "the handler factory receives the platform's native SDK client",
     "register_telegram_handler": "the handler factory receives the native Telegram Application",
@@ -48,7 +48,7 @@ HOST_UNSUPPORTED_CTX_METHODS: dict[str, str] = {
 # Registered in-process only; skipped (with a warning, the plugin still loads) inside the host
 # because the surface they extend does not exist in a server process.
 HOST_SKIPPED_CTX_METHODS: dict[str, str] = {
-    "register_cli_command": "`hermes <command>` subcommands are wired into the local CLI parser",
+    "register_cli_command": "`argus <command>` subcommands are wired into the local CLI parser",
 }
 
 # Live ctx facades the host reaches by method call; each call returns plain data.
@@ -128,7 +128,7 @@ def in_process_import_refusal(what: str, *, source: str = "user",
     if source == "bundled" or isolation_mode(config) != ISOLATION_HOST:
         return None
     return (f"{what} runs only in-process, and plugins.isolation is 'host' (third-party plugin code "
-            f"never runs inside the Hermes process); set plugins.isolation: in_process to load it")
+            f"never runs inside the ARGUS process); set plugins.isolation: in_process to load it")
 
 
 def user_plugin_host() -> Any:

@@ -404,7 +404,7 @@ def test_update_sync_disables_plugin_excluded_by_requires_python(admission_env):
     work = yaml.safe_load((profile / "config.yaml").read_text(encoding="utf-8"))
     assert work["memory"]["provider"] == "too-old" and work["plugins"]["disabled"] == ["too-old"]
     assert "too-old" in json.dumps(_latest_receipt(home).get("warnings"))
-    assert "hermes plugins enable too-old" in json.dumps(_latest_receipt(home).get("warnings"))
+    assert "argus plugins enable too-old" in json.dumps(_latest_receipt(home).get("warnings"))
     assert venv_is_current(project_root=core) is True
 
     for plugin in (home / "plugins" / "too-old", profile / "plugins" / "too-old"):

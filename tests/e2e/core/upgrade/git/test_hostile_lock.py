@@ -33,7 +33,7 @@ pytestmark = [
     pytest.mark.skipif(H.sandbox_required_reason() is not None, reason=str(H.sandbox_required_reason())),
 ]
 
-REFUSAL = "Another Hermes update is already running"
+REFUSAL = "Another ARGUS update is already running"
 
 # Runs inside the sandbox (its own pid namespace), so owners, updates and completion children
 # see each other's pids and creation times exactly as on a real machine.

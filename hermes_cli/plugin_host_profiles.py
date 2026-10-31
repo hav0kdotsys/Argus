@@ -119,7 +119,7 @@ def _host_call(plugin_dir: str, module_name: str, profile: str, attr: str) -> Ca
         from hermes_cli.plugin_isolation import user_plugin_host
         host = user_plugin_host()
         if host is None:
-            raise PluginHostUnavailable("plugins.isolation is no longer 'host'; restart Hermes")
+            raise PluginHostUnavailable("plugins.isolation is no longer 'host'; restart ARGUS")
         return host.profile_call(plugin_dir, module_name, profile, attr, args, kwargs)
     return call
 

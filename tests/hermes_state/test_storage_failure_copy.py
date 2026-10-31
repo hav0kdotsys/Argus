@@ -15,10 +15,10 @@ from hermes_state_user_copy import describe_storage_failure, storage_failure_det
     ("exc", "code", "command"),
     [
         (sqlite3.OperationalError("database is locked"), "storage_locked", "try again"),
-        (sqlite3.OperationalError("attempt to write a readonly database"), "storage_readonly", "hermes doctor --fix"),
-        (sqlite3.DatabaseError("database disk image is malformed"), "storage_corrupt", "hermes doctor --fix"),
+        (sqlite3.OperationalError("attempt to write a readonly database"), "storage_readonly", "argus doctor --fix"),
+        (sqlite3.DatabaseError("database disk image is malformed"), "storage_corrupt", "argus doctor --fix"),
         (OSError(28, "No space left on device"), "disk_full", "Free some disk space"),
-        (None, "storage_unavailable", "hermes doctor --fix"),
+        (None, "storage_unavailable", "argus doctor --fix"),
     ],
 )
 def test_each_cause_has_a_stable_code_and_an_action(exc, code, command):
@@ -46,4 +46,4 @@ def test_action_command_is_pinned_to_the_failing_profile(monkeypatch, tmp_path):
     for exc in (sqlite3.OperationalError("database is locked"), sqlite3.DatabaseError("malformed"), None):
         action = describe_storage_failure(exc).action
         assert "{profile_arg}" not in action
-        assert f"`hermes {selector}" in action and "`hermes doctor" not in action and "`hermes gateway" not in action
+        assert f"`argus {selector}" in action and "`argus doctor" not in action and "`argus gateway" not in action

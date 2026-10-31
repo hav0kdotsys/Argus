@@ -70,7 +70,7 @@ _CLAIM_BLOCKERS: tuple[tuple[str, Callable[[_Ask], bool]], ...] = (
     ("a Nous identity exists", lambda _ask: _has_nous_identity()),
     ("a provider is configured",
      lambda ask: provider_configured() if ask.configured is None else ask.configured),
-    ("Hermes was used on this machine", lambda ask: _machine_is_used(ask.assume_fresh)),
+    ("ARGUS was used on this machine", lambda ask: _machine_is_used(ask.assume_fresh)),
 )
 
 

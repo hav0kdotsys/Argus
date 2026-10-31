@@ -687,7 +687,7 @@ def auto_title_session(
             _notify_title(title_callback, persisted, source, "Auto-title")
     except Exception as e:
         # WARNING so operators see it in agent.log; names the likely cause.
-        logger.warning("Auto-title failed (harmless; if this started after an update, restart the running Hermes process): %s", e)
+        logger.warning("Auto-title failed (harmless; if this started after an update, restart the running ARGUS process): %s", e)
         logger.debug("Auto-title traceback", exc_info=True)
         _report_failure(failure_callback, e, "Auto-title")
 

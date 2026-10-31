@@ -431,7 +431,7 @@ class HandoffProperties:
         self._relaunched(o)
         assert not o.pid_file, f"{o.pid_file}\n{o.diag}"
         assert f"Gateway is running (PID: {o.ident['pid']})" in o.status.stdout, (
-            f"`hermes gateway status` cannot find the relaunched gateway:\n{H.describe(o.status)}\n{o.diag}")
+            f"`argus gateway status` cannot find the relaunched gateway:\n{H.describe(o.status)}\n{o.diag}")
 
     def test_dashboard_is_back_on_its_port(self, fleet):
         o = fleet

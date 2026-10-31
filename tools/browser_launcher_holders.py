@@ -207,5 +207,5 @@ def hand_over(record: Path, data: dict, holder: dict) -> None:
     from utils import atomic_json_write
     atomic_json_write(record, {**data, "owner_pid": holder["holder_pid"],
                                "owner_start_time": holder.get("holder_start_time")}, indent=None)
-    logger.info("browser: Chromium pid %s is still used by Hermes pid %s; handed it over instead of stopping it",
+    logger.info("browser: Chromium pid %s is still used by ARGUS pid %s; handed it over instead of stopping it",
                 data.get("pid"), holder["holder_pid"])

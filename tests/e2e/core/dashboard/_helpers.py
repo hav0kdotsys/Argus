@@ -278,8 +278,8 @@ class Dashboard:
                     port_box.append(int(m.group(1)))
         threading.Thread(target=pump, daemon=True, name="dash-stdout").start()
         self.port = poll(lambda: port_box[0] if port_box else (self.proc.poll() is not None and -1), 120,
-                         "hermes dashboard to report its port")
-        assert self.port > 0, f"hermes dashboard exited rc={self.proc.returncode}:\n{self.log_tail()}"
+                         "argus dashboard to report its port")
+        assert self.port > 0, f"argus dashboard exited rc={self.proc.returncode}:\n{self.log_tail()}"
         self.base = f"http://127.0.0.1:{self.port}"
         self.http = httpx.Client(base_url=self.base, timeout=60.0, trust_env=False)
         index = self.http.get("/")

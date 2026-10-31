@@ -33,7 +33,7 @@ def _gate(install_root: Path, relaunch_target: Path) -> str:
 def _checkout(root: Path) -> Path:
     unpacked = root / "apps" / "desktop" / "release" / "linux-unpacked"
     unpacked.mkdir(parents=True)
-    (unpacked / "Hermes").touch()
+    (unpacked / "ARGUS").touch()
     return unpacked
 
 
@@ -43,7 +43,7 @@ def test_symlinked_spelling_on_either_side_still_relaunches(tmp_path, root_spell
     _checkout(real)
     (tmp_path / "link").symlink_to(real)
     root = tmp_path / root_spelling
-    target = tmp_path / target_spelling / "apps" / "desktop" / "release" / "linux-unpacked" / "Hermes"
+    target = tmp_path / target_spelling / "apps" / "desktop" / "release" / "linux-unpacked" / "ARGUS"
     assert _gate(root, target) == "relaunch"
 
 
@@ -51,9 +51,9 @@ def test_target_outside_the_checkout_is_still_skew(tmp_path):
     real = tmp_path / "real"
     unpacked = _checkout(real)
     (tmp_path / "link").symlink_to(real)
-    foreign = tmp_path / "opt" / "Hermes"
+    foreign = tmp_path / "opt" / "ARGUS"
     foreign.mkdir(parents=True)
     (foreign / "hermes").touch()
     assert _gate(tmp_path / "link", foreign / "hermes") == "skew"
     # A sibling directory sharing the prefix must not be mistaken for the checkout either.
-    assert _gate(tmp_path / "link", Path(str(unpacked) + "-evil") / "Hermes") == "skew"
+    assert _gate(tmp_path / "link", Path(str(unpacked) + "-evil") / "ARGUS") == "skew"

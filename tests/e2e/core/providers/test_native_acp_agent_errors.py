@@ -55,8 +55,8 @@ CRASH_STDERR = "fatal: agent segfaulted (fake)"
 
 # Red on current main for a tracked, open bug: key -> (the bug's own failure-message pattern, reason).
 KNOWN: dict[str, tuple[str, str]] = {
-    "auth_remedy": (r"^remedy 'hermes [^']+' is a dead end for an external_process provider: ",
-                    "#121290 an ACP provider's auth failure tells the user to run a hermes command that cannot "
+    "auth_remedy": (r"^remedy 'argus [^']+' is a dead end for an external_process provider: ",
+                    "#121290 an ACP provider's auth failure tells the user to run a argus command that cannot "
                     "handle it (agent/turn_failure_copy.py oauth_relogin_command names `auth add <slug> --type oauth` "
                     "for a profile with no auth_handler)"),
 }
@@ -147,7 +147,7 @@ def test_acp_failure_is_retried_per_semantics_and_surfaced_once(outcomes, name):
     wait_until(lambda: not [p for p in pids if _alive(p)], 10.0, f"agent processes {pids} to exit")
 
 
-REMEDY_RE = re.compile(r"`(hermes [^`]+)`")
+REMEDY_RE = re.compile(r"`(argus [^`]+)`")
 
 
 # What a remedy command says when it cannot do anything for this provider.

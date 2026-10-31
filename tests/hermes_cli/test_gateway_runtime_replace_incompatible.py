@@ -93,7 +93,7 @@ def test_a_refused_replacement_is_reported_with_its_reason(home, monkeypatch):
     result = runtime.ensure_gateway_runtime(home, timeout=5)
 
     assert (result.state, result.reason_code) == ("incompatible", "runtime_protocol")
-    assert result.detail and "another Hermes install" in result.detail
+    assert result.detail and "another ARGUS install" in result.detail
 
 
 # --- the stop itself -------------------------------------------------------------------------------

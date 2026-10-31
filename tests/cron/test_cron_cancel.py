@@ -100,7 +100,7 @@ def test_operator_cancel_is_not_treated_as_claim_loss():
 
     # The run stops...
     assert fence.cancel_event.is_set()
-    assert scheduler.cancel_reason(fence.cancel_event) == "cancelled on request (hermes cron cancel)"
+    assert scheduler.cancel_reason(fence.cancel_event) == "cancelled on request (argus cron cancel)"
     # ...but a cancel is a real outcome the run records itself, not a lost fire claim.
     assert not fence.transport_cancelled()
     assert fence.claim_lost is None

@@ -84,7 +84,7 @@ class TestBuildToolTitle:
             ("terminal", {"command": "git status --short"}),
             ("read_file", {"path": "/etc/hosts", "offset": 10}),
             ("search_files", {"pattern": "TODO", "path": "src"}),
-            ("web_search", {"query": "hermes agent acp"}),
+            ("web_search", {"query": "argus agent acp"}),
             ("execute_code", {"code": "\nfrom hermes_tools import terminal\nprint('done')"}),
             ("skill_view", {"name": "github", "file_path": "references/x.md"}),
         ],

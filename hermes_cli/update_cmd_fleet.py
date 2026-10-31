@@ -496,10 +496,10 @@ def _update_owes_fleet_restart(*, receipt: dict | None = None, pending_manual: l
 def _warn_pending_fleet_restart(*, startup: bool = False) -> None:
     """Print the specific interrupted-update fleet-restart warning."""
     stream = sys.stderr if startup else sys.stdout
-    print("⚠ A previous `hermes update` pulled new code but did not restart running gateways.", file=stream)
+    print("⚠ A previous `argus update` pulled new code but did not restart running gateways.", file=stream)
     print("  Gateways may still be serving pre-update modules (mixed sys.modules).", file=stream)
     if startup:
-        print("  Run `hermes update` or `hermes gateway restart`.", file=stream)
+        print("  Run `argus update` or `argus gateway restart`.", file=stream)
 
 
 def _warn_pending_fleet_restart_on_startup() -> None:
@@ -597,7 +597,7 @@ def _restart_systemd_gateway_units_best_effort(failed: list, listings) -> None:
         print(
             f"  • {unit_key} is a legacy per-profile unit sharing one host gateway process with "
             f"{owner_key}; restarting it again would restart that process twice. Fold the units "
-            "together with: hermes gateway migrate"
+            "together with: argus gateway migrate"
         )
 
     for key in keys:
@@ -811,13 +811,13 @@ def _warn_incomplete_gateway_fleet_restart(failed_units: list) -> None:
         # See #88848.
         print("  Listed services may be deregistered from launchd, or still")
         print("  running pre-update code (mixed sys.modules). Recover with:")
-        print("    hermes gateway status")
+        print("    argus gateway status")
         print("    launchctl list | grep <label>")
         print("    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<label>.plist")
         return
     print("  Skipped units may still be running pre-update code (mixed")
     print("  sys.modules). Restart them manually, then verify:")
-    print("    hermes gateway status")
+    print("    argus gateway status")
     if any(not name.startswith("ai.hermes.") for name in ordered):
         print("    systemctl --user restart <unit>   # user-scope")
         print("    sudo systemctl restart <unit>     # system-scope")
@@ -864,7 +864,7 @@ def _restart_launchd_gateway_after_update(
             print(
                 f"  ⚠ Gateway restart failed: {stderr}\n"
                 "    The gateway may be DOWN on pre-update code. "
-                "Recover manually: hermes gateway restart"
+                "Recover manually: argus gateway restart"
             )
             return [], [current_label]
     except (FileNotFoundError, subprocess.TimeoutExpired) as e:
@@ -874,7 +874,7 @@ def _restart_launchd_gateway_after_update(
             # The old code `pass`ed here (#74973's second silent variant); count it and tell the operator.
             "  ⚠ Could not restart the gateway "
             f"({e.__class__.__name__}: {e}).\n"
-            "    Recover manually: hermes gateway restart"
+            "    Recover manually: argus gateway restart"
         )
         return [], [current_label]
 
@@ -898,7 +898,7 @@ def _restart_launchd_gateway_after_update(
         return [current_label], []
     print(
         f"  ✗ {current_label} restarted but launchd is not supervising a new process for it.\n"
-        "    Check logs, then: hermes gateway restart"
+        "    Check logs, then: argus gateway restart"
     )
     return [], [current_label]
 
@@ -1100,8 +1100,8 @@ def _warn_gateway_restart_phase_aborted(exc: BaseException, pids) -> None:
         print("  Any gateway still running is serving pre-update code")
         print("  (mixed sys.modules) against the updated checkout.")
     print("  Restart it manually, then verify:")
-    print("    hermes gateway restart")
-    print("    hermes gateway status")
+    print("    argus gateway restart")
+    print("    argus gateway status")
 
 
 def _drain_or_signal_gateway_for_update(
@@ -1230,7 +1230,7 @@ def _repair_unit_without_fatal_exit_park(svc_name: str, scope: str) -> None:
     print(
         f"  ⚠ {svc_name} lacks RestartPreventExitStatus={GATEWAY_FATAL_CONFIG_EXIT_CODE}: a permanent refusal "
         f"(exit {GATEWAY_FATAL_CONFIG_EXIT_CODE}) would crash-loop it instead of parking.\n"
-        f"    Repair: {'sudo ' if system else ''}hermes gateway install{' --system' if system else ''}"
+        f"    Repair: {'sudo ' if system else ''}argus gateway install{' --system' if system else ''}"
     )
 
 
@@ -1304,7 +1304,7 @@ def _restart_one_systemd_gateway_unit(
             f"  ⚠ {svc_name} is a system service and restarting it needs root.\n"
             f"    Restart it manually to load the new version:\n"
             f"      sudo systemctl restart {svc_name}\n"
-            f"    To let `hermes update` restart it automatically, allow\n"
+            f"    To let `argus update` restart it automatically, allow\n"
             f"    passwordless sudo for systemctl, or run updates with sudo."
         )
         return
@@ -1360,7 +1360,7 @@ def _restart_systemd_gateway_units(
         print(
             f"  ⚠ systemctl timed out listing {scope}-scope "
             f"gateway units ({exc.cmd if exc.cmd else 'unknown command'}). "
-            f"Check the gateway with: hermes gateway status"
+            f"Check the gateway with: argus gateway status"
         )
 
     def _on_unit_timeout(svc_name: str, exc: subprocess.TimeoutExpired) -> None:
@@ -1397,7 +1397,7 @@ def _restart_systemd_gateway_units(
         print(
             f"  • {unit_key} is a legacy per-profile unit sharing one host gateway process with "
             f"{owner_key}; restarting it again would restart that process twice. Fold the units "
-            "together with: hermes gateway migrate"
+            "together with: argus gateway migrate"
         )
 
     from hermes_cli.update_cmd_posix_pause import already_restarted
@@ -1571,9 +1571,9 @@ def _restart_manual_gateways(out: _GatewayRestartOutcome, _drain_budget) -> None
         unmapped_count = (len(out.killed_pids) - len(out.relaunched_profiles) - len(out.externally_supervised_profiles))
         if unmapped_count:
             print(f"  → Stopped {unmapped_count} manual gateway process(es)")
-            print("    Restart manually: hermes gateway run")
+            print("    Restart manually: argus gateway run")
             if unmapped_count > 1:
-                print("    (or: hermes -p <profile> gateway run  for each profile)")
+                print("    (or: argus -p <profile> gateway run  for each profile)")
 
 
 def _force_kill_stuck_gateways(killed_pids) -> None:
@@ -1694,7 +1694,7 @@ def _restart_gateway_fleet_after_update(_pre_update_plan, gateway_mode: bool):
     from hermes_cli.update_cmd import _m
     from hermes_cli.update_stage import publish_stage
 
-    publish_stage("Restarting Hermes services")  # also after a failed build: the code is committed
+    publish_stage("Restarting ARGUS services")  # also after a failed build: the code is committed
     # All bookkeeping is declared before the try so abort recovery and fleet reconciliation
     # can read it even if the phase raises early. ``pre_restart_gateway_pids`` stays empty
     # until we are about to stop/drain, so an early exception has nothing to fail closed on,

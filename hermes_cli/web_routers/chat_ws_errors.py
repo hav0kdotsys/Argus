@@ -14,7 +14,7 @@ from fastapi import HTTPException
 from hermes_cli.pty_session import RegistryFull
 
 CHAT_NEEDS_NODE = (
-    "{surface} could not start: Hermes needs Node.js to run the terminal chat. "
+    "{surface} could not start: ARGUS needs Node.js to run the terminal chat. "
     "Install Node 18+ (for example from nodejs.org) and reopen this tab."
 )
 CHAT_TOO_MANY_TERMINALS = (
@@ -22,7 +22,7 @@ CHAT_TOO_MANY_TERMINALS = (
     "Close one and click Start new session."
 )
 CHAT_PROFILE_UNKNOWN = "{surface} could not start: {detail} Pick another profile from the switcher and reopen this tab."
-CHAT_START_FAILED = "{surface} could not start: {detail} Check the server log (`hermes dashboard` terminal) and click Start new session."
+CHAT_START_FAILED = "{surface} could not start: {detail} Check the server log (`argus dashboard` terminal) and click Start new session."
 
 
 def _node_missing(exc: BaseException) -> bool:

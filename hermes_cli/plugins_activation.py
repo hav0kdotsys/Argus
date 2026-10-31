@@ -174,13 +174,13 @@ def gateway_reload_hint(answer: Optional[dict[str, Any]], name: str) -> str:
     wired into platform adapters outlive a reload (the plugin guide), so a restart still ends those."""
     if answer and answer.get("reloaded"):
         return (f"The running gateway reloaded its plugins and unloaded {name}; platform hooks it already "
-                "wired up stay until a gateway restart (hermes gateway restart).")
+                "wired up stay until a gateway restart (argus gateway restart).")
     if answer is not None:  # a gateway answered and refused: say so, with its reason
         return (f"The running gateway refused to reload its plugins: {answer.get('error') or 'no reason given'}.\n"
                 "Only the saved config changed; restart the gateway serving this profile to apply it:\n"
-                "  hermes gateway restart")
+                "  argus gateway restart")
     return ("No running gateway answered. If one is running, restart it for this to take effect:\n"
-            "  hermes gateway restart")
+            "  argus gateway restart")
 
 
 def load_and_go_live(name: str) -> Optional[dict[str, Any]]:
@@ -277,8 +277,8 @@ def _gateway_present() -> bool:
             or _installed_service_kind() is not None)
 
 
-_RESTART_LINES = {"gateway": "  hermes gateway restart",
-                  "backend": "  quit and reopen the Hermes desktop app (or restart hermes dashboard)"}
+_RESTART_LINES = {"gateway": "  argus gateway restart",
+                  "backend": "  quit and reopen the ARGUS desktop app (or restart argus dashboard)"}
 
 
 def dependency_restart_hint(missing: list[str], processes: list[str]) -> str:
@@ -291,7 +291,7 @@ def dependency_restart_hint(missing: list[str], processes: list[str]) -> str:
         return (f"Its Python dependencies ({deps}) were installed after the running gateway or dashboard "
                 "started, and a running process never switches dependency environments. Restart them to "
                 f"load the plugin:\n{restart}")
-    return f"Its Python dependencies ({deps}) are not installed. Run hermes pm repair, then restart:\n{restart}"
+    return f"Its Python dependencies ({deps}) are not installed. Run argus pm repair, then restart:\n{restart}"
 
 
 def report_activation(console, name: str) -> None:
@@ -320,7 +320,7 @@ def activation_hint(result: dict[str, Any]) -> str:
         # a messaging gateway that starts later loads it at boot, so a restart applies to nothing.
         if lines or not _gateway_present():
             return "\n".join(lines)
-        return "\n".join([*lines, "Restart the gateway for the plugin to take effect:\n  hermes gateway restart"])
+        return "\n".join([*lines, "Restart the gateway for the plugin to take effect:\n  argus gateway restart"])
     now, deferred = act.get("activated_now") or {}, act.get("deferred") or {}
     parts = []
     if now:

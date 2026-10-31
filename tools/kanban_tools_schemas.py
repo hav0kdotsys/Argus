@@ -146,8 +146,8 @@ KANBAN_COMPLETE_SCHEMA = _schema(
                 "Optional list of absolute paths to deliverable "
                 "files you produced during this run — generated "
                 "charts, PDFs, spreadsheets, images, archives. "
-                "Examples: [\"~/.hermes/cache/scratch/q3-revenue.png\", "
-                "\"~/.hermes/cache/scratch/report.pdf\"]. The gateway notifier "
+                "Examples: [\"~/.argus/cache/scratch/q3-revenue.png\", "
+                "\"~/.argus/cache/scratch/report.pdf\"]. The gateway notifier "
                 "uploads each path as a native attachment to the "
                 "subscribed chat (images embed inline, everything "
                 "else uploads as a file) so the deliverable "
@@ -254,7 +254,7 @@ KANBAN_REQUEST_REVIEW_SCHEMA = _schema(
                 "Optional list of absolute paths to deliverable "
                 "files this handoff names — generated charts, "
                 "PDFs, spreadsheets, images, archives. Examples: "
-                "['~/.hermes/cache/scratch/q3-revenue.png', '~/.hermes/cache/scratch/report.pdf']. "
+                "['~/.argus/cache/scratch/q3-revenue.png', '~/.argus/cache/scratch/report.pdf']. "
                 "A review handoff is the last implementer "
                 "transition, so the kernel copies these into the "
                 "task's durable attachments before the reviewer's "
@@ -352,7 +352,7 @@ KANBAN_ATTACH_SCHEMA = _schema(
 KANBAN_ATTACH_URL_SCHEMA = _schema(
     "kanban_attach_url",
     (
-        "Attach a file to a task by URL (Hermes downloads it server-side, max 25 MB). Use when "
+        "Attach a file to a task by URL (ARGUS downloads it server-side, max 25 MB). Use when "
         "you have a link rather than the bytes. Only http/https URLs are "
         "accepted."
     ),

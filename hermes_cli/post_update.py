@@ -154,7 +154,7 @@ def step_state_db_guard() -> dict:
     message = result.get("message", "unknown error")
     logger.error(
         "state.db failed integrity check after a code update: %s — "
-        "restore a backup with `hermes backup` tooling or contact support",
+        "restore a backup with `argus backup` tooling or contact support",
         message,
     )
     return {"ok": False, "error": message}

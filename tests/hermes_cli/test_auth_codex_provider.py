@@ -421,7 +421,7 @@ def test_refresh_429_classified_as_quota_not_auth_failure(monkeypatch):
     # User-facing copy must not tell the operator to re-authenticate.
     rendered = format_auth_error(err)
     assert "re-authenticate" not in rendered
-    assert "hermes auth" not in rendered
+    assert "argus auth" not in rendered
 
 
 def test_refresh_429_without_retry_after_header(monkeypatch):

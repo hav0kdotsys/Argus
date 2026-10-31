@@ -296,8 +296,8 @@ def _one_use_links_work(platform: str = sys.platform) -> bool:
 #: How every missing-bundle reason starts; ``hermes webapp --status`` asks for no restart after it.
 NOT_BUILT = "The Webapp is not built"
 #: Why a bundle ``hermes update`` could not rebuild is not served (``hermes_cli.webapp.mark_webapp_stale``).
-NOT_REBUILT = (f"{NOT_BUILT} for this version of Hermes: hermes update could not rebuild it. "
-               "Run hermes webapp to rebuild it.")
+NOT_REBUILT = (f"{NOT_BUILT} for this version of ARGUS: argus update could not rebuild it. "
+               "Run argus webapp to rebuild it.")
 
 
 def bundle_stale_reason(dist) -> str | None:
@@ -312,7 +312,7 @@ def bundle_missing_reason(dist) -> str | None:
     rebuilt, so building it needs no gateway restart."""
     if (Path(dist) / "index.html").is_file():
         return bundle_stale_reason(dist)
-    return f"{NOT_BUILT} ({Path(dist) / 'index.html'} is missing). Run hermes webapp to build it."
+    return f"{NOT_BUILT} ({Path(dist) / 'index.html'} is missing). Run argus webapp to build it."
 
 
 def _bundle_missing(web) -> str | None:

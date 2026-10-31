@@ -80,7 +80,7 @@ def _build_server() -> Any:
     mcp = MCPServer(
         HERMES_TOOLS_MCP_SERVER_NAME,
         instructions=(
-            "Hermes Agent's tool surface, exposed for use inside a Codex "
+            "ARGUS's tool surface, exposed for use inside a Codex "
             "session. Use these for capabilities Codex's built-in toolset "
             "doesn't cover: web search/extract, "
             "subagent delegation, vision, image generation, persistent "
@@ -117,9 +117,9 @@ def _build_server() -> Any:
     for name in EXPOSED_TOOLS:
         spec = all_defs.get(name)
         if spec is None:
-            logger.debug("skipping %s — not registered in this Hermes process", name)
+            logger.debug("skipping %s — not registered in this ARGUS process", name)
             continue
-        description = spec.get("description") or f"Hermes {name} tool"
+        description = spec.get("description") or f"ARGUS {name} tool"
         params_schema = spec.get("parameters") or {"type": "object", "properties": {}}
         try:
             mcp.add_tool(_make_handler(name, params_schema, description), name=name, description=description)

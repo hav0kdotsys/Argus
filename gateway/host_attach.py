@@ -281,7 +281,7 @@ def attach_message(gateway: HostGateway, profile: str) -> str:
         f"✓ The host gateway already serves profile '{profile}' — nothing to start.\n"
         f"  {gateway.describe()}\n"
         f"  One gateway per host serves every profile; manage it with "
-        f"`hermes -p {gateway.profile_label} gateway restart`.")
+        f"`argus -p {gateway.profile_label} gateway restart`.")
 
 
 def _unknown_served_message(gateway: HostGateway, profile: str) -> str:
@@ -291,8 +291,8 @@ def _unknown_served_message(gateway: HostGateway, profile: str) -> str:
         f"   Whether it will serve profile '{profile}' is unknown, so starting a second gateway\n"
         f"   now could double-bind this profile's platforms. Nothing was started; this is a\n"
         f"   transient state and a service supervisor will retry.\n"
-        f"   Take the host over (only from the home that launched it):  hermes gateway run --replace\n"
-        f"   Start anyway:  hermes gateway run --force")
+        f"   Take the host over (only from the home that launched it):  argus gateway run --replace\n"
+        f"   Start anyway:  argus gateway run --force")
 
 
 def _refuse_message(gateway: HostGateway, profile: str) -> str:
@@ -304,7 +304,7 @@ def _refuse_message(gateway: HostGateway, profile: str) -> str:
         f"   Exactly one gateway per host serves every profile, so starting a second one\n"
         f"   would double-bind this profile's platforms.\n"
         f"   Fold this profile into it:   {MIGRATE_COMMAND}\n"
-        f"   Or start one anyway:         hermes gateway run --force\n"
+        f"   Or start one anyway:         argus gateway run --force\n"
         f"   (--replace only replaces an owner that serves this profile, so it would not take this one over.)")
 
 

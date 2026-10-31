@@ -599,7 +599,7 @@ def parse_credits_headers(headers: Mapping[str, str], provider: str = "") -> Opt
         if version_val != 1:
             if version_val > 1 and not _version_warning_emitted:
                 _version_warning_emitted = True
-                logger.warning("credits header version %d unsupported, ignoring — update Hermes", version_val)
+                logger.warning("credits header version %d unsupported, ignoring — update ARGUS", version_val)
             return None
         denominator_kind = lowered.get("x-nous-credits-denominator-kind", "none")
         window_note = denominator_kind == "usage_window"

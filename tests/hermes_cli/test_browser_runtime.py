@@ -104,7 +104,7 @@ def test_baked_path_to_a_missing_binary_is_ignored_and_hinted(homes):
     browser_runtime.BAKED_EXECUTABLE_FILE.parent.mkdir()
     browser_runtime.BAKED_EXECUTABLE_FILE.write_text(str(homes / "gone"), encoding="utf-8")
     assert browser_runtime.chromium_executable() is None
-    assert "pull the current Hermes image" in browser_runtime.chromium_missing_hint()
+    assert "pull the current ARGUS image" in browser_runtime.chromium_missing_hint()
 
 
 @pytest.mark.platforms("posix")
@@ -118,7 +118,7 @@ def test_system_chromium_only_where_pm_builds_none(homes, monkeypatch):
     # A target pm builds Chromium for: a system chromium on PATH is not picked up.
     monkeypatch.setattr(pm, "current_target", lambda: "linux-x64")
     assert browser_runtime.chromium_executable() is None
-    assert browser_runtime.chromium_missing_hint() == "Chromium is not installed: run `hermes pm install chromium`."
+    assert browser_runtime.chromium_missing_hint() == "Chromium is not installed: run `argus pm install chromium`."
     # Termux (linux-arm64-bionic): pm builds no Chromium, the system one is used.
     monkeypatch.setattr(pm, "current_target", lambda: "linux-arm64-bionic")
     assert browser_runtime.chromium_executable() == str(exe)

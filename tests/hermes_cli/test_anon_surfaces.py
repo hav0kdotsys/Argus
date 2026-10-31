@@ -94,7 +94,7 @@ def _render_all(capsys) -> dict[str, str]:
     out["auth list"] = capsys.readouterr().out
     ctx = SimpleNamespace(config={}, nous_logged_in=False, nous_inference_present=False, nous_account_info=None)
     status_auth._render_auth_providers(ctx)
-    out["hermes status"] = capsys.readouterr().out
+    out["argus status"] = capsys.readouterr().out
     portal_cli._cmd_status(SimpleNamespace())
     out["portal info"] = capsys.readouterr().out
     return out

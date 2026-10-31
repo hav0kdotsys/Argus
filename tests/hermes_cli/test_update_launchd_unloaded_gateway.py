@@ -89,7 +89,7 @@ class TestLaunchdRestartAfterUpdate:
         assert update_cmd._restart_launchd_gateway_after_update(supervision_verify=False) == ([], ["ai.hermes.gateway"])
         out = capsys.readouterr().out
         assert "kickstart refused" in out
-        assert "hermes gateway restart" in out
+        assert "argus gateway restart" in out
 
     @pytest.mark.parametrize(
         "exc",
@@ -106,7 +106,7 @@ class TestLaunchdRestartAfterUpdate:
         assert update_cmd._restart_launchd_gateway_after_update(supervision_verify=False) == ([], ["ai.hermes.gateway"])
         assert calls == []
         out = capsys.readouterr().out
-        assert "hermes gateway restart" in out
+        assert "argus gateway restart" in out
 
     def test_no_plist_is_not_a_launchd_install(self, launchd, capsys):
         """No service definition → nothing to restart, and nothing to warn about."""

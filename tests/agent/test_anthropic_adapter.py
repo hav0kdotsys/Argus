@@ -40,7 +40,7 @@ def test_missing_sdk_error_reports_why_the_lazy_install_did_not_land(monkeypatch
     from agent import anthropic_adapter
     from pm.package import InstallError
 
-    restart = InstallError("venv", "anthropic installed; restart Hermes to activate the new dependency environment")
+    restart = InstallError("venv", "anthropic installed; restart ARGUS to activate the new dependency environment")
 
     def ensure_import(extra):
         raise restart
@@ -88,7 +88,7 @@ class TestBuildAnthropicClient:
             kwargs = mock_sdk.Anthropic.call_args[1]
             headers = kwargs["default_headers"]
             assert headers["HTTP-Referer"] == "https://hermes-agent.nousresearch.com"
-            assert headers["X-Title"] == "Hermes Agent"
+            assert headers["X-Title"] == "ARGUS"
             from hermes_cli.version_info import get_version_info
             assert headers["User-Agent"] == f"HermesAgent/{get_version_info().base_version}"
             # Auth branch is unchanged: x-api-key via api_key, betas kept.
@@ -1813,9 +1813,9 @@ def test_oauth_system_prompt_sanitizer_preserves_docs_url():
             {
                 "role": "system",
                 "content": (
-                    "Hermes Agent by Nous Research uses hermes-agent skills. "
+                    "ARGUS by Nous Research uses hermes-agent skills. "
                     "Docs: https://hermes-agent.nousresearch.com/docs ; "
-                    "interpreter ~/.hermes/hermes-agent/venv/bin/python ; "
+                    "interpreter ~/.argus/hermes-agent/venv/bin/python ; "
                     "source github.com/NousResearch/hermes-agent ; mail hermes-agent@example.com ; "
                     "skill_view(name='hermes-agent') ; hermes-agent's docs ; built by hermes-agent."
                 ),
@@ -1833,7 +1833,7 @@ def test_oauth_system_prompt_sanitizer_preserves_docs_url():
     assert "https://hermes-agent.nousresearch.com/docs" in system_text
     # Paths and repo slugs are addresses too: a subagent told to run
     # ``~/.hermes/claude-code/venv/bin/python`` fails on a file that does not exist.
-    assert "~/.hermes/hermes-agent/venv/bin/python" in system_text
+    assert "~/.argus/hermes-agent/venv/bin/python" in system_text
     assert "github.com/NousResearch/hermes-agent" in system_text
     assert "hermes-agent@example.com" in system_text
     assert "skill_view(name='hermes-agent')" in system_text  # a quoted slug is an identifier

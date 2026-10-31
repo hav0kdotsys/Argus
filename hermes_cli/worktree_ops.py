@@ -390,7 +390,7 @@ def _setup_worktree(repo_root: str | None = None, sync_base: bool = True,
     repo_root = repo_root or _git_repo_root()
     if not repo_root:
         _cprint("\033[31m✗ --worktree requires being inside a git repository.\033[0m")
-        print("  cd into your project repo first, then run hermes -w")
+        print("  cd into your project repo first, then run argus -w")
         return None
 
     wt_name = ((name and re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-._")[:40])
@@ -421,7 +421,7 @@ def _setup_worktree(repo_root: str | None = None, sync_base: bool = True,
 
     # Lock so other processes (and `git worktree remove`) see it is in use; fail-soft.
     try:
-        reason = f"hermes pid={os.getpid()}" + (f" db={retain_db}" if retain_db is not None else "")
+        reason = f"argus pid={os.getpid()}" + (f" db={retain_db}" if retain_db is not None else "")
         _git(["worktree", "lock", "--reason", reason, str(wt_path)], repo_root)
         logger.debug("Worktree locked: %s (pid=%s)", wt_path, os.getpid())
     except Exception as e:
@@ -775,7 +775,7 @@ def _retain_worktree_for_session(repo_root: str, worktree_path: str, session_id:
     """
     _git_quiet(["worktree", "unlock", worktree_path], repo_root, log="worktree unlock before retain failed")
     try:
-        result = _git(["worktree", "lock", "--reason", f"hermes session={session_id} db={db_path}",
+        result = _git(["worktree", "lock", "--reason", f"argus session={session_id} db={db_path}",
                        worktree_path], repo_root)
     except (OSError, subprocess.SubprocessError) as exc:
         logger.debug("worktree retain lock failed for %s: %s", worktree_path, exc)
@@ -1170,7 +1170,7 @@ def _prune_stale_worktree_trees(repo_root: str, max_age_hours: int) -> None:
 
     if preserved_stale:
         logger.warning("Preserving %d worktree(s) older than 7 days with unmerged work "
-                       "(run `hermes worktree prune` to review and reclaim): %s",
+                       "(run `argus worktree prune` to review and reclaim): %s",
                        len(preserved_stale), ", ".join(sorted(preserved_stale)))
 
     _prune_orphaned_branches(repo_root, protect=kept_branches)
@@ -1185,8 +1185,8 @@ def _warn_worktree_footprint(repo_root: str) -> None:
         count, size_mb = worktrees_summary(repo_root, size_below_count=10)
         if count >= 10 or (size_mb or 0) >= 5120:
             size_txt = f" ({size_mb / 1024:.1f}GB)" if size_mb else ""
-            logger.warning(".worktrees/ holds %d tree(s)%s — run `hermes worktree list` "
-                           "to audit and `hermes worktree prune` to reclaim safely.", count, size_txt)
+            logger.warning(".worktrees/ holds %d tree(s)%s — run `argus worktree list` "
+                           "to audit and `argus worktree prune` to reclaim safely.", count, size_txt)
     except Exception:
         logger.debug("worktree summary failed", exc_info=True)
 

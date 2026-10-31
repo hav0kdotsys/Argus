@@ -1903,7 +1903,7 @@ def _log_fallback_activated(agent, reason, old_model, old_provider, fb_model, fb
         return
     from hermes_constants import get_hermes_home, profile_name_for_home
     profile = profile_name_for_home(get_hermes_home()) or "default"
-    remedy = "hermes model" if profile == "default" else f"hermes -p {profile} model"
+    remedy = "argus model" if profile == "default" else f"argus -p {profile} model"
     logger.warning(
         "Profile %s: %s via %s refused for billing/credits — using fallback %s via %s. "
         "Top up credits, or run `%s` to pick a model this account can use.",

@@ -44,14 +44,14 @@ def _list(worktree_gc, repo_root: str, args) -> int:
             print(f"{r.name[:32]:32} {r.age_days:>5.1f}d {_fmt_size(r.size_mb):>6} {r.verdict:13} {r.reason}")
         print(
             f"\n{len(records)} tree(s), {_fmt_size(total_mb)} total — "
-            f"{_fmt_size(reapable_mb)} reclaimable now via `hermes worktree prune`.")
+            f"{_fmt_size(reapable_mb)} reclaimable now via `argus worktree prune`.")
     if external:
         print(f"\n{len(external)} externally-registered worktree(s) (never touched by prune):")
         for e in external:
             state = "MISSING" if e.missing else ("locked" if e.locked else "ok")
             print(f"  {e.path}  [{e.branch or '?'}]  {state}")
         if any(e.missing and not e.locked for e in external):
-            print("  Stale registrations (MISSING) are cleaned by `hermes worktree prune` (metadata only).")
+            print("  Stale registrations (MISSING) are cleaned by `argus worktree prune` (metadata only).")
     deletable = [b for b in branch_records if b.verdict == "delete"]
     if deletable:
         print(f"{len(deletable)} local branch(es) fully merged/patch-equivalent upstream would also be deleted.")
@@ -62,7 +62,7 @@ def _print_archives(archives) -> None:
     if not archives:
         return
     import time
-    print(f"{len(archives)} archived worktree(s) (restore with `hermes worktree restore <name>`):")
+    print(f"{len(archives)} archived worktree(s) (restore with `argus worktree restore <name>`):")
     for a in archives:
         age = (time.time() - a.created) / 86400 if a.created else 0
         skipped = len(a.meta.get("skipped_untracked") or [])
@@ -147,7 +147,7 @@ def _prune(worktree_gc, repo_root: str, args) -> int:
         }, indent=2))
         return 0
     if actions:
-        print("Attended reclaim (`hermes worktree prune` only; the automatic sweep is the table above):")
+        print("Attended reclaim (`argus worktree prune` only; the automatic sweep is the table above):")
         for line in actions:
             print(f"  {line}")
         print(f"{len(actions)} action(s) {'planned' if dry_run else 'done'}.")
@@ -160,7 +160,7 @@ def _restore(_worktree_gc, repo_root: str, args) -> int:
     from hermes_cli.worktree_archive import ArchiveError, restore_archive
     name = getattr(args, "name", None)
     if not name:
-        print("Usage: hermes worktree restore <name> [--path DIR]")
+        print("Usage: argus worktree restore <name> [--path DIR]")
         return 1
     try:
         result = restore_archive(repo_root, name, getattr(args, "path", None))

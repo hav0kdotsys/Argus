@@ -68,7 +68,7 @@ async def test_bypass_without_a_model_names_the_missing_flag(monkeypatch, tmp_pa
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv(flag, '1')
     created = []
-    with pytest.raises(GatewayClientError, match='hermes -m <model>'):
+    with pytest.raises(GatewayClientError, match='argus -m <model>'):
         await _agent(created).new_session(cwd=str(tmp_path))
     assert created == []
 

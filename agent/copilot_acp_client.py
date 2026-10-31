@@ -34,13 +34,13 @@ _ARGS_ENV_VAR = "HERMES_COPILOT_ACP_ARGS"
 _GH_EXTENSION_REQUIRED = ("gh-copilot",)
 _GH_EXTENSION_MARKERS = ("has been deprecated", "no commands will be executed")
 _GH_EXTENSION_ERROR = (
-    "Hermes ACP mode requires the NEW GitHub Copilot CLI (github.com/github/copilot-cli), but the binary it just "
+    "ARGUS ACP mode requires the NEW GitHub Copilot CLI (github.com/github/copilot-cli), but the binary it just "
     "spawned is the deprecated `gh copilot` extension.\n\n"
     "Install the new CLI:\n  npm install -g @github/copilot\n  # then verify with: copilot --help\n\n"
-    "If `copilot` already resolves to the new CLI but you still see this,\npoint Hermes at it explicitly:\n"
+    "If `copilot` already resolves to the new CLI but you still see this,\npoint ARGUS at it explicitly:\n"
     "  export HERMES_COPILOT_ACP_COMMAND=/path/to/new/copilot\n\n"
     "Alternative: use the `copilot` provider (no ACP, hits the Copilot API\ndirectly with a Copilot subscription "
-    "token) via `hermes setup`.\n\nOriginal error:\n"
+    "token) via `argus setup`.\n\nOriginal error:\n"
 )
 
 

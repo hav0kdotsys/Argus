@@ -49,7 +49,7 @@ def test_backend_off_is_dropped_with_a_notice(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert _raw(home)["browser"] == {"inactivity_timeout": 60}
     assert _raw(home)["_config_version"] == DEFAULT_CONFIG["_config_version"]
-    assert "browser_exec is the browser now" in out and "`browser` toolset in `hermes tools`" in out
+    assert "browser_exec is the browser now" in out and "`browser` toolset in `argus tools`" in out
     # Once: a second pass has nothing left to say.
     _migrate(home)
     assert "browser_exec" not in capsys.readouterr().out
@@ -90,16 +90,16 @@ def test_boot_migration_shows_the_off_notice_at_the_first_agent_start_once(tmp_p
     said = _boot_agents(home, monkeypatch, starts=2)
     assert _raw(home)["_config_version"] == DEFAULT_CONFIG["_config_version"]
     assert len(said) == 1
-    assert "browser_exec is the browser now" in said[0] and "`browser` toolset in `hermes tools`" in said[0]
+    assert "browser_exec is the browser now" in said[0] and "`browser` toolset in `argus tools`" in said[0]
     assert _boot_agents(home, monkeypatch, starts=1) == []
 
 
 @pytest.mark.parametrize(("value", "reason"), [
-    ("camofox", "Camofox is now the camofox plugin (`hermes plugins install camofox`)"),
-    ("local", "browser_exec launches Hermes's packaged Chromium itself"),
+    ("camofox", "Camofox is now the camofox plugin (`argus plugins install camofox`)"),
+    ("local", "browser_exec launches ARGUS's packaged Chromium itself"),
     ("browserbase", "a cloud browser is chosen with browser.cloud_provider"),
     ("Browser-Use", "browser_exec (Browser Use mode) is the only browser now"),
-    ("agent-browser", "agent-browser left Hermes"),
+    ("agent-browser", "agent-browser left ARGUS"),
     ("lynx", "browser_exec is the only browser now"),
 ])
 def test_a_removed_backend_value_is_named_with_its_reason(tmp_path, monkeypatch, value, reason):

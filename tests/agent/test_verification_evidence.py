@@ -509,7 +509,7 @@ def test_workspace_verify_clears_stale_on_other_session(tmp_path, monkeypatch):
     assert event is not None
     status = verification_status(session_id="s-edit", cwd=tmp_path)
     assert status["status"] == "passed"
-    assert status["evidence"]["canonical_command"] == "hermes verify"
+    assert status["evidence"]["canonical_command"] == "argus verify"
 
 
 def test_targeted_partial_verify_does_not_clear_other_session(tmp_path, monkeypatch):

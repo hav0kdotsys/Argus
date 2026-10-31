@@ -97,7 +97,7 @@ def recover_failed_plugin_refresh(
         # the dead token every cooldown at DEBUG with no trace for the user.
         logger.warning(
             "%s refresh token for %s is terminally invalid (%s); the credential leaves rotation. "
-            "Re-run 'hermes auth add %s' to sign in again.",
+            "Re-run 'argus auth add %s' to sign in again.",
             pool.provider, entry.label or entry.id[:8], exc, pool.provider,
         )
         pool._mark_dead_refresh_grant(entry, exc)

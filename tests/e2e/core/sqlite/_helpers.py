@@ -60,7 +60,7 @@ def skip_unless_deployable(journal: str) -> None:
     if journal == "wal" and not linked_sqlite_is_wal_capable():
         import pytest
 
-        pytest.skip(f"linked SQLite {sqlite3.sqlite_version} runs Hermes in DELETE mode; the delete arm covers it")
+        pytest.skip(f"linked SQLite {sqlite3.sqlite_version} runs ARGUS in DELETE mode; the delete arm covers it")
 
 
 def base_seed() -> int:

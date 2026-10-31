@@ -25,7 +25,7 @@ it('reports failed canonical bootstrap without creating an independent owner or 
   gw.kill()
 })
 
-it('reports a bootstrap that cannot load Hermes once and stops retrying (#138878)', async () => {
+it('reports a bootstrap that cannot load ARGUS once and stops retrying (#138878)', async () => {
   vi.useFakeTimers()
   vi.stubEnv('HERMES_HOME', home)
   vi.stubEnv('HERMES_TUI_GATEWAY_URL', '')

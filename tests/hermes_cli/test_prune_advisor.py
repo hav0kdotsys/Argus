@@ -175,7 +175,7 @@ def test_estimate_weights_by_stored_bytes_not_message_count(tmp_path, monkeypatc
     # message share says ~89% of the file; the bytes really freed are a small fraction of it
     assert advice.reclaim_bytes < before * 0.25
     assert abs(advice.reclaim_bytes - shrink) < max(shrink, 64 * 1024) * 1.0
-    assert "hermes sessions optimize" in "\n".join(prune_advisor.advice_lines(advice))
+    assert "argus sessions optimize" in "\n".join(prune_advisor.advice_lines(advice))
 
 
 def test_cli_startup_never_reads_the_store_and_asks_from_the_stored_estimate(home, monkeypatch):

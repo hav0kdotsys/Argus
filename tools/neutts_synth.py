@@ -50,7 +50,7 @@ def main():
     try:
         from neutts import NeuTTS
     except ImportError:
-        print("Error: neutts not installed. Run hermes setup tts and choose NeuTTS.", file=sys.stderr)
+        print("Error: neutts not installed. Run argus setup tts and choose NeuTTS.", file=sys.stderr)
         sys.exit(1)
 
     # llama_cpp (backbone) offloads to GPU only for the literal string "gpu";

@@ -24,7 +24,7 @@ def build_slack_parser(subparsers, *, cmd_slack: Callable) -> None:
         "--write", nargs="?", const=True, default=None, metavar="PATH",
         help="Write manifest to a file instead of stdout. With no PATH "
         "writes to $HERMES_HOME/slack-manifest.json.")
-    slack_manifest.add_argument("--name", default=None, help='Bot display name (default: "Hermes")')
+    slack_manifest.add_argument("--name", default=None, help='Bot display name (default: "ARGUS")')
     slack_manifest.add_argument(
         "--description", default=None, help="Bot description shown in Slack's app directory.")
     slack_long_description = slack_manifest.add_mutually_exclusive_group()

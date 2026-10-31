@@ -24,10 +24,10 @@ def report_incompatible_owner(pids) -> bool:
     if not stale:
         return False
     running = f"Gateway is running (PID: {', '.join(map(str, pids))})" if pids else "The running gateway"
-    print(f"✗ {running} but cannot serve this Hermes ({stale})")
-    print("  It was started by another Hermes version; TUI, Desktop and chat cannot attach to it.")
+    print(f"✗ {running} but cannot serve this ARGUS ({stale})")
+    print("  It was started by another ARGUS version; TUI, Desktop and chat cannot attach to it.")
     print("  Replace it with this version:")
-    print("    hermes gateway restart")
+    print("    argus gateway restart")
     return True
 
 

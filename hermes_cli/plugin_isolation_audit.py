@@ -41,7 +41,7 @@ _DIRECT_REGISTRY_CALLS: frozenset = frozenset({
     ("gateway.platform_registry", "register"), ("providers", "register_provider"),
 })
 _MANIFEST_KIND_REASONS: dict[str, str] = {
-    "platform": "kind 'platform': gateway platform adapters run in the Hermes process",
+    "platform": "kind 'platform': gateway platform adapters run in the ARGUS process",
 }
 _STREAMING_MARKERS = ("StreamingResponse", "EventSourceResponse", ".websocket(", "WebSocket")
 _SKIP_DIRS = frozenset({"tests", "test", ".git", "__pycache__", "node_modules", ".venv", "venv", "docs"})
@@ -125,8 +125,8 @@ class _SourceVisitor(ast.NodeVisitor):
         if isinstance(target, ast.Attribute):
             owner = self._resolve(target.value)
             if owner:
-                self.reasons.append(f"{self.rel}:{line} patches {owner}.{target.attr} (a Hermes module "
-                                    f"attribute; the host's copy is not the one Hermes runs)")
+                self.reasons.append(f"{self.rel}:{line} patches {owner}.{target.attr} (an ARGUS module "
+                                    f"attribute; the host's copy is not the one ARGUS runs)")
 
     def visit_Assign(self, node: ast.Assign) -> None:
         for target in node.targets:
@@ -142,7 +142,7 @@ class _SourceVisitor(ast.NodeVisitor):
         if isinstance(func, ast.Name) and func.id == "setattr" and node.args:
             owner = self._resolve(node.args[0])
             if owner:
-                self.reasons.append(f"{self.rel}:{node.lineno} setattr() on {owner} (patches a Hermes module)")
+                self.reasons.append(f"{self.rel}:{node.lineno} setattr() on {owner} (patches an ARGUS module)")
         if isinstance(func, ast.Attribute):
             name = func.attr
             if name in self._unsupported:
@@ -169,7 +169,7 @@ class _SourceVisitor(ast.NodeVisitor):
         if (module, attr) in _DIRECT_REGISTRY_CALLS or (
                 module.endswith("_registry") and attr in {"register", "register_provider"}):
             self.reasons.append(f"{self.rel}:{line} calls {target}() directly instead of "
-                                f"through ctx (registers in the host, not in Hermes)")
+                                f"through ctx (registers in the host, not in ARGUS)")
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         if self.model_provider and any(isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))

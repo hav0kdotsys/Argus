@@ -22,7 +22,7 @@ def _err(msg: str) -> None:
 def cmd_proxy_start(args: Any) -> int:
     """Run the proxy server in the foreground."""
     if not AIOHTTP_AVAILABLE:
-        _err("hermes proxy requires aiohttp. Run `hermes setup` to install it.")
+        _err("argus proxy requires aiohttp. Run `argus setup` to install it.")
         return 1
     provider = getattr(args, "provider", None) or "nous"
     try:
@@ -31,7 +31,7 @@ def cmd_proxy_start(args: Any) -> int:
         _err(f"Error: {exc}")
         return 2
     if not adapter.is_authenticated():
-        auth_hint = getattr(adapter, "auth_hint", f"hermes auth add {adapter.name}")
+        auth_hint = getattr(adapter, "auth_hint", f"argus auth add {adapter.name}")
         _err(f"Not logged into {adapter.display_name}. Run `{auth_hint}` first.")
         return 2
     from hermes_cli.url_utils import format_url_host
@@ -39,7 +39,7 @@ def cmd_proxy_start(args: Any) -> int:
     host = getattr(args, "host", None) or DEFAULT_HOST
     port = getattr(args, "port", None) or DEFAULT_PORT
     _err(
-        f"Starting Hermes proxy for {adapter.display_name}\n"
+        f"Starting ARGUS proxy for {adapter.display_name}\n"
         f"  Listening on:  http://{format_url_host(host)}:{port}/v1\n"
         f"  Forwarding to: (resolved per-request from your subscription)\n"
         f"  Use any bearer token in the client — the proxy attaches your real credential.\n"
@@ -58,7 +58,7 @@ def cmd_proxy_start(args: Any) -> int:
 
 def cmd_proxy_status(args: Any) -> int:
     """Print the status of each configured upstream adapter."""
-    print("Hermes proxy upstream adapters\n")
+    print("ARGUS proxy upstream adapters\n")
     for name in sorted(ADAPTERS):
         adapter = get_adapter(name)
         if not adapter.is_authenticated():
@@ -71,7 +71,7 @@ def cmd_proxy_status(args: Any) -> int:
             continue
         expires = f" (bearer expires {cred.expires_at})" if cred.expires_at else ""
         print(f"  [{name:8s}] {adapter.display_name} — ready{expires}")
-    print("\nStart the proxy with: hermes proxy start [--provider <name>]")
+    print("\nStart the proxy with: argus proxy start [--provider <name>]")
     return 0
 
 
@@ -98,15 +98,15 @@ def cmd_proxy(args: Any) -> int:
     if handler is not None:
         return handler(args)
     _err(
-        "hermes proxy — local OpenAI-compatible proxy that attaches your\n"
+        "argus proxy — local OpenAI-compatible proxy that attaches your\n"
         "OAuth-authenticated provider credentials to outbound requests.\n"
         "\n"
         "Subcommands:\n"
-        "  hermes proxy start [--provider nous|xai] [--host 127.0.0.1] [--port 8645]\n"
+        "  argus proxy start [--provider nous|xai] [--host 127.0.0.1] [--port 8645]\n"
         "      Run the proxy in the foreground.\n"
-        "  hermes proxy status\n"
+        "  argus proxy status\n"
         "      Show which upstream adapters are ready.\n"
-        "  hermes proxy providers\n"
+        "  argus proxy providers\n"
         "      List available upstream providers.\n"
     )
     return 0

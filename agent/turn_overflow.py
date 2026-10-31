@@ -376,7 +376,7 @@ def _recover_context_length(st: _Recovery, _retry: TurnRetryState, error_msg: st
             notices=(
                 "❌ The provider rejected the request because the requested output length exceeds its "
                 "output cap for this model, and the error did not state the allowed limit.",
-                "   💡 Hermes has no user setting for the output cap — check the endpoint's default max output "
+                "   💡 ARGUS has no user setting for the output cap — check the endpoint's default max output "
                 "(completion) tokens for this model on the server or proxy. "
                 "(This is an output-cap error, not a context overflow — compression cannot fix it.)",
             ),

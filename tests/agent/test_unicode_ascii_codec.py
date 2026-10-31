@@ -130,12 +130,12 @@ class TestSanitizeStructureNonAscii:
     def test_sanitizes_nested_dict_structure(self):
         payload = {
             "default_headers": {
-                "X-Title": "Hermes │ Agent",
+                "X-Title": "ARGUS │ Agent",
                 "User-Agent": "Hermes/1.0 🤖",
             }
         }
         assert _sanitize_structure_non_ascii(payload) is True
-        assert payload["default_headers"]["X-Title"] == "Hermes  Agent"
+        assert payload["default_headers"]["X-Title"] == "ARGUS  Agent"
         assert payload["default_headers"]["User-Agent"] == "Hermes/1.0 "
 
 

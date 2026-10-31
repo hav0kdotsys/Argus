@@ -195,7 +195,7 @@ def test_takeover_waits_propagates_status_and_never_reenters_old_code(tmp_path, 
     assert result.returncode == status, result.stdout + result.stderr
     assert (home / "runs").read_text() == "child\n"
     assert (home / "cleanup").read_text() == "ran"
-    assert "run `hermes` again" not in result.stderr
+    assert "run `argus` again" not in result.stderr
 
 
 # Only the copied shim and JSON probe run; this temp checkout has no real updater.
@@ -632,7 +632,7 @@ def test_a_takeover_debt_another_profile_cannot_see_is_never_silent(tmp_path, mo
         lock_dir.chmod(0o700)
 
     assert (homes["coder"] / "fleet_restart_pending").is_file()
-    assert "hermes gateway restart" in capsys.readouterr().err
+    assert "argus gateway restart" in capsys.readouterr().err
 
 
 def test_a_historical_updater_arms_the_host_record_under_the_current_mutex(tmp_path, monkeypatch):

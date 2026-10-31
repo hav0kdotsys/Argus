@@ -71,7 +71,7 @@ def _turn(sb: I.Sandbox, provider: FakeLLMServer, marker: str) -> subprocess.Com
     new = provider.main_requests()[n:]
     assert cp.returncode == 0 and I.TRACEBACK not in cp.stdout + cp.stderr, P.diagnostics(sb, cp)
     assert len(new) == 1 and marker in json.dumps(new[0]["messages"]), (
-        f"`hermes -z` did not reach the provider exactly once ({len(new)} requests)\n" + P.diagnostics(sb, cp))
+        f"`argus -z` did not reach the provider exactly once ({len(new)} requests)\n" + P.diagnostics(sb, cp))
     return cp
 
 
@@ -123,10 +123,10 @@ def test_sigkill_mid_dependency_update_recovers(home, provider, phase):
     # The user re-runs the update: it converges at the target and owes nothing.
     again = _retry(sb, "update", "--yes", "--branch", "main")
     assert again.returncode == 0 and I.TRACEBACK not in again.stdout + again.stderr, (
-        f"`hermes update` after a kill at {phase} failed\n" + P.diagnostics(sb, first, again))
+        f"`argus update` after a kill at {phase} failed\n" + P.diagnostics(sb, first, again))
     assert I.git("rev-parse", "HEAD", cwd=sb.checkout) == target, P.diagnostics(sb, again)
     assert not P.pending_marker(sb).exists(), (
-        f"`hermes update` exited 0 after a kill at {phase} but left source-completion-pending behind\n"
+        f"`argus update` exited 0 after a kill at {phase} but left source-completion-pending behind\n"
         + P.diagnostics(sb, first, again))
     selected = P.selected_generation(sb)
     if phase == "stage":

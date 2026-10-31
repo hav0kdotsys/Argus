@@ -123,7 +123,7 @@ def _cmd_list(args) -> None:
             continue
         rows.extend((backend.display_name, meta) for meta in backend.list_items())
     if not rows and not locked:
-        c.print("[dim]Vault is empty. Add an item with `hermes vault add`.[/]")
+        c.print("[dim]Vault is empty. Add an item with `argus vault add`.[/]")
         return
     if rows:
         from rich.table import Table
@@ -166,7 +166,7 @@ def _cmd_sources(args) -> None:
         if name in enabled:
             status = "[green]detected[/] · the agent asks you to unlock it when it needs a login"
         elif is_installed(name):
-            status = f"[dim]turned off[/] (`hermes vault sources --enable {name}` to use it)"
+            status = f"[dim]turned off[/] (`argus vault sources --enable {name}` to use it)"
         else:
             status = "[dim]not installed[/]"
         c.print(f"  {cls.display_name:<10} {status}")
@@ -203,7 +203,7 @@ def _cmd_key(args) -> None:
             c.print(f"[green]Vault key moved to the OS keychain[/] ({vault_keychain.backend_label()}); "
                     "vault.key was removed after the keychain copy decrypted the vault.")
             c.print("[dim]Backups of this profile now hold the encrypted vault without its key; "
-                    "`hermes vault key migrate --to file` before moving the profile to another machine.[/]")
+                    "`argus vault key migrate --to file` before moving the profile to another machine.[/]")
         else:
             where = store.key_location()
             c.print(f"[green]Vault key moved to[/] {where.get('path')} (0600).")
@@ -264,7 +264,7 @@ def register_cli(subparser) -> None:
     p_list.set_defaults(_vault_handler=_cmd_list)
 
     p_rm = subs.add_parser("rm", help="Remove a vault item by handle")
-    p_rm.add_argument("handle", help="Item handle (see `hermes vault list`)")
+    p_rm.add_argument("handle", help="Item handle (see `argus vault list`)")
     p_rm.set_defaults(_vault_handler=_cmd_rm)
 
     p_src = subs.add_parser("sources", help="Show detected password managers (1Password, Bitwarden); they are on automatically")

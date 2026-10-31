@@ -19,7 +19,7 @@ from typing import Any, Dict, List
 MAX_HISTORY_SEED_CHARS = 32_000
 _TOOL_RESULT_PREVIEW_CHARS = 400
 
-_HEADER = ("Prior conversation from this Hermes session (the thread you are continuing was started fresh; "
+_HEADER = ("Prior conversation from this ARGUS session (the thread you are continuing was started fresh; "
            "treat these turns as already having happened):")
 
 

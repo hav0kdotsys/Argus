@@ -142,7 +142,7 @@ def _classify_tree(_ops, repo_root: str, entry: Path, merge_cache, remote_heads)
     if _KANBAN_RE.match(entry.name):
         return "keep", "kanban task tree (owned by kanban gc)", []
     if _ops._worktree_lock_is_live(repo_root, path, timeout=5) == "live":
-        return "keep", "in use by a running hermes session", []
+        return "keep", "in use by a running argus session", []
     tracked_dirty, untracked = _dirty_split(path)
     if tracked_dirty:
         return "keep", "uncommitted tracked changes (real work)", []

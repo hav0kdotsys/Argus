@@ -212,7 +212,7 @@ def test_supervised_gateway_does_not_recurse(
     assert r.returncode == 0
     n = int(r.stdout.strip() or 0)
     assert n <= 1, (
-        f"expected at most one supervised python `hermes gateway run` "
+        f"expected at most one supervised python `argus gateway run` "
         f"process (the legitimately-supervised gateway); found {n}. "
         f"Recursion guard may have failed. "
         f"ps:\n{docker_exec_sh(container_name, 'ps -eo pid,ppid,cmd').stdout}"

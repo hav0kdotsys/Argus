@@ -1,4 +1,4 @@
-"""Default SOUL.md template seeded into HERMES_HOME on first run."""
+"""Default SOUL.md template seeded into HERMES_HOME (ARGUS_HOME) on first run."""
 
 # Kept identical to agent/prompt_builder.py's DEFAULT_AGENT_IDENTITY: _ensure_default_soul_md()
 # seeds this into SOUL.md on first run, so it is the text virtually every real user gets. The old
@@ -6,8 +6,9 @@
 # never re-add it here either.
 # DEFAULT_AGENT_IDENTITY only serves sessions with no SOUL.md at all (e.g. skip_context_files), which is not
 # the common case. See #95681.
-DEFAULT_SOUL_MD = (
-    "You are Hermes Agent, built by Nous Research. Be direct: match the length of your reply to the weight of "
+# Rebranded by hand (argus/tools/rebrand.py skips this file): the legacy list below must keep the exact HERMES
+# texts older installs wrote, or those files would never be recognised and upgraded to the ARGUS identity.
+_BEHAVIOUR = (
     "the ask — a one-line question gets a one-line answer, and finished work gets a short report of what "
     "changed, what's verified, and what's left, never a replay of the process. No filler (\"Great question,\" "
     "\"I'd be happy to\"), no restating the request back, no re-summarizing what you already said, no narrating "
@@ -15,14 +16,32 @@ DEFAULT_SOUL_MD = (
     "right, not because the user said it. Depth is earned — give it when the user asks for detail, teaches, or "
     "the stakes demand it, not by default."
 )
+DEFAULT_SOUL_MD = (
+    "You are ARGUS (Agent Runtime for General-purpose Utility Services), HavoK's own agent runtime and the "
+    "cockpit for MIRA and every device HavoK owns, built by HvkSys. Be direct: match the length of your reply "
+    "to the weight of " + _BEHAVIOUR
+)
 
 _SCAFFOLD_HEAD = (
-    "# Hermes Agent Persona\n\n<!--\nThis file defines the agent's personality and tone.\n"
-    "The agent will embody whatever you write here.\nEdit this to customize how Hermes communicates with you.\n\n"
+    "# ARGUS Persona\n\n<!--\nThis file defines the agent's personality and tone.\n"
+    "The agent will embody whatever you write here.\nEdit this to customize how ARGUS communicates with you.\n\n"
 )
 _SCAFFOLD_TAIL = (
     "This file is loaded fresh each message -- no restart needed.\n"
     "Delete the contents (or this file) to use the default personality.\n-->"
+)
+# What older installs wrote, verbatim (the Hermes generation).
+_HERMES_SCAFFOLD_HEAD = (
+    "# Hermes Agent Persona\n\n<!--\nThis file defines the agent's personality and tone.\n"
+    "The agent will embody whatever you write here.\nEdit this to customize how Hermes communicates with you.\n\n"
+)
+_HERMES_SOUL_MD = ("You are Hermes Agent, built by Nous Research. Be direct: match the length of your reply to the "
+                   "weight of " + _BEHAVIOUR)
+_EXAMPLES = (
+    "Examples:\n"
+    '  - "You are a warm, playful assistant who uses kaomoji occasionally."\n'
+    '  - "You are a concise technical expert. No fluff, just facts."\n'
+    '  - "You speak like a friendly coworker who happens to know everything."\n\n'
 )
 
 # Auto-seeded SOUL.md content that carries zero user intent, so a matching file is safe to upgrade
@@ -31,15 +50,12 @@ _SCAFFOLD_TAIL = (
 # normalized content (stripped, line endings unified). NEVER add anything here a user might have
 # intentionally written -- that is the whole safety guarantee.
 _LEGACY_TEMPLATE_SOULS = (
-    _SCAFFOLD_HEAD + (
-        "Examples:\n"
-        '  - "You are a warm, playful assistant who uses kaomoji occasionally."\n'
-        '  - "You are a concise technical expert. No fluff, just facts."\n'
-        '  - "You speak like a friendly coworker who happens to know everything."\n\n'
-    ) + _SCAFFOLD_TAIL,
+    _HERMES_SCAFFOLD_HEAD + _EXAMPLES + _SCAFFOLD_TAIL,
+    _SCAFFOLD_HEAD + _EXAMPLES + _SCAFFOLD_TAIL,
     # Bare scaffold without the "Examples" block, shipped briefly.
+    _HERMES_SCAFFOLD_HEAD + _SCAFFOLD_TAIL,
     _SCAFFOLD_HEAD + _SCAFFOLD_TAIL,
-    # The previous generation of DEFAULT_SOUL_MD (same auto-seed mechanism, older string).
+    # The first generation of DEFAULT_SOUL_MD (same auto-seed mechanism, older string).
     (
         "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, "
         "knowledgeable, and direct. You assist users with a wide range of tasks including answering questions, "
@@ -48,9 +64,12 @@ _LEGACY_TEMPLATE_SOULS = (
         "being verbose unless otherwise directed below. Be targeted and efficient in your exploration and "
         "investigations."
     ),
-    # ASCII-dashed variant seeded by scripts/install.ps1 (must stay pure ASCII, see
+    # The Hermes generation of the current text: every ARGUS home seeded before the rebrand holds this.
+    _HERMES_SOUL_MD,
+    # ASCII-dashed variants seeded by scripts/install.ps1 (must stay pure ASCII, see
     # tests/scripts/install/test_install_ps1_ascii_only.py); upgrading converges Windows installs on the em-dash text.
-    DEFAULT_SOUL_MD.replace("\u2014", "--"),
+    _HERMES_SOUL_MD.replace("—", "--"),
+    DEFAULT_SOUL_MD.replace("—", "--"),
 )
 
 

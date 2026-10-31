@@ -2692,7 +2692,7 @@ def test_history_to_messages_types_the_failed_turn_boundary_for_resume():
         {"role": "user", "content": "b"},
         {"role": "assistant", "content": PARTIAL_FAILED_TURN_NOTICE},  # legacy untyped row
         {"role": "user", "content": "c"},
-        {"role": "assistant", "content": f"Quoting Hermes: {FAILED_TURN_NOTICE}"},  # a real reply
+        {"role": "assistant", "content": f"Quoting ARGUS: {FAILED_TURN_NOTICE}"},  # a real reply
     ]
 
     assert [m.get("display_kind") for m in server._history_to_messages(history)] == [
@@ -15947,7 +15947,7 @@ def test_handoff_request_uses_session_profile_home(monkeypatch, tmp_path):
                 home_channel=HomeChannel(
                     platform=Platform.DISCORD,
                     chat_id="discord-home",
-                    name="Hermes / #chat-coding",
+                    name="ARGUS / #chat-coding",
                 ),
             )
         return config
@@ -20569,7 +20569,7 @@ def test_build_persist_message_quotes_paths_containing_spaces(tmp_path):
     with a space parses as a truncated ref with the tail left as loose text.
     Desktop composer images live in the app's userData dir, which on macOS is
     ``~/Library/Application Support/...`` — a space every time."""
-    img_dir = tmp_path / "Application Support" / "Hermes" / "composer-images"
+    img_dir = tmp_path / "Application Support" / "ARGUS" / "composer-images"
     img_dir.mkdir(parents=True)
     img = img_dir / "cat.png"
     img.write_bytes(b"png")

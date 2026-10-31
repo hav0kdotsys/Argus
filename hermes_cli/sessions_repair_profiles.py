@@ -237,7 +237,7 @@ class RepairPlan:
             self._add(Finding(
                 "unclaimed_namespace", store.profile, sid, detail,
                 reason=f"no live profile named {key_profile!r}; create it, then rerun, or "
-                       f"`hermes profile migrate-identity {key_profile} <target>`"))
+                       f"`argus profile migrate-identity {key_profile} <target>`"))
             return
         moving.add(sid)
         self._add(Finding(

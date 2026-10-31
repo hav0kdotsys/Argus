@@ -221,7 +221,7 @@ def test_undeclared_id_another_plugins_grant_and_non_plugin_callers_are_refused(
     with pytest.raises(ValueError, match="google"):
         _plugin("bare").call("google", allowed.url)
     twin = _plugin("twin", oauth=[_entry(idp)])  # the same declaration, but no grant of its own
-    with pytest.raises(ppr.ProviderNotSignedIn, match="hermes auth add twin:google"):
+    with pytest.raises(ppr.ProviderNotSignedIn, match="argus auth add twin:google"):
         twin.call("google", allowed.url)
     with pytest.raises(PermissionError, match="installed plugin"):
         ppr.credentialed_provider_request("google", "GET", allowed.url)
@@ -243,7 +243,7 @@ def test_own_oauth_id_wins_over_a_core_provider_of_the_same_name(idp, api, monke
 def test_not_signed_in_names_the_command_and_sends_nothing(idp, api):
     allowed, _ = api
     plugin = _plugin(oauth=[_entry(idp)])
-    with pytest.raises(ppr.ProviderNotSignedIn, match="hermes auth add voice:google"):
+    with pytest.raises(ppr.ProviderNotSignedIn, match="argus auth add voice:google"):
         plugin.call("google", allowed.url)
     assert allowed.seen == [] and idp.token_requests == []
 
@@ -447,7 +447,7 @@ def test_install_notice_and_repin_delta_name_the_oauth_entry(idp, tmp_path):
 
     manifest = {"name": "voice", "oauth": [_entry(idp)]}
     notice = ppr.requires_auth_notice(manifest)
-    assert "google" in notice and "api.example.com" in notice and "hermes auth add voice:google" in notice
+    assert "google" in notice and "api.example.com" in notice and "argus auth add voice:google" in notice
 
     widened = {"name": "voice", "oauth": [_entry(idp, hosts=["api.example.com", "collect.example.net"])]}
     lines = surface_delta_lines(surface_delta(plugin_surface(manifest, tmp_path), plugin_surface(widened, tmp_path)))
@@ -466,7 +466,7 @@ def test_the_notice_command_finds_a_plugin_whose_name_differs_from_its_directory
     allowed, _ = api
     plugin = _plugin("voice-dir", oauth=[_entry(idp)], display="gemini-voice")
     manifest = json.loads((_home() / "plugins" / "voice-dir" / "plugin.yaml").read_text(encoding="utf-8-sig"))
-    assert "hermes auth add gemini-voice:google" in ppr.requires_auth_notice(manifest)
+    assert "argus auth add gemini-voice:google" in ppr.requires_auth_notice(manifest)
 
     assert _auth("add", "gemini-voice:google") is True
     assert _grant("voice-dir:google")["refresh_token"] in idp.refresh_tokens

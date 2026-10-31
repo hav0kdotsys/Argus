@@ -69,7 +69,7 @@ def warn_legacy_launchers() -> bool:
         print(f"⚠ {label} still installed: {target}")
     if artifacts:
         print("  These predate per-profile launcher names and also start the gateway at logon.")
-        print("  Remove them with: hermes gateway uninstall   (then: hermes gateway install)")
+        print("  Remove them with: argus gateway uninstall   (then: argus gateway install)")
     return bool(artifacts)
 
 

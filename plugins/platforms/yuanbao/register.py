@@ -22,7 +22,7 @@ _SETUP_PLATFORM = {
         "1. Download the Yuanbao app from https://yuanbao.tencent.com/",
         "2. In the app, go to PAI → My Bot and create a new bot",
         "3. After the bot is created, copy the App ID and App Secret",
-        "4. Enter them below and Hermes will connect automatically over WebSocket",
+        "4. Enter them below and ARGUS will connect automatically over WebSocket",
     ],
     "vars": [
         {"name": "YUANBAO_APP_ID", "prompt": "App ID", "password": False,
@@ -98,7 +98,7 @@ def register(ctx) -> None:
         standalone_send=StandaloneSendPolicy(label="Yuanbao", media=True, text_direct=True),
         name="yuanbao", label="Yuanbao", adapter_factory=YuanbaoAdapter,
         dashboard_label="Yuanbao (元宝)",
-        dashboard_description="Connect Hermes to Tencent Yuanbao.",
+        dashboard_description="Connect ARGUS to Tencent Yuanbao.",
         dashboard_required_env=(),
         check_fn=check_yuanbao_requirements, is_connected=_is_connected,
         config_connected_fn=config_connected_extra("app_id", "app_secret"),

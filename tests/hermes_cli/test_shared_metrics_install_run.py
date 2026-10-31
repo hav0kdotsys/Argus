@@ -145,7 +145,7 @@ def test_real_install_sh_ladder_leaves_only_closed_tokens(tmp_path):
         found = shutil.which(name)
         if found:
             (tools / name).symlink_to(found)
-    home = tmp_path / "hermes home"
+    home = tmp_path / "argus home"
     result = subprocess.run(
         [str(tools / "bash"), str(INSTALL_SH), "--non-interactive", "--hermes-home", str(home),
          "--dir", str(tmp_path / "checkout")],

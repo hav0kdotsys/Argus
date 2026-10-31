@@ -78,7 +78,7 @@ def test_blocked_swap_result_names_the_holder_for_the_desktop(tmp_path: Path) ->
     ], result
     assert not consent.exists(), 'a consent the run never used ends with the run'
     assert 'SogouCloud.exe (pid 4242)' in result['message'], result
-    assert 'not part of Hermes' in result['message'], result
+    assert 'not part of ARGUS' in result['message'], result
 
 
 # The Desktop that clicked "Close X and retry": it quits once the hand-off has adopted its bridge.

@@ -125,7 +125,7 @@ class SharedMetricsSubscriber:
             try:
                 engagement.record(self.store, self._client_resource, surface=surface, route=route)
             except Exception:
-                logger.warning("Unable to update the Hermes engagement rollup", exc_info=True)
+                logger.warning("Unable to update the ARGUS engagement rollup", exc_info=True)
 
     def _persist(self, metric_name: str, dimensions: dict, amount: int) -> None:
         store, resource = self.store, self._client_resource
@@ -182,7 +182,7 @@ class SharedMetricsSubscriber:
                 except Exception:
                     saved = False
                     logger.warning(
-                        "Unable to persist the Hermes shared metric: %s", metric_name, exc_info=True
+                        "Unable to persist the ARGUS shared metric: %s", metric_name, exc_info=True
                     )
         if ticket and saved:
             with self._lock:

@@ -206,7 +206,7 @@ def test_e2e_login_then_supervised_gateway_can_read_auth(
     assert r.returncode == 0, f"find failed: {r.stderr}"
     unreadable = [ln for ln in r.stdout.splitlines() if ln.strip()]
     assert not unreadable, (
-        "Files written by `docker exec` are unreadable to the hermes user "
+        "Files written by `docker exec` are unreadable to the argus user "
         f"(supervised gateway UID): {unreadable}. The shim failed to drop "
         "privileges before the write."
     )

@@ -418,7 +418,7 @@ def test_a_gateway_the_update_never_asked_is_left_serving_and_a_user_stop_is_fin
     assert journey["never_owed_while"] == [], fail_with(
         m, f"a gateway never asked to stop is held as draining (owed while it serves: {journey['never_owed_while']})",
         during)
-    assert journey["never_gone"], fail_with(m, "premise: the user's `hermes gateway stop` did not stop it",
+    assert journey["never_gone"], fail_with(m, "premise: the user's `argus gateway stop` did not stop it",
                                             journey["never_user_stop"])
     assert _restarts(after.stdout) == 0 and journey["never_running_after"] is None, fail_with(
         m, "a gateway the user stopped was restarted for an update that never stopped it", after)

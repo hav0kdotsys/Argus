@@ -42,7 +42,7 @@ def test_doctor_names_the_command_that_removes_an_orphan_alias(isolated_home, ca
     report = io.StringIO()
     with redirect_stdout(report):
         doctor_state._check_profiles(False)
-    assert "(remove with: hermes profile alias petcare --remove)" in report.getvalue()
+    assert "(remove with: argus profile alias petcare --remove)" in report.getvalue()
 
     _alias("petcare", remove=True)
 

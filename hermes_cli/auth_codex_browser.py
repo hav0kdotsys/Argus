@@ -73,7 +73,7 @@ def codex_oauth_login(args: Any) -> dict[str, Any]:
             print(_PORT_BUSY_NOTICE)
             print()
     print("Signing in to OpenAI Codex...")
-    print("(Hermes creates its own session — won't affect Codex CLI or VS Code)")
+    print("(ARGUS creates its own session — won't affect Codex CLI or VS Code)")
     print()
     return auth_mod._codex_device_code_login()
 
@@ -128,9 +128,9 @@ def _codex_browser_login(
 
     print()
     print("Signing in to OpenAI Codex (browser authorization)...")
-    print("(Hermes creates its own session — won't affect Codex CLI or VS Code)")
+    print("(ARGUS creates its own session — won't affect Codex CLI or VS Code)")
     print()
-    print(f"Open this URL to authorize Hermes:\n  {auth_url}\n")
+    print(f"Open this URL to authorize ARGUS:\n  {auth_url}\n")
     _print_loopback_ssh_hint(redirect_uri)
     if open_browser and _can_open_graphical_browser():
         try:

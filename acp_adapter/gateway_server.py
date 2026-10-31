@@ -50,11 +50,11 @@ def _bypass_route():
     model = (os.environ.get("HERMES_MODEL") or os.environ.get("HERMES_INFERENCE_MODEL") or "").strip()
     if not model:
         raise GatewayClientError("--safe-mode / --ignore-user-config read no profile default model: launch "
-                                 "with one, e.g. hermes -m <model> --provider <provider> --safe-mode acp")
+                                 "with one, e.g. argus -m <model> --provider <provider> --safe-mode acp")
     provider = os.environ.get("HERMES_INFERENCE_PROVIDER", "").strip()
     if not provider:
         raise GatewayClientError("--safe-mode / --ignore-user-config read no profile provider: launch with "
-                                 "--provider too, e.g. hermes -m <model> --provider <provider> --safe-mode acp")
+                                 "--provider too, e.g. argus -m <model> --provider <provider> --safe-mode acp")
     return {"model": model, "provider": provider}
 
 

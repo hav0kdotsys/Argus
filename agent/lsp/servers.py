@@ -223,11 +223,11 @@ def _spawn_bash_ls(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 
 _VUE_REINSTALL = (
     "delete <HERMES_HOME>/lsp/node_modules/@vue and <HERMES_HOME>/lsp/bin/vue-language-server*, "
-    "then run: hermes lsp install vue-language-server"
+    "then run: argus lsp install vue-language-server"
 )
 _VUE_TUNNEL_MSG = (
     "vue-language-server: the installed @vue/language-server is 3.x, which only works behind a client-hosted "
-    f"tsserver tunnel Hermes does not run — no diagnostics will arrive. Reinstall the self-hosting 2.x line: {_VUE_REINSTALL}"
+    f"tsserver tunnel ARGUS does not run — no diagnostics will arrive. Reinstall the self-hosting 2.x line: {_VUE_REINSTALL}"
 )
 _VUE_TSDK_MSG = (
     "vue-language-server: no JavaScript TypeScript SDK (typescript/lib/typescript.js) next to the server or under "
@@ -285,7 +285,7 @@ def _spawn_vue(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
 
 _TS_UNTRUSTED_MSG = (
     "typescript-language-server: no TypeScript SDK next to the server, and this workspace is untrusted so its "
-    "own node_modules/typescript is not loaded — diagnostics are skipped. Reinstall: hermes lsp install "
+    "own node_modules/typescript is not loaded — diagnostics are skipped. Reinstall: argus lsp install "
     "typescript-language-server, or list the workspace under lsp.trusted_workspaces."
 )
 
@@ -352,7 +352,7 @@ def _spawn_powershell_es(root: str, ctx: ServerContext) -> Optional[SpawnSpec]:
         f"-LogPath '{os.path.join(session_dir, 'pses.log')}' "
         f"-SessionDetailsPath '{os.path.join(session_dir, f'pses-session-{os.getpid()}.json')}' "
         f"-FeatureFlags @() -AdditionalModules @() "
-        f"-HostName Hermes -HostProfileId hermes -HostVersion 1.0.0 -Stdio -LogLevel Normal"
+        f"-HostName ARGUS -HostProfileId argus -HostVersion 1.0.0 -Stdio -LogLevel Normal"
     )
     return SpawnSpec(
         [pwsh, "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", inner],

@@ -165,7 +165,7 @@ def _namespace(w: G.World) -> Iterator[NamespaceHost]:
 
 def _ns_cli(host: NamespaceHost, w: G.World, *args: str, timeout: float = 600):
     cp = host.run([w.sb.hermes, *args], timeout=timeout)
-    w.transcripts.append(f"$ hermes {' '.join(args)} -> rc={cp.returncode}\n{(cp.stdout or '')[-6000:]}\n"
+    w.transcripts.append(f"$ argus {' '.join(args)} -> rc={cp.returncode}\n{(cp.stdout or '')[-6000:]}\n"
                          f"{(cp.stderr or '')[-3000:]}")
     return cp
 

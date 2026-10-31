@@ -45,11 +45,11 @@ def plan_update_all(results: list[Any]) -> UpdatePlan:
         if row.needs_fixing:
             plan.skipped.append((row, f"needs fixing: {row.needs_fixing}"))
         elif row.update_available is True and (held := held_for_newer_hermes(row)):
-            plan.skipped.append((row, f"update available after updating Hermes ({held})"))
+            plan.skipped.append((row, f"update available after updating ARGUS ({held})"))
         elif row.update_available is True and row.klass in _UPDATE_KIND:
             plan.movable.append(row)
         elif row.update_available is True:
-            plan.skipped.append((row, f"{row.klass} distribution; Hermes does not upgrade it"))
+            plan.skipped.append((row, f"{row.klass} distribution; ARGUS does not upgrade it"))
         elif row.update_available is None:
             plan.skipped.append((row, row.reason or "update status unknown"))
         elif row.reason:  # up to date by construction but worth naming (pinned)

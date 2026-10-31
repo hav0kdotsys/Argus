@@ -119,7 +119,7 @@ def test_a_gateway_started_before_the_webapp_was_turned_on_asks_for_a_restart(wo
     world["answers"]["webapp-status"] = {"ok": True, "result": {"state": "off", "url": None, "reason": None}}
     assert launcher.cmd_webapp(_args()) == 1
     out = capsys.readouterr().out
-    assert "hermes gateway restart" in out
+    assert "argus gateway restart" in out
     assert world["calls"]["opened"] == []
 
 
@@ -132,10 +132,10 @@ def test_a_webapp_the_gateway_could_not_serve_reports_why_and_how_to_retry(world
                                                                "reason": reason}}
     assert launcher.cmd_webapp(_args()) == 1
     out = capsys.readouterr().out
-    assert reason in out and "hermes gateway restart" in out
+    assert reason in out and "argus gateway restart" in out
     assert launcher.cmd_webapp(_args(status=True)) == 0
     out = capsys.readouterr().out
-    assert reason in out and "hermes gateway restart" in out
+    assert reason in out and "argus gateway restart" in out
 
 
 def test_a_launch_refused_for_a_stale_bundle_asks_for_a_build_not_a_restart(world, capsys):
@@ -148,7 +148,7 @@ def test_a_launch_refused_for_a_stale_bundle_asks_for_a_build_not_a_restart(worl
                                                                "reason": NOT_REBUILT}}
     assert launcher.cmd_webapp(_args(skip_build=True)) == 1
     out = capsys.readouterr().out
-    assert "Run hermes webapp to rebuild it." in out and launcher.RESTART_COMMAND not in out
+    assert "Run argus webapp to rebuild it." in out and launcher.RESTART_COMMAND not in out
 
 
 SERVING = {"ok": True, "result": {"state": "serving", "url": "http://127.0.0.1:9120", "reason": None}}
@@ -250,7 +250,7 @@ def test_status_with_no_gateway_running_and_the_webapp_off_says_how_to_turn_it_o
     assert launcher.cmd_webapp(_args(status=True)) == 1
     out = capsys.readouterr().out
     assert "webapp.enabled: true" in out and str(world["root"] / "config.yaml") in out
-    assert "Run hermes webapp" not in out
+    assert "Run argus webapp" not in out
 
 
 def test_sign_out_replaces_the_browser_credential_on_the_running_gateway(world, capsys):
@@ -396,7 +396,7 @@ def test_a_hermes_home_at_a_deleted_profile_is_refused_like_its_profile_flag(wor
     _use_home(world, gone)
     assert launcher.cmd_webapp(_args(**action)) == 1
     refused = capsys.readouterr()
-    assert "Error: Profile 'gone' does not exist. Create it with: hermes profile create gone" in refused.err
+    assert "Error: Profile 'gone' does not exist. Create it with: argus profile create gone" in refused.err
     assert "Signed out" not in refused.out
     assert (world["calls"]["control"], world["calls"]["ensure"], world["calls"]["build"]) == ([], [], 0)
     assert (world["root"] / TOKEN_PATH).read_text().strip() == before

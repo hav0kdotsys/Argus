@@ -316,7 +316,7 @@ class GatewayKanbanWatchersMixin:
                         "kanban dispatcher stuck: ready queue non-empty for "
                         "%d consecutive ticks but 0 workers spawned.%s Check "
                         "profile health (venv, PATH, credentials) and "
-                        "`hermes kanban list --status ready`.",
+                        "`argus kanban list --status ready`.",
                         bad_ticks, f" Last tick held back: {held}." if held else "",
                     )
                     last_warn_at = now

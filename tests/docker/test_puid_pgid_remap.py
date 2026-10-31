@@ -43,7 +43,7 @@ def test_puid_pgid_remaps_hermes_user(
         timeout=10,
     )
     assert "WRITE_OK" in r.stdout, (
-        f"hermes user cannot write to /opt/data after remap: {r.stdout}"
+        f"argus user cannot write to /opt/data after remap: {r.stdout}"
     )
 
 def test_nas_low_uid_accepted(

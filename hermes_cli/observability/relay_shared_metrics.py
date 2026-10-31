@@ -234,7 +234,7 @@ class _Runtime:
     def __init__(self, host: relay_runtime.RelayRuntime | None = None) -> None:
         resolved_host = host or relay_runtime.get_runtime()
         if resolved_host is None:
-            raise RuntimeError("Hermes core Relay runtime is unavailable")
+            raise RuntimeError("ARGUS core Relay runtime is unavailable")
         self.host: relay_runtime.RelayRuntime = resolved_host
         self.relay = self.host.relay
         self._active = True
@@ -458,7 +458,7 @@ class _Runtime:
                 )
                 if tokens is not None:
                     self._guarded(
-                        "Hermes shared-metrics token mark failed", self._mark,
+                        "ARGUS shared-metrics token mark failed", self._mark,
                         session, session.tasks.get(model_call.task_id), contract.MODEL_TOKENS_MARK, tokens,
                     )
             else:
@@ -611,7 +611,7 @@ class _Runtime:
         if retired:
             self.close_session({"session_id": session.session_id})
         elif finished:
-            self._schedule_flush_and_export("Hermes shared-metrics task flush failed")
+            self._schedule_flush_and_export("ARGUS shared-metrics task flush failed")
 
     def close_session(self, event: dict[str, Any]) -> None:
         session = self._session(event)
@@ -624,7 +624,7 @@ class _Runtime:
             return
         self._emit_session_summary(session)
         self._schedule_flush_and_export(
-            f"Hermes shared-metrics session {session.session_id} flush failed"
+            f"ARGUS shared-metrics session {session.session_id} flush failed"
         )
         with self._sessions_lock:
             _forget(self._sessions, session.session_id, session)
@@ -651,7 +651,7 @@ class _Runtime:
             self._safe(self._close_unseen_segment, session_id)
         if not self._registered:
             return
-        self._flush_and_export("Hermes shared-metrics shutdown flush failed")
+        self._flush_and_export("ARGUS shared-metrics shutdown flush failed")
         self._deregister()
         self._release()
 
@@ -903,7 +903,7 @@ class _Runtime:
             fallback_duration_ms=_elapsed_ms(tool_call.started_ns), tool_name=tool_call.tool_name,
         )
         self._guarded(
-            "Hermes shared-metrics tool call close failed",
+            "ARGUS shared-metrics tool call close failed",
             lambda: self._run_in_task(
                 task, self.relay.tools.call_end, tool_call.handle,
                 self.relay.ToolExecutionResult(fields),
@@ -933,7 +933,7 @@ class _Runtime:
             ttft_bucket=model_call.ttft_bucket,
         )
         self._guarded(
-            "Hermes shared-metrics model call close failed",
+            "ARGUS shared-metrics model call close failed",
             self._run_scoped, session, session.tasks.get(model_call.task_id),
             self.relay.llm.call_end, model_call.handle, fields,
             metadata=self._event_metadata(),
@@ -980,7 +980,7 @@ class _Runtime:
             self._observe_model_turn(session, task, fields)
         try:
             popped = self._guarded(
-                "Hermes shared-metrics task close failed",
+                "ARGUS shared-metrics task close failed",
                 self._run_in_task, task, relay_runtime.pop_relay_scope_if_top, self.relay, task.handle,
                 output=fields, metadata=self._event_metadata(),
             )
@@ -1015,12 +1015,12 @@ class _Runtime:
             self._with_route_run(session.session_id, session.route_run, lambda run: run.observe(task.selected_route))
         if task.model_route is not None and engagement_.engaged_turn(task.start_fields, task.cost.user_turn):
             self._guarded(
-                "Hermes shared-metrics engagement mark failed", self._mark,
+                "ARGUS shared-metrics engagement mark failed", self._mark,
                 session, None, contract.ENGAGEMENT_TURN_MARK, dict(task.model_route),
             )
         if fields["end_reason"] == "user_cancelled" and route is not None and model_.attended(task.start_fields):
             self._guarded(
-                "Hermes shared-metrics friction mark failed", self._mark,
+                "ARGUS shared-metrics friction mark failed", self._mark,
                 session, None, contract.MODEL_FRICTION_MARK, model_.friction_fields("interrupt", route),
             )
         if task.cost.user_turn and model_.attended(task.start_fields):
@@ -1033,9 +1033,9 @@ class _Runtime:
     def _emit_rows(self, session: _MetricsSession | None, rows: list[tuple[str, dict[str, str]]]) -> None:
         for mark, data in rows:
             if session is None:
-                self._guarded("Hermes shared-metrics efficiency mark failed", self.record_process_mark, mark, data)
+                self._guarded("ARGUS shared-metrics efficiency mark failed", self.record_process_mark, mark, data)
             else:
-                self._guarded("Hermes shared-metrics efficiency mark failed", self._mark, session, None, mark, data)
+                self._guarded("ARGUS shared-metrics efficiency mark failed", self._mark, session, None, mark, data)
 
     def _observe_turn_call(
         self, session: _MetricsSession, task: _TaskRun | None, model_call: _ModelCall, event: dict[str, Any]
@@ -1331,7 +1331,7 @@ class _Runtime:
 
     @classmethod
     def _safe(cls, callback: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        return cls._guarded("Hermes shared metrics operation failed", callback, *args, **kwargs)
+        return cls._guarded("ARGUS shared metrics operation failed", callback, *args, **kwargs)
 
 
 def _raw_config() -> dict[str, Any]:
@@ -1368,7 +1368,7 @@ def enabled() -> bool:
     try:
         config: Any = _raw_config()
     except Exception:
-        logger.debug("Unable to read Hermes shared-metrics policy", exc_info=True)
+        logger.debug("Unable to read ARGUS shared-metrics policy", exc_info=True)
         config = None
     for key in ("telemetry", "shared_metrics"):
         config = config.get(key) if isinstance(config, dict) else None
@@ -1449,7 +1449,7 @@ def observe_lifecycle(hook_name: str, **kwargs: Any) -> None:
     try:
         _HOOK_HANDLERS[hook_name](runtime, kwargs)
     except Exception:
-        logger.warning("Hermes shared metrics hook failed: %s", hook_name, exc_info=True)
+        logger.warning("ARGUS shared metrics hook failed: %s", hook_name, exc_info=True)
 
 
 def _with_runtime_toolset(event: dict[str, Any]) -> dict[str, Any]:
@@ -1654,7 +1654,7 @@ def _get_runtime(
         try:
             _RUNTIMES[profile_key] = runtime = _Runtime(host=host)
         except Exception:
-            logger.warning("Hermes shared metrics initialization failed", exc_info=True)
+            logger.warning("ARGUS shared metrics initialization failed", exc_info=True)
             _RUNTIMES[profile_key] = _RUNTIME_FAILED
             return None
         return runtime

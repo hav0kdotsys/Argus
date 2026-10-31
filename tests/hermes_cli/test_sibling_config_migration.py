@@ -187,6 +187,6 @@ def test_sibling_step_notices_reach_the_update_output(monkeypatch, tmp_path, cap
     profile_line = out.index("Profile 'work': config format updated (v51")
     notice = out.index("removed browser.backend: off")
     assert profile_line < notice
-    assert "`browser` toolset in `hermes tools`" in out[notice:]
+    assert "`browser` toolset in `argus tools`" in out[notice:]
     assert "display.new_option" not in out[profile_line:]
     assert "backend" not in (yaml.safe_load((work / "config.yaml").read_text()).get("browser") or {})

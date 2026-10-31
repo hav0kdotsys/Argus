@@ -171,7 +171,7 @@ def test_catalog_entry_is_inspected_at_its_reviewed_pin(tmp_path, sentinel, monk
     assert (pinned["ok"], pinned["agent"], pinned["desktop"]) == (True, True, False)
     assert pinned["sha"] == pin
     assert unknown == {"ok": False, "agent": False, "desktop": False, "warnings": [], "insecure": False,
-                       "error": "'missing' is not in the Hermes plugin catalog."}
+                       "error": "'missing' is not in the ARGUS plugin catalog."}
 
 
 def test_the_reported_sha_is_the_commit_read_even_after_the_source_moves(tmp_path, sentinel, monkeypatch):

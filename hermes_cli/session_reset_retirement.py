@@ -44,5 +44,5 @@ def format_notice(path: str, mode: str) -> str:
     move = "" if path == "session_reset" else " (move the block to top-level session_reset first)"
     return (
         f"{path}.mode: {mode} is no longer applied: gateway conversations reset only on /new or "
-        f"/reset. To keep idle/daily resets, run `hermes plugins install {PLUGIN_NAME}`{move}."
+        f"/reset. To keep idle/daily resets, run `argus plugins install {PLUGIN_NAME}`{move}."
     )

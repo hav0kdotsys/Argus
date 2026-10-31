@@ -24,8 +24,8 @@ def test_legacy_search_entry_is_reported_then_cleared_by_enabling_web():
               "agent": {"disabled_toolsets": ["search", "terminal_tools", "browser", "memory"]}}
     enabled = _get_platform_tools(config, "cli", include_default_mcp_servers=False)
     assert toolsets_partially_stripped(config, enabled) == {
-        "terminal": (["terminal"], ["terminal_tools"], "run `hermes tools enable terminal` to restore"),
-        "web": (["web_search"], ["search"], "run `hermes tools enable web` to restore"),
+        "terminal": (["terminal"], ["terminal_tools"], "run `argus tools enable terminal` to restore"),
+        "web": (["web_search"], ["search"], "run `argus tools enable web` to restore"),
     }
 
     with patch("hermes_cli.tools_config.save_config"):

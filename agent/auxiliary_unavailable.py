@@ -86,8 +86,8 @@ def pool_cooldown_message(provider_id: str) -> Optional[str]:
              else f"all {len(live)} credentials are")
     return (f"Provider '{provider_id}' is set in config.yaml but {which} cooling down after a "
             f"rate limit / quota error (429); the next one resets at {when}. Wait for the reset, "
-            f"add another credential with `hermes auth add {provider_id}`, or switch to a "
-            "different provider with `hermes model`.")
+            f"add another credential with `argus auth add {provider_id}`, or switch to a "
+            "different provider with `argus model`.")
 
 
 class ProviderCredentialsExhaustedError(RuntimeError):
@@ -173,7 +173,7 @@ def pool_billing_message(
     return (
         f"Provider '{provider_id}'{scope} is out of usable credentials: {which} exhausted"
         f"{code_text}. Add credits or update billing with that provider, then retry, or switch "
-        f"to a different provider with `hermes model`."
+        f"to a different provider with `argus model`."
     )
 
 
@@ -214,10 +214,10 @@ def missing_provider_credentials_message(provider_id: str) -> str:
     elif pconfig is None:
         remedy = f"Set the {provider_id.upper().replace('-', '_')}_API_KEY environment variable"
     elif str(pconfig.auth_type).startswith("oauth"):
-        problem, remedy = "no credentials were found", f"Run `hermes auth add {provider_id}` to sign in"
+        problem, remedy = "no credentials were found", f"Run `argus auth add {provider_id}` to sign in"
     else:
         problem = "no credentials were found"
-    switch = "switch to a different provider with `hermes model`."
+    switch = "switch to a different provider with `argus model`."
     return (f"Provider '{provider_id}' is set in config.yaml but {problem}. "
             + (f"{remedy}, or {switch}" if remedy else switch.capitalize()))
 

@@ -87,7 +87,7 @@ def test_launcher_started_gateway_is_visible_before_update(journey: Journey) -> 
     m, state, status = journey.machine, journey["state_before"], journey["status_before"]
     line = _status_line(status.stdout)
     assert status.returncode == 0 and line.startswith("✓") and str(state.get("pid")) in line, fail_with(
-        m, f"the launcher-started gateway (pid {state.get('pid')}) is invisible to `hermes gateway status` "
+        m, f"the launcher-started gateway (pid {state.get('pid')}) is invisible to `argus gateway status` "
            f"before any update: {_status_line(status.stdout)!r}", status)
 
 
@@ -96,7 +96,7 @@ def test_update_with_running_gateway_succeeds(journey: Journey) -> None:
     journey["state_before"]  # the precondition: a gateway was running when the update began
     failure = _RESTART_FAILURE.search(run.stdout)
     assert run.returncode == 0 and failure is None, fail_with(
-        m, f"hermes update with a running gateway reported a failed gateway restart "
+        m, f"argus update with a running gateway reported a failed gateway restart "
            f"(rc={run.returncode}): {failure.group(0).strip() if failure else '<no restart message>'}", run)
 
 
@@ -112,7 +112,7 @@ def test_gateway_discoverable_after_update(journey: Journey) -> None:
     pid, pidfile = int(state.get("pid") or 0), journey["pidfile_after"]
     line = _status_line(status.stdout)
     assert status.returncode == 0 and str(pid) in line and pidfile, fail_with(
-        m, f"after update the serving gateway (pid {pid}) is invisible: `hermes gateway status` says "
+        m, f"after update the serving gateway (pid {pid}) is invisible: `argus gateway status` says "
            f"{line!r}; gateway.pid present={pidfile}", status)
 
 
@@ -121,7 +121,7 @@ def test_next_update_is_not_blocked(journey: Journey) -> None:
     journey["state_after"]  # a gateway was running (the relaunched one)
     blocked = "Could not map Windows gateway PIDs" in run.stdout
     assert run.returncode == 0 and not blocked, fail_with(
-        m, f"the next hermes update is blocked at the gateway pause step (rc={run.returncode}, "
+        m, f"the next argus update is blocked at the gateway pause step (rc={run.returncode}, "
            f"'Could not map Windows gateway PIDs' printed={blocked})", run)
 
 
@@ -130,5 +130,5 @@ def test_gateway_stop_after_update(journey: Journey) -> None:
     pid = int(state.get("pid") or 0)
     assert pid, fail_with(m, f"no gateway recorded before stop: {state}")
     assert journey["stopped"], fail_with(
-        m, f"after update `hermes gateway stop` left the serving gateway (pid {pid}) running", stop)
-    assert stop.returncode == 0, fail_with(m, f"hermes gateway stop exited {stop.returncode}", stop)
+        m, f"after update `argus gateway stop` left the serving gateway (pid {pid}) running", stop)
+    assert stop.returncode == 0, fail_with(m, f"argus gateway stop exited {stop.returncode}", stop)

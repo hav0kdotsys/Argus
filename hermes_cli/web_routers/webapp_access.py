@@ -44,7 +44,7 @@ def owner_on_this_machine(request: Request) -> None:
     the gateway from another machine (an SSH tunnel), and behind the sign-in gate a cookie or bearer
     login may come from another device."""
     if not getattr(request.state, "native_http_principal", None):
-        raise HTTPException(status_code=403, detail="Web Access can only be changed from the Hermes app on this computer.")
+        raise HTTPException(status_code=403, detail="Web Access can only be changed from the ARGUS app on this computer.")
 
 
 router = APIRouter(dependencies=[Depends(owner_on_this_machine)])

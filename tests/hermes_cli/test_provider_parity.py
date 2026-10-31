@@ -76,7 +76,7 @@ def test_every_hermes_model_provider_is_configurable_in_desktop():
         if slug not in _EXEMPT and slug not in gui
     ]
     assert not missing, (
-        "providers shown in `hermes model` but not configurable in the desktop "
+        "providers shown in `argus model` but not configurable in the desktop "
         f"Providers tabs: {missing}"
     )
     leaked = sorted(gui & ({e.slug for e in CANONICAL_PROVIDERS} - listed))

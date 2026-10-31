@@ -250,7 +250,7 @@ def _select_named_custom_provider(
     if isinstance(config.get("custom_providers"), dict):
         logger.warning("custom_providers in config.yaml is a dict, not a list. "
                        "Each entry must be prefixed with '-' in YAML. "
-                       "Run 'hermes doctor' for details.")
+                       "Run 'argus doctor' for details.")
         return None
     custom_providers = rp.get_compatible_custom_providers(config)
     found = _match_legacy_custom_provider(requested_norm, custom_providers) if custom_providers else None
@@ -621,8 +621,8 @@ def _resolve_llamacpp_runtime(requested_provider: str, explicit_api_key: Optiona
                                            "model with /model.", retryable=True)
     # Every chat surface (messaging, TUI, Webapp) shows this sentence, so it names both places a
     # user can start the server and no Desktop-only pane; the Desktop client links its pane itself.
-    raise LocalRuntimeUnavailableError("The local model server is turned off. Start it from the Hermes "
-                                       "desktop app or `hermes model` → Local models, or switch to "
+    raise LocalRuntimeUnavailableError("The local model server is turned off. Start it from the ARGUS "
+                                       "desktop app or `argus model` → Local models, or switch to "
                                        "another model with /model.")
 
 

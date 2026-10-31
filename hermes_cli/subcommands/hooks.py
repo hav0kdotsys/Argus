@@ -9,9 +9,9 @@ def build_hooks_parser(subparsers, *, cmd_hooks: Callable) -> None:
     """Attach the ``hooks`` subcommand to ``subparsers``."""
     hooks_parser = subparsers.add_parser(
         "hooks", help="Inspect and manage shell-script hooks",
-        description="Inspect shell-script hooks declared in ~/.hermes/config.yaml, "
+        description="Inspect shell-script hooks declared in ~/.argus/config.yaml, "
             "test them against synthetic payloads, and manage the first-use "
-            "consent allowlist at ~/.hermes/shell-hooks-allowlist.json.")
+            "consent allowlist at ~/.argus/shell-hooks-allowlist.json.")
     hooks_subparsers = hooks_parser.add_subparsers(dest="hooks_action")
 
     hooks_subparsers.add_parser(

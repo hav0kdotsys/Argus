@@ -85,17 +85,17 @@ def is_interactive_stdin() -> bool:
 def print_noninteractive_setup_guidance(reason: str | None = None) -> None:
     """Print guidance for headless/non-interactive setup flows."""
     print()
-    print(color("☤ Hermes Setup — Non-interactive mode", Colors.CYAN, Colors.BOLD))
+    print(color("☤ ARGUS Setup — Non-interactive mode", Colors.CYAN, Colors.BOLD))
     print()
     if reason:
         print_info(reason)
     _info("The interactive wizard cannot be used here.", None,
-          "Configure Hermes using environment variables or config commands:",
-          "  hermes config set model.provider custom",
-          "  hermes config set model.base_url http://localhost:8080/v1",
-          "  hermes config set model.default your-model-name", None,
+          "Configure ARGUS using environment variables or config commands:",
+          "  argus config set model.provider custom",
+          "  argus config set model.base_url http://localhost:8080/v1",
+          "  argus config set model.default your-model-name", None,
           "Or set OPENROUTER_API_KEY (OpenRouter) / OPENAI_API_KEY (OpenAI) in your environment.",
-          "Run 'hermes setup' in an interactive terminal to use the full wizard.", None)
+          "Run 'argus setup' in an interactive terminal to use the full wizard.", None)
 
 
 def _sanitize_pasted_input(value: str) -> str:
@@ -340,7 +340,7 @@ def _prompt_api_key(var: dict):
     if var.get("url"):
         print_info(f"  Get your key at: {var['url']}")
     print()
-    _prompt_and_save_env_var(var, "  ✓ Saved", "  Skipped (configure later with 'hermes setup')")
+    _prompt_and_save_env_var(var, "  ✓ Saved", "  Skipped (configure later with 'argus setup')")
 
 
 def _prompt_and_save_env_var(var: dict, saved_msg: str, skipped_msg: str) -> None:
@@ -392,7 +392,7 @@ def setup_model_provider(config: dict, *, quick: bool = False):
     except Exception as exc:
         logger.debug("select_provider_and_model error during setup: %s", exc)
         from hermes_cli.auth_error_copy import provider_setup_failure_lines
-        lead, *rest = provider_setup_failure_lines(exc, retry_command="hermes model")
+        lead, *rest = provider_setup_failure_lines(exc, retry_command="argus model")
         print_warning(lead)
         for line in rest:
             print_info(line)
@@ -421,7 +421,7 @@ def _apply_default_agent_settings(config: dict):
     save_config(config)
     print_success("Applied recommended defaults:")
     _info("  Max iterations: 150", "  Compression threshold: 0.50",
-          "  Run `hermes setup agent` later to customize.")
+          "  Run `argus setup agent` later to customize.")
 
 
 def _prompt_number(label: str, current, cast=int):
@@ -445,7 +445,7 @@ _TOOL_PROGRESS_HELP = (
     "  new     — Show tool name only when it changes (less noise)",
     "  all     — Show every tool call with a short preview",
     "  verbose — Full args, results, and debug logs",
-    "  log     — Silent in chat; write every tool call to ~/.hermes/logs/tool_calls.log (gateway only)",
+    "  log     — Silent in chat; write every tool call to ~/.argus/logs/tool_calls.log (gateway only)",
 )
 def setup_agent_settings(config: dict):
     """Configure agent behavior: iterations, progress display and compression."""
@@ -536,7 +536,7 @@ def setup_telemetry(config: dict):
           "counts, update and install results and timing (with a fixed-list reason",
           "and the stage when one fails; a fresh install is noted on this machine and",
           "counted only once you opt in), crashes,",
-          "startup and reply speed, messaging-platform health, how Hermes gets used",
+          "startup and reply speed, messaging-platform health, how ARGUS gets used",
           "(agent accuracy and efficiency, active time per surface, which features and",
           "settings are used or switched off, provider setup outcomes), and coarse",
           "machine facts (RAM range, GPU type, version age and channel, updates behind,",
@@ -615,7 +615,7 @@ def _run_setup_section(config: dict, section: str) -> None:
         print_info(f"Available sections: {', '.join(k for k, _, _ in SETUP_SECTIONS)}")
         return
     label, func = entry
-    _print_banner(f"│     ☤ Hermes Setup — {label:<34s} │")
+    _print_banner(f"│     ☤ ARGUS Setup — {label:<34s} │")
     _run_setup_steps([(label, lambda: func(config))])
     save_config(config)
     print()
@@ -628,7 +628,7 @@ def _run_full_setup(config: dict, hermes_home, *, is_existing: bool, imported_fr
     print_header("Configuration Location")
     _info(f"Config file:  {get_config_path()}", f"Secrets file: {get_env_path()}",
           f"Data folder:  {hermes_home}", f"Install dir:  {PROJECT_ROOT}", None,
-          "You can edit these files directly or use 'hermes config edit'")
+          "You can edit these files directly or use 'argus config edit'")
     if imported_from:
         _info(None, f"Settings were imported from {imported_from}.",
               "Each section below shows what is already set up — keep it,",
@@ -706,9 +706,9 @@ def _run_setup_wizard_impl(args):
     from hermes_cli.auth import get_active_provider
     is_existing = bool(get_env_value("OPENROUTER_API_KEY") or get_env_value("OPENAI_BASE_URL")
                        or get_active_provider() is not None)
-    _print_banner("│             ☤ Hermes Agent Setup Wizard                │",
+    _print_banner("│             ☤ ARGUS Setup Wizard                │",
                   "├─────────────────────────────────────────────────────────┤",
-                  "│  Let's configure your Hermes Agent installation.       │",
+                  "│  Let's configure your ARGUS installation.       │",
                   "│  Press Ctrl+C at any time to exit.                     │")
     imported_from = ""
     if is_existing:
@@ -720,10 +720,10 @@ def _run_setup_wizard_impl(args):
             _record_setup_completed(config)
             return
         print_header("Reconfigure", gap=True)
-        print_success("You already have Hermes configured.")
+        print_success("You already have ARGUS configured.")
         _info("Running the full wizard — each prompt shows your current value.",
               "Press Enter to keep it, or type a new value to change it.", "",
-              "Tip: jump straight to a section with 'hermes setup model|terminal|",
+              "Tip: jump straight to a section with 'argus setup model|terminal|",
               "     gateway|tools|agent', or fill only missing items with --quick.")
     else:
         # First-time setup (--reconfigure / --quick are meaningless here; fall through)
@@ -734,7 +734,7 @@ def _run_setup_wizard_impl(args):
         # outside this dict (the import from another process), so reload it.
         imported_from = offer_agent_import(hermes_home)
         config = load_config()
-        setup_mode = prompt_choice("How would you like to set up Hermes?", [label for label, _ in _FIRST_TIME_MODES], 0)
+        setup_mode = prompt_choice("How would you like to set up ARGUS?", [label for label, _ in _FIRST_TIME_MODES], 0)
         label, runner = _FIRST_TIME_MODES[setup_mode]
         if runner is not None:
             from hermes_cli import setup_quick

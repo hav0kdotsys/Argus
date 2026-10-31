@@ -357,7 +357,7 @@ class TestRunDebugShare:
         with patch("hermes_cli.dump.run_dump") as mock_dump, \
              patch("hermes_cli.debug.upload_to_pastebin",
                     side_effect=_mock_upload):
-            mock_dump.side_effect = lambda a: print("--- hermes dump ---\nversion: test\n--- end dump ---")
+            mock_dump.side_effect = lambda a: print("--- argus dump ---\nversion: test\n--- end dump ---")
             run_debug_share(args)
 
         out = capsys.readouterr().out
@@ -376,16 +376,16 @@ class TestRunDebugShare:
 
         # Each log paste should start with the dump header
         agent_paste = uploaded_content[1]
-        assert "--- hermes dump ---" in agent_paste
+        assert "--- argus dump ---" in agent_paste
         assert "--- full agent.log ---" in agent_paste
         gateway_paste = uploaded_content[2]
-        assert "--- hermes dump ---" in gateway_paste
+        assert "--- argus dump ---" in gateway_paste
         assert "--- full gateway.log ---" in gateway_paste
         gui_paste = uploaded_content[3]
-        assert "--- hermes dump ---" in gui_paste
+        assert "--- argus dump ---" in gui_paste
         assert "--- full gui.log ---" in gui_paste
         desktop_paste = uploaded_content[4]
-        assert "--- hermes dump ---" in desktop_paste
+        assert "--- argus dump ---" in desktop_paste
         assert "--- full desktop.log ---" in desktop_paste
 
 

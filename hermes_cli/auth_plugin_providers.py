@@ -380,7 +380,7 @@ def plugin_missing_auth_handler_error(provider: str, action: str) -> Optional[Sy
         return None
     return SystemExit(
         f"Provider '{provider}' declares auth_type '{profile.auth_type}' but its plugin ships no "
-        f"auth_handler, so `hermes auth {action} {provider}` cannot be handled. Add "
+        f"auth_handler, so `argus auth {action} {provider}` cannot be handled. Add "
         "`auth_handler=` to its ProviderProfile (see the model-provider plugin guide).")
 
 
@@ -416,4 +416,4 @@ def get_plugin_oauth_auth_status(provider_id: str) -> dict[str, Any]:
         "configured": True, "provider": provider_id, "logged_in": bool(live),
         "needs_refresh": bool(refreshable), "accounts": len(entries),
         "base_url": next((e.base_url for e in live + refreshable if e.base_url), "") or "",
-        "hint": "" if live else f"Run `hermes auth add {provider_id}` to sign in."}
+        "hint": "" if live else f"Run `argus auth add {provider_id}` to sign in."}

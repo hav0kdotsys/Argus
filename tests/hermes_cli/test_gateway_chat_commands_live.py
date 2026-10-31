@@ -110,7 +110,7 @@ def classic_session(tmp_path):
             # The banner prints before prompt_toolkit owns the tty: keys typed then are echoed raw and
             # reach the app in one burst with their Enter (a newline, not a submit). The drawn
             # composer row means the app is reading keys.
-            while not ("Welcome to Hermes Agent" in screen() and composer_shows("")):
+            while not ("Welcome to ARGUS" in screen() and composer_shows("")):
                 assert time.monotonic() < deadline, (screen(), (home / "gw.log").read_text())
                 time.sleep(.1)
             yield send, screen, db, session_id

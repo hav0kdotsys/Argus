@@ -607,7 +607,7 @@ class EmailAdapter(BasePlatformAdapter):
         # Validate up front so a missing host is an actionable config error, not IMAP4_SSL("") raising ``[Errno 8]``.
         required = (("EMAIL_ADDRESS", self._address), ("EMAIL_PASSWORD", self._password), ("EMAIL_IMAP_HOST", self._imap_host), ("EMAIL_SMTP_HOST", self._smtp_host))
         if missing := [name for name, value in required if not value]:
-            message = f"Not configured — missing {', '.join(missing)}. Set it via `hermes gateway setup` (env) or platforms.email in config.yaml."
+            message = f"Not configured — missing {', '.join(missing)}. Set it via `argus gateway setup` (env) or platforms.email in config.yaml."
             # Non-retryable: a blank-but-present env var used to drive an indefinite retry loop that leaked until OOM.
             return self._fail("[Email] %s", message, "email_missing_configuration", message, retryable=False)
         if not self._probe_imap(is_reconnect) or not self._probe_smtp():
@@ -863,7 +863,7 @@ class EmailAdapter(BasePlatformAdapter):
                    attach_empty_body: bool = False) -> tuple[MIMEMultipart, str, str]:
         """Build a threaded reply skeleton. Returns ``(msg, msg_id, subject)``."""
         msg, ctx = MIMEMultipart(), self._thread_context.get(to_addr, {})
-        subject = ctx.get("subject", "Hermes Agent")
+        subject = ctx.get("subject", "ARGUS")
         if not subject.startswith("Re:"):
             subject = f"Re: {subject}"
         original_msg_id = reply_to_msg_id or ctx.get("message_id")
@@ -1017,7 +1017,7 @@ def register(ctx) -> None:
         target_ref_syntax_fn=regex_stripped_parser(_SEND_TARGET_RE),
         standalone_send=StandaloneSendPolicy(text_direct=True),
         name="email", label="Email", adapter_factory=EmailAdapter, check_fn=check_email_requirements, is_connected=_is_connected,
-        dashboard_description="Talk to Hermes through an IMAP/SMTP mailbox.",
+        dashboard_description="Talk to ARGUS through an IMAP/SMTP mailbox.",
         docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/",
         dashboard_env_vars=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),
         dashboard_required_env=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),

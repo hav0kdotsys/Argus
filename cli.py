@@ -1004,7 +1004,7 @@ class HermesCLI(CLIInitMixin, CLITuiRuntimeMixin, CLIProcessNotificationsMixin, 
             # A typo'd name must not crash a kanban worker; only a fully-missing set fails loudly.
             if not loaded_skills:
                 raise ValueError(format_missing_skills(missing_skills))
-            logger.warning("Skipping %s. Continuing with: %s. List available skills with `hermes skills list`.",
+            logger.warning("Skipping %s. Continuing with: %s. List available skills with `argus skills list`.",
                            format_missing_skills(missing_skills), ", ".join(loaded_skills))
         if skills_prompt:
             self.system_prompt = "\n\n".join(p for p in (self.system_prompt, skills_prompt) if p).strip()

@@ -54,7 +54,7 @@ def _assert_updated_through_proxy(inst: S.Installed, r: S.Result, new: str) -> N
     stray = sorted(edge.proxy.hosts("refused") | edge.proxy.hosts("tls-rejected"))
     assert not stray, f"the update tried to reach hosts the proxy does not route: {stray}\n" + r.report(inst)
     v = inst.version_works()
-    assert v.rc == 0 and I.TRACEBACK not in v.out, "`hermes --version` broken after the update\n" + I.describe(v.cp)
+    assert v.rc == 0 and I.TRACEBACK not in v.out, "`argus --version` broken after the update\n" + I.describe(v.cp)
 
 
 def test_update_through_tls_inspecting_proxy_lands_on_the_new_commit(inst):

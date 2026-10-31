@@ -43,8 +43,8 @@ async def _start_gateway_replace_existing_instance(existing_pid: int, replace: b
             f"   One gateway per host serves every profile, so there is nothing to start here.\n"
             f"   Attach is impossible: PID {existing_pid} published no usable host record\n"
             f"   (an older build, or an unwritable lock directory).\n"
-            f"   Take the host over:  hermes gateway run --replace\n"
-            f"   Or stop it first:    hermes gateway stop\n")
+            f"   Take the host over:  argus gateway run --replace\n"
+            f"   Or stop it first:    argus gateway stop\n")
         return False
 
     # Never signal a process not provably ours (a poisoned PID record → cross-profile restart loop).
@@ -449,7 +449,7 @@ def _start_gateway_start_cron_and_housekeeping(runner):
                 "loopback HTTP and will all fail (jobs only run when "
                 "triggered manually). Most common cause: API_SERVER_KEY is "
                 "missing from this gateway process's environment. Restart "
-                "the gateway through its supervisor (`hermes gateway "
+                "the gateway through its supervisor (`argus gateway "
                 "restart`) so the profile env loads.",
                 getattr(cron_provider, "name", "external"))
 
@@ -537,7 +537,7 @@ def _launch_home_may_multiplex(config=None) -> bool:
         decision = MultiplexDecision(
             False, "guard",
             f"profile {name!r} launched the gateway, and only the default profile runs the multiplexer "
-            "(start it with `hermes gateway run` from the default profile to serve every profile)")
+            "(start it with `argus gateway run` from the default profile to serve every profile)")
         config.multiplex_profiles = False
         log_multiplex_decision(decision)
         return True
@@ -546,7 +546,7 @@ def _launch_home_may_multiplex(config=None) -> bool:
     logger.error(
         "gateway.multiplex_profiles is set on profile %r, but only the default profile can run the "
         "multiplexer. Unset the flag in this profile's config.yaml, or start the gateway from the "
-        "default profile (`hermes gateway run`), which serves this profile too.", name)
+        "default profile (`argus gateway run`), which serves this profile too.", name)
     _write_runtime_status_quiet(gateway_state="startup_failed", exit_reason="multiplex_requires_default_profile")
     raise SystemExit(GATEWAY_FATAL_CONFIG_EXIT_CODE)
 
@@ -609,7 +609,7 @@ def _start_gateway_reserve_profiles(profile_homes) -> bool:
             from gateway.run import _write_runtime_status_quiet
             logger.error(
                 "The default gateway is running as a profile multiplexer and already serves this profile. "
-                "Manage it with `hermes gateway restart` from the default profile instead of starting a "
+                "Manage it with `argus gateway restart` from the default profile instead of starting a "
                 "second gateway for the profile.")
             _write_runtime_status_quiet(gateway_state="startup_failed", exit_reason=str(exc))
             raise SystemExit(GATEWAY_FATAL_CONFIG_EXIT_CODE)

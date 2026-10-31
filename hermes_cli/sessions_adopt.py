@@ -104,9 +104,9 @@ def _unreadable_store(exc: sqlite3.Error, store: str) -> str:
     if is_sqlite_lock_error(exc):
         return f'Error: {store} is locked by another program. Close that program, then run this command again.'
     if _schema_not_built(exc):
-        return (f'Error: {store} is from an older Hermes and has not been upgraded ({exc}). Run '
-                '`hermes sessions repair` to upgrade it (it makes a backup first), then run this command again.')
-    return f'Error: could not read {store} ({exc}). Run `hermes sessions repair` to check it.'
+        return (f'Error: {store} is from an older ARGUS and has not been upgraded ({exc}). Run '
+                '`argus sessions repair` to upgrade it (it makes a backup first), then run this command again.')
+    return f'Error: could not read {store} ({exc}). Run `argus sessions repair` to check it.'
 
 
 def cmd_adopt(args) -> int:
@@ -150,5 +150,5 @@ def add_adopt_parser(sessions_subparsers) -> None:
         description="Chats written before the gateway owned sessions become gateway sessions the first "
             "time a native client on this host opens them. This adopts them all at once, so remote "
             "clients such as the Webapp can continue them. Run it as the gateway's OS user; use "
-            "`hermes -p <profile> sessions adopt` for another profile.")
+            "`argus -p <profile> sessions adopt` for another profile.")
     parser.add_argument('--dry-run', action='store_true', help='Only count what would be adopted')

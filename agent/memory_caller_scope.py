@@ -35,7 +35,7 @@ _claims_lock = threading.RLock()  # reentrant: a weakref callback can fire from 
 
 def refused_tool_message(tool_name: str) -> str:
     """What the model/chat sees for a refused memory tool call: no check name, no home paths."""
-    return f"Memory tool '{tool_name}' refused. Ask the operator to check `hermes logs errors`."
+    return f"Memory tool '{tool_name}' refused. Ask the operator to check `argus logs errors`."
 
 
 def _home_key(home: Any) -> Optional[str]:

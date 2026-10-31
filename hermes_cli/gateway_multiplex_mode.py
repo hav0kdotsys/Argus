@@ -31,7 +31,7 @@ STANDALONE_PROFILE_REASON = "this profile is standalone (gateway.standalone: tru
 #: profile appears: the in-place switch is an automatic migration, so the opt-out holds it back.
 AUTO_MIGRATION_OPTED_OUT_REASON = (
     "gateway.auto_multiplex_migration is false, so this gateway serves only its own profile; "
-    "run `hermes gateway migrate --multiplex` to serve every profile")
+    "run `argus gateway migrate --multiplex` to serve every profile")
 
 #: ``gateway.standalone: true`` is a TEMPORARY backwards-compatibility shim, not a supported topology.
 #: It exists so fleets that lost per-profile gateways in the multiplex-only switch keep working while
@@ -40,7 +40,7 @@ AUTO_MIGRATION_OPTED_OUT_REASON = (
 #: prints this so nobody builds on it.
 STANDALONE_DEPRECATION_NOTICE = (
     "gateway.standalone is a temporary compatibility shim while multiplexing gaps are fixed; "
-    "it will be removed once they are — plan to fold this profile with `hermes gateway migrate --multiplex`."
+    "it will be removed once they are — plan to fold this profile with `argus gateway migrate --multiplex`."
 )
 
 #: ``gateway.multiplex_profiles: false`` is no longer an opt-out from the one-gateway-per-host

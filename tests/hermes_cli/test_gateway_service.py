@@ -100,7 +100,7 @@ class TestSystemdServiceRefresh:
 
         output = capsys.readouterr().out
         assert "still restarting after 90s" in output
-        assert "hermes gateway status" in output
+        assert "argus gateway status" in output
 
     def test_refresh_refuses_to_bake_pytest_tmpdir_into_real_user_unit(
         self, tmp_path, monkeypatch
@@ -168,7 +168,7 @@ class TestRequireServiceInstalled:
         assert exc_info.value.code == 1
         out = capsys.readouterr().out
         assert "not installed" in out
-        assert "hermes gateway install" in out
+        assert "argus gateway install" in out
 
     def test_passes_when_unit_exists(self, tmp_path, monkeypatch):
         unit_path = tmp_path / "hermes-gateway.service"
@@ -1670,7 +1670,7 @@ class TestPreflightUserSystemd:
 
         msg = str(exc_info.value)
         assert "sudo loginctl enable-linger" in msg
-        assert "hermes gateway run" in msg  # foreground fallback mentioned
+        assert "argus gateway run" in msg  # foreground fallback mentioned
         assert "Interactive authentication required" in msg
 
     def test_enable_linger_succeeds_and_socket_appears(self, monkeypatch, capsys):
@@ -2093,7 +2093,7 @@ class TestLegacyHermesUnitDetection:
 
     # Minimal ExecStart that looks like our gateway
     _OUR_UNIT_TEXT = (
-        "[Unit]\nDescription=Hermes Gateway\n[Service]\n"
+        "[Unit]\nDescription=ARGUS Gateway\n[Service]\n"
         "ExecStart=/usr/bin/python -m hermes_cli.main gateway run --replace\n"
     )
 
@@ -2142,7 +2142,7 @@ class TestLegacyHermesUnitDetection:
         for i, execstart in enumerate(variants):
             # Test each variant fresh (every variant ships the same unit name)
             (user_dir / "hermes.service").write_text(
-                f"[Unit]\nDescription=Old Hermes\n[Service]\n{execstart}\n",
+                f"[Unit]\nDescription=Old ARGUS\n[Service]\n{execstart}\n",
                 encoding="utf-8",
             )
             results = gateway_cli._find_legacy_hermes_units()
@@ -2154,7 +2154,7 @@ class TestRemoveLegacyHermesUnits:
     """Tests for remove_legacy_hermes_units (the migration action)."""
 
     _OUR_UNIT_TEXT = (
-        "[Unit]\nDescription=Hermes Gateway\n[Service]\n"
+        "[Unit]\nDescription=ARGUS Gateway\n[Service]\n"
         "ExecStart=/usr/bin/python -m hermes_cli.main gateway run --replace\n"
     )
 

@@ -133,7 +133,7 @@ def _warn_anchorless_thread_sub_once(sub: dict, platform: str) -> None:
     _ANCHORLESS_WARNED.add(key)
     logger.warning(
         "kanban notifier: subscription for %s on %s thread %s has no parent_chat_id anchor and matched no "
-        "profile route; it will not be delivered. Re-subscribe with `hermes kanban notify-subscribe ... "
+        "profile route; it will not be delivered. Re-subscribe with `argus kanban notify-subscribe ... "
         "--parent-chat-id <channel id> [--guild-id <guild id>]`.",
         sub.get("task_id"), platform, sub.get("chat_id"),
     )
@@ -198,7 +198,7 @@ def _adapter_for_subscription(runner: Any, platform: Any, sub: dict, owner_profi
                     sub, platform,
                     "kanban notifier: subscription for %s on %s chat %s is stamped with profile %s but a "
                     "profile_routes entry pins that chat to profile %s; it will not be delivered. "
-                    "Re-subscribe with `hermes kanban notify-subscribe ... --notifier-profile %s`.",
+                    "Re-subscribe with `argus kanban notify-subscribe ... --notifier-profile %s`.",
                     profile, route.profile, route.profile)
                 return None
             from gateway.run import _multiplex_profile_homes

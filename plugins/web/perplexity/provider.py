@@ -56,7 +56,7 @@ _KEY_URL = "https://www.perplexity.ai/account/api"
 def _headers() -> dict[str, str]:
     return {
         "HTTP-Referer": "https://hermes-agent.nousresearch.com",
-        "X-Title": "Hermes Agent",
+        "X-Title": "ARGUS",
         "User-Agent": hermes_user_agent("HermesAgent"),
         "X-Pplx-Integration": "hermes-agent",
     }

@@ -55,7 +55,7 @@ _ACCESS_DENIED_PATTERN = re.compile(rf"({_ACCESS_DENIED_WORDS})", re.IGNORECASE)
 _LAST_SPAWN_BREAKAWAY_FALLBACK: dict = {"fallback": False}
 
 _TASK_NAME_DEFAULT = "Hermes_Gateway"
-_TASK_DESCRIPTION = "Hermes Agent Gateway - Messaging Platform Integration"
+_TASK_DESCRIPTION = "ARGUS Gateway - Messaging Platform Integration"
 _TASK_LOGON_DELAY = "PT30S"
 _TASK_RESTART_INTERVAL = "PT1M"
 _TASK_RESTART_COUNT = 999
@@ -895,7 +895,7 @@ def _install_startup_fallback(script_path: Path, start_now: bool, detail: str) -
         # An earlier task survives (UAC declined, access denied on re-create) and still fires at
         # logon; adding the fallback beside it would start the gateway twice (#80569).
         print("⚠ Scheduled Task is still registered — skipped the Startup fallback to avoid a duplicate autostart.")
-        print("  If that task is disabled or broken, run 'hermes gateway uninstall', then install again.")
+        print("  If that task is disabled or broken, run 'argus gateway uninstall', then install again.")
     else:
         entry = _install_startup_entry(script_path)
         print(f"✓ Installed Windows login item: {entry}")
@@ -910,7 +910,7 @@ def _install_startup_fallback(script_path: Path, start_now: bool, detail: str) -
         from hermes_cli.gateway import _profile_arg
 
         profile_arg = _profile_arg()
-        start_cmd = f"hermes {profile_arg} gateway start" if profile_arg else "hermes gateway start"
+        start_cmd = f"argus {profile_arg} gateway start" if profile_arg else "argus gateway start"
         print("ℹ Startup fallback installed; gateway not started now.")
         print(f"  Start manually with: {start_cmd}")
     _print_next_steps()
@@ -924,11 +924,11 @@ def _offer_elevated_install(headline: str, force: bool, start_now: bool, start_o
     print("  UAC is Windows' admin approval prompt; it is needed to create/update the Scheduled Task.")
     if prompt_yes_no("  Open the UAC prompt now?", False):
         if _launch_elevated_install(force=force, start_now=start_now, start_on_login=start_on_login):
-            print("✓ Launched elevated Hermes gateway install prompt.")
+            print("✓ Launched elevated ARGUS gateway install prompt.")
             if start_now:
                 print("  Approve the Windows UAC prompt; the elevated install will start the gateway afterwards.")
             else:
-                print("  Approve the Windows UAC prompt, then run: hermes gateway status")
+                print("  Approve the Windows UAC prompt, then run: argus gateway status")
             return True
         print("⚠ Falling back to Startup folder because elevation was unavailable or cancelled.")
     else:
@@ -951,7 +951,7 @@ def install(
             _start_or_report_running()
         else:
             print("ℹ Gateway not started and no auto-start service installed.")
-            print("  Run in the foreground later with: hermes gateway run")
+            print("  Run in the foreground later with: argus gateway run")
         return
 
     task_name = get_task_name()
@@ -994,7 +994,7 @@ def install(
             _start_or_report_running()
         else:
             print("ℹ Gateway not started now.")
-            print("  Start manually with: hermes gateway start")
+            print("  Start manually with: argus gateway start")
         _print_next_steps()
         return
 
@@ -1277,7 +1277,7 @@ def _format_attestation_warning(attested: list[int], data: dict) -> str:
         f"⚠ The previous gateway start ({via}, {ts}) reported success, but the "
         f"process (PID {', '.join(map(str, attested))}) died without a clean "
         "shutdown record.",
-        "  This usually means the shell that ran `hermes gateway start` was inside "
+        "  This usually means the shell that ran `argus gateway start` was inside "
         "a Windows Job Object that killed the gateway on exit (#91675).",
     ]
     hint = _task_run_hint("  Recovery: schtasks /Run /TN {}   (Task Scheduler starts the gateway outside any Job Object)")
@@ -1328,7 +1328,7 @@ def _report_gateway_start(via: str) -> None:
 
 
 def _print_next_steps() -> None:
-    print("\nNext steps:\n  hermes gateway status                      # Check status")
+    print("\nNext steps:\n  argus gateway status                      # Check status")
     print(f"  type {_hermes_home()}\\logs\\gateway.log       # View logs")
 
 
@@ -1352,8 +1352,8 @@ def uninstall() -> None:
             print("  UAC is Windows' admin approval prompt; it is needed to remove the Scheduled Task.")
             if prompt_yes_no("  Open the UAC prompt now?", False):
                 if _launch_elevated_gateway_command("uninstall"):
-                    print("✓ Launched elevated Hermes gateway uninstall prompt.")
-                    print("  Approve the Windows UAC prompt, then run: hermes gateway status")
+                    print("✓ Launched elevated ARGUS gateway uninstall prompt.")
+                    print("  Approve the Windows UAC prompt, then run: argus gateway status")
                     return
                 print("⚠ Elevated uninstall prompt was unavailable or cancelled.")
             else:
@@ -1489,7 +1489,7 @@ def _print_scheduled_task_drift(task_name: str) -> None:
     drift = scheduled_task_drift(task_name)
     if drift:
         print(f"⚠ Scheduled Task registration predates the current template ({'; '.join(drift)})")
-        print("  Repair: hermes gateway start  (or: hermes gateway install)")
+        print("  Repair: argus gateway start  (or: argus gateway install)")
 
 
 def reconcile_scheduled_task(task_name: str) -> bool:
@@ -1504,7 +1504,7 @@ def reconcile_scheduled_task(task_name: str) -> bool:
     ok, detail = _install_scheduled_task(task_name, _write_task_script())
     print(f"{'✓' if ok else '⚠'} {detail}")
     if not ok:
-        print("  Repair manually: hermes gateway install")
+        print("  Repair manually: argus gateway install")
     return ok
 
 
@@ -1691,7 +1691,7 @@ def status(deep: bool = False) -> None:
         _print_deep_probes()
 
     if not task_installed and not startup_installed and not pids:
-        print("\nTo install:\n  hermes gateway install")
+        print("\nTo install:\n  argus gateway install")
 
 
 def start() -> None:
@@ -1723,7 +1723,7 @@ def start() -> None:
             # hand-off to an elevated child — so there is nothing left to spawn or to warn about here.
             install(force=False, start_now=True, start_on_login=True)
             return
-        print("ℹ Login auto-start not installed; add it later with: hermes gateway install")
+        print("ℹ Login auto-start not installed; add it later with: argus gateway install")
     elif is_task_registered():
         reconcile_scheduled_task(get_task_name())   # like systemd's regenerate-on-stale before a start
 
@@ -1905,5 +1905,5 @@ def restart() -> None:
     if not _wait_for_gateway_ready(timeout_s=15.0):
         raise RuntimeError(
             "Gateway restart did not produce a running gateway process. "
-            "Check logs/gateway.log and run `hermes gateway status`."
+            "Check logs/gateway.log and run `argus gateway status`."
         )

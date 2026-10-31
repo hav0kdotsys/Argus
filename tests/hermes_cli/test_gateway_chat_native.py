@@ -125,7 +125,7 @@ finally:
                 tmux("send-keys", "-t", "chat", "Enter")
 
             launch("--cli", "chat")
-            first = until("Welcome to Hermes Agent")
+            first = until("Welcome to ARGUS")
             until("❯ ")  # the banner prints before the prompt accepts input
             type_line("WS_SHARED")
             fresh = until("LOCAL_ACK_WS_SHARED")

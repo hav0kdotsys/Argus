@@ -43,4 +43,4 @@ def test_restart_after_a_failed_build_names_the_restart(tmp_path, monkeypatch):
                       had_desktop_app_before_update=False, pre_update_version=None, plan=None,
                       windows_resume=None)
 
-    assert during_restart == ["Restarting Hermes services"]
+    assert during_restart == ["Restarting ARGUS services"]

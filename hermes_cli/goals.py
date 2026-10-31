@@ -1081,7 +1081,7 @@ def _decision(status, should_continue: bool, prompt: Optional[str], verdict: str
 
 
 _JUDGE_CONFIG_HINT = (
-    "~/.hermes/config.yaml:\n  auxiliary:\n    goal_judge:\n      provider: {provider}\n      model: {model}\n"
+    "~/.argus/config.yaml:\n  auxiliary:\n    goal_judge:\n      provider: {provider}\n      model: {model}\n"
     "Then /goal resume to continue."
 )
 

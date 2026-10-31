@@ -237,7 +237,7 @@ def _discover_bare(service_pids: set[int]) -> tuple[list[dict], list[str]]:
         argv, home = _capture_gateway_argv(pid), gateway_pid_home(pid)
         if marker or not argv or not home:
             why = f"supervised by {marker}" if marker else "its command line could not be read" if not argv \
-                else "its Hermes home could not be proved"
+                else "its ARGUS home could not be proved"
             notices.append(f"  ↷ gateway PID {pid} keeps running until after the update ({why})")
             continue
         bare.append({"pid": pid, "argv": list(argv), "home": str(home), "ct": get_process_start_time(pid)})
@@ -276,7 +276,7 @@ def _escape_cgroup(unit: dict) -> bool:
     cmd = ["busctl", bus, "call", "org.freedesktop.systemd1", "/org/freedesktop/systemd1",
            "org.freedesktop.systemd1.Manager", "StartTransientUnit", "ssa(sv)a(sa(sv))",
            f"hermes-update-{os.getpid()}.scope", "fail", "2", "PIDs", "au", str(len(pids)), *map(str, pids),
-           "Description", "s", f"hermes update (outside {unit['unit']} while it is paused)", "0"]
+           "Description", "s", f"argus update (outside {unit['unit']} while it is paused)", "0"]
     with suppress(OSError, subprocess.SubprocessError):
         subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
                    stdin=subprocess.DEVNULL, timeout=15, check=False)

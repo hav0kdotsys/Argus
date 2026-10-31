@@ -43,7 +43,7 @@ def cmd_list(args: Any | None = None) -> None:
     entries = _pc()._discover_all_plugins()
     if not entries:
         console.print("[dim]No plugins installed.[/dim]")
-        console.print("[dim]Install with:[/dim] hermes plugins install owner/repo")
+        console.print("[dim]Install with:[/dim] argus plugins install owner/repo")
         return
 
     enabled = _pc()._get_enabled_set()
@@ -108,9 +108,9 @@ def cmd_list(args: Any | None = None) -> None:
     for line in removed_lines:
         console.print(line)
     console.print()
-    console.print("[dim]Compact view:[/dim] hermes plugins list --plain --no-bundled")
-    console.print("[dim]Interactive toggle:[/dim] hermes plugins")
-    console.print("[dim]Enable/disable:[/dim] hermes plugins enable/disable <name>")
+    console.print("[dim]Compact view:[/dim] argus plugins list --plain --no-bundled")
+    console.print("[dim]Interactive toggle:[/dim] argus plugins")
+    console.print("[dim]Enable/disable:[/dim] argus plugins enable/disable <name>")
     console.print("[dim]Plugins are opt-in by default — only 'enabled' plugins load.[/dim]")
 
 
@@ -120,7 +120,7 @@ def cmd_show(name: str) -> None:
     match = _pc()._find_plugin_entry(name)
     if match is None:
         console.print(f"[red]Plugin '{name}' not found.[/red]")
-        _pc()._fail(console, "[dim]List installed plugins:[/dim] hermes plugins list")
+        _pc()._fail(console, "[dim]List installed plugins:[/dim] argus plugins list")
 
     pname, version, description, source, dir_path, key = match
     manifest = _pc()._read_manifest(Path(dir_path)) if dir_path else {}
@@ -140,7 +140,7 @@ def cmd_show(name: str) -> None:
         audit = audit_plugin_dir(Path(dir_path), manifest)
         runs_in = ("plugin host" if isolation_mode() == ISOLATION_HOST and audit.host_ready
                    else "refused (plugins.isolation: host)" if isolation_mode() == ISOLATION_HOST
-                   else "Hermes process")
+                   else "ARGUS process")
         console.print(f"[dim]Runs in:[/dim] {runs_in} [dim]— {audit.summary()}[/dim]")
     from hermes_cli.plugin_provider_requests import requires_auth_notice
     if notice := requires_auth_notice(manifest):

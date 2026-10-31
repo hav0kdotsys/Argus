@@ -192,7 +192,7 @@ class TestTickerLoopRecordsErrors:
 
         msg = jobs.get_ticker_last_error()
         assert msg is not None, (
-            "a failing tick must persist its reason for `hermes cron status` "
+            "a failing tick must persist its reason for `argus cron status` "
             "to surface (#68483)"
         )
         assert "Permission denied" in msg

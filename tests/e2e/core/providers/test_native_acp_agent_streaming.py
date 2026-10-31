@@ -55,7 +55,7 @@ KNOWN: dict[str, tuple[str, str]] = {
     "tui_stream": (r"^tui_stream: no agent chunk reached the surface during the [\d.]+s turn",
                    "#120550 the ACP client buffers the whole turn: no reasoning/message delta reaches the UI in flight"),
     "nested_acp": (r"^nested_acp: no agent chunk reached the surface during the [\d.]+s turn",
-                   "#101507 hermes acp over an ACP provider forwards inner ACP chunks only after the inner turn ends"),
+                   "#101507 argus acp over an ACP provider forwards inner ACP chunks only after the inner turn ends"),
 }
 
 

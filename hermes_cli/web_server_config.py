@@ -96,8 +96,8 @@ _SCHEMA_OVERRIDES: dict[str, dict[str, Any]] = {
     "proxy.enabled": {
         "type": "boolean",
         "description": (
-            "Docker-only egress credential firewall. Requires `hermes egress setup` "
-            "and `hermes egress start`; Modal/SSH/Daytona are not wired yet."
+            "Docker-only egress credential firewall. Requires `argus egress setup` "
+            "and `argus egress start`; Modal/SSH/Daytona are not wired yet."
         ),
         "category": "security",
     },
@@ -112,8 +112,8 @@ _SCHEMA_OVERRIDES: dict[str, dict[str, Any]] = {
     "auth.adopt_external_logins": {
         "type": "boolean",
         "description": (
-            "Borrow and refresh the Codex CLI / Claude Code logins when Hermes has no usable login of its own. "
-            "Off: Hermes uses only its own logins (`hermes auth add <provider>`)."
+            "Borrow and refresh the Codex CLI / Claude Code logins when ARGUS has no usable login of its own. "
+            "Off: ARGUS uses only its own logins (`argus auth add <provider>`)."
         ),
         "category": "security",
     },
@@ -154,7 +154,7 @@ _SCHEMA_OVERRIDES: dict[str, dict[str, Any]] = {
         "", "minimal", "low", "medium", "high", "xhigh", "max", "ultra",
     ),
     "updates.non_interactive_local_changes": _select(
-        "When the chat app / gateway updates Hermes (no terminal prompt), "
+        "When the chat app / gateway updates ARGUS (no terminal prompt), "
         "what to do with uncommitted local source edits. 'stash' keeps them "
         "and re-applies them after the update; 'discard' throws them away. "
         "Terminal updates always ask, regardless of this setting.",
@@ -163,7 +163,7 @@ _SCHEMA_OVERRIDES: dict[str, dict[str, Any]] = {
     "updates.refresh_cua_driver": {
         "type": "boolean",
         "description": (
-            "Refresh an already-installed cua-driver during hermes update. "
+            "Refresh an already-installed cua-driver during argus update. "
             "Disable this on non-admin macOS accounts where /Applications is "
             "not writable."
         ),
@@ -672,11 +672,11 @@ def _dashboard_skew_restart_hint() -> str:
     if os.environ.get("HERMES_SERVE_HEADLESS") == "1":
         return (
             "restart the Desktop-owned backend to load the new code "
-            "(use Restart backend in Hermes Desktop, or quit and reopen the app)"
+            "(use Restart backend in ARGUS Desktop, or quit and reopen the app)"
         )
     return (
-        "restart this Hermes process to load the new code "
-        "(hermes dashboard --port <port>, or the equivalent service restart for this install)"
+        "restart this ARGUS process to load the new code "
+        "(argus dashboard --port <port>, or the equivalent service restart for this install)"
     )
 
 

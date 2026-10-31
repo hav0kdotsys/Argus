@@ -29,7 +29,7 @@ from cron.executions import cancellable_execution
 # job is rare, so the prune rides along with the write instead of needing its own sweep.
 _MARKER_TTL_SECONDS = 24 * 3600
 
-_DEFAULT_REASON = "cancelled on request (hermes cron cancel)"
+_DEFAULT_REASON = "cancelled on request (argus cron cancel)"
 
 
 def _cancels_dir() -> Path:

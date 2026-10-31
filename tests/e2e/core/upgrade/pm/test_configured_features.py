@@ -53,7 +53,7 @@ def _mcp_test(sb: I.Sandbox, server: HttpMcpServer) -> str:
     cp = sb.cli("mcp", "test", MCP_NAME, timeout=180)
     after = server.log.read_text(encoding="utf-8").count('"initialize"') if server.log.exists() else 0
     if cp.returncode != 0 or "Connected" not in cp.stdout or after <= before:
-        return f"`hermes mcp test {MCP_NAME}` did not connect (server saw {after - before} initialize)\n{I.describe(cp)}"
+        return f"`argus mcp test {MCP_NAME}` did not connect (server saw {after - before} initialize)\n{I.describe(cp)}"
     return ""
 
 
@@ -79,7 +79,7 @@ def rebuilt(tmp_path_factory, provider):
         before = {"generation": P.selected_generation(sb), "imports": P.managed_imports(sb, *MANAGED),
                   "mcp": _mcp_test(sb, server)}
         assert before["imports"]["telegram"] == "ok" and before["mcp"] == "", (
-            f"harness: `hermes pm install --extra telegram` exited 0 but left no SDK / MCP broken: {before}")
+            f"harness: `argus pm install --extra telegram` exited 0 but left no SDK / MCP broken: {before}")
         P.publish_dependency_release(origin, root, 1)
         up = P.update(sb)
         after_update = {"generation": P.selected_generation(sb), "imports": P.managed_imports(sb, *MANAGED),
@@ -95,32 +95,32 @@ def rebuilt(tmp_path_factory, provider):
 
 def test_update_rebuild_keeps_installed_extra_and_mcp(rebuilt):
     sb, up, after = rebuilt["sb"], rebuilt["update"], rebuilt["after_update"]
-    assert up.returncode == 0, "hermes update failed:\n" + P.diagnostics(sb, up)
+    assert up.returncode == 0, "argus update failed:\n" + P.diagnostics(sb, up)
     assert after["generation"] != rebuilt["before"]["generation"], (
         "harness: the dependency release did not make the update build a new generation\n" + P.diagnostics(sb, up))
     assert after["imports"]["telegram"] == "ok", (
-        f"the extra installed with `hermes pm install --extra telegram` is gone after `hermes update`: "
+        f"the extra installed with `argus pm install --extra telegram` is gone after `argus update`: "
         f"{after['imports']}\n" + P.diagnostics(sb, up))
     assert after["imports"]["mcp.client.streamable_http"] == "ok", after["imports"]
-    assert after["mcp"] == "", "HTTP MCP server no longer connects after `hermes update`:\n" + after["mcp"]
+    assert after["mcp"] == "", "HTTP MCP server no longer connects after `argus update`:\n" + after["mcp"]
 
 
 def test_repair_keeps_installed_extra_and_mcp(rebuilt):
     sb, rp, after = rebuilt["sb"], rebuilt["repair"], rebuilt["after_repair"]
-    assert rp.returncode == 0, "hermes pm repair failed on a healthy install:\n" + P.diagnostics(sb, rp)
+    assert rp.returncode == 0, "argus pm repair failed on a healthy install:\n" + P.diagnostics(sb, rp)
     assert after["generation"] != rebuilt["after_update"]["generation"], (
-        "`hermes pm repair` reported success but did not rebuild the environment\n" + P.diagnostics(sb, rp))
+        "`argus pm repair` reported success but did not rebuild the environment\n" + P.diagnostics(sb, rp))
     assert after["imports"]["telegram"] == "ok", (
-        f"the extra installed with `hermes pm install --extra telegram` is gone after `hermes pm repair`: "
+        f"the extra installed with `argus pm install --extra telegram` is gone after `argus pm repair`: "
         f"{after['imports']}\n" + P.diagnostics(sb, rp))
-    assert after["mcp"] == "", "HTTP MCP server no longer connects after `hermes pm repair`:\n" + after["mcp"]
+    assert after["mcp"] == "", "HTTP MCP server no longer connects after `argus pm repair`:\n" + after["mcp"]
 
 
 def test_configured_gateway_platform_has_its_sdk_after_update(rebuilt):
     sb, up, after = rebuilt["sb"], rebuilt["update"], rebuilt["after_update"]
     assert up.returncode == 0, P.diagnostics(sb, up)
     assert after["imports"]["discord"] == "ok", (
-        f"configured discord platform has no SDK after `hermes update`: {after['imports']['discord']}\n"
+        f"configured discord platform has no SDK after `argus update`: {after['imports']['discord']}\n"
         + P.diagnostics(sb, up))
 
 
@@ -162,7 +162,7 @@ def migrated(tmp_path_factory, provider):
 def test_legacy_venv_features_carry_into_the_first_pm_generation(migrated):
     leg, up = migrated["leg"], migrated["update"]
     assert migrated["pre"].returncode == 0, "harness: N-1 venv cannot import its features:\n" + H.describe(migrated["pre"])
-    assert up.returncode == 0, "hermes update from a main-era venv failed:\n" + H.describe(up)
+    assert up.returncode == 0, "argus update from a main-era venv failed:\n" + H.describe(up)
     assert I.git("rev-parse", "HEAD", cwd=leg.install) == _refs().head, H.describe(up)
     selected = Path(leg.python)
     assert "installs" in selected.parts, f"update left the install on the legacy venv: {selected}\n{H.describe(up)}"

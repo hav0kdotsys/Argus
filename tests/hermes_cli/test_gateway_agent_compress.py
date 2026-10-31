@@ -86,7 +86,7 @@ def test_manual_compress_reports_the_gateways_committed_summary(make_agent):
     CLI's compressor view cannot know."""
     fallback = {"noop": False, "aborted": False, "refused_would_grow": False, "fallback_used": True,
                 "headline": "Compressed with fallback: 6 → 2 messages", "token_line": "Approx request size: ~90 → ~30 tokens",
-                "note": "Summary generation failed; Hermes used limited fallback context and removed 4 message(s)."}
+                "note": "Summary generation failed; ARGUS used limited fallback context and removed 4 message(s)."}
     agent, _, result = _compress_with_mutate_reply(
         make_agent, {"session_id": SID, "operation": "compress", "revision": 10, "summary": fallback})
     assert result.summary == fallback

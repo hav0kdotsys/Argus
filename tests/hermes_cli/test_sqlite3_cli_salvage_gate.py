@@ -33,7 +33,7 @@ from hermes_cli.session_lost_and_found import (
 )
 from hermes_cli.sqlite_runtime import is_sqlite_wal_reset_vulnerable
 
-LIVE_DB_SALVAGE_COMMAND = 'sqlite3 ~/.hermes/state.db ".recover"'
+LIVE_DB_SALVAGE_COMMAND = 'sqlite3 ~/.argus/state.db ".recover"'
 
 # ---------------------------------------------------------------------------
 # The version gate itself
@@ -197,7 +197,7 @@ class TestGuidanceNeverNamesLiveDb:
             "session_persistence_failed", "corrupt"
         )
         assert LIVE_DB_SALVAGE_COMMAND not in explanation
-        assert "hermes sessions recover --source" in explanation
+        assert "argus sessions recover --source" in explanation
         assert "--inspect-only" in explanation
         assert "--output recovered-state.db" in explanation
         assert ".recover" in explanation  # the warning still names the hazard

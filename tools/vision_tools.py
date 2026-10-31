@@ -681,7 +681,7 @@ async def _prepare_image(
 def _too_large_message(image_data_url: str) -> str:
     return (
         f"Image too large for vision API: base64 payload is {len(image_data_url) / (1024 * 1024):.1f} MB "
-        f"(limit {_MAX_BASE64_BYTES / (1024 * 1024):.0f} MB) even after resizing. Run `hermes pm repair` "
+        f"(limit {_MAX_BASE64_BYTES / (1024 * 1024):.0f} MB) even after resizing. Run `argus pm repair` "
         f"to restore Pillow for auto-resize, or compress the image manually.")
 
 

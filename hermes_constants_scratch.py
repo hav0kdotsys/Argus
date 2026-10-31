@@ -342,7 +342,7 @@ def reap_processes_rooted_in(scratch_root: Path, doomed: list[Path], audit: logg
                 name = proc.name()
             except (psutil.Error, OSError):
                 name = "?"
-            audit.info("scratch prune: kept %r — live Hermes process pid=%d (%r) works inside",
+            audit.info("scratch prune: kept %r — live ARGUS process pid=%d (%r) works inside",
                        os.fspath(entry), proc.pid, name)
     # Re-filter against the shrunk *doomed*: an orphan in a kept entry is spared with it (the
     # reap only exists to clear the way for rmtree); one whose cwd is already gone still goes.

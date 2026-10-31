@@ -63,7 +63,7 @@ def _remedy(root: Optional[Path], package: str, node: Path, npm: Path) -> str:
     if root.parent.name != "_npx":
         return rebuild
     delete = f"Remove-Item -Recurse -Force {q(root)}" if windows else f"rm -rf {q(root)}"
-    return f"{delete} (Hermes reinstalls it on the next start), or {rebuild}"
+    return f"{delete} (ARGUS reinstalls it on the next start), or {rebuild}"
 
 
 def node_abi_error(server_name: str, stderr_text: str) -> Optional[NodeAbiMismatchError]:
@@ -75,14 +75,14 @@ def node_abi_error(server_name: str, stderr_text: str) -> Optional[NodeAbiMismat
     versions = _ABI_VERSIONS.search(stderr_text)
     node, node_version = _managed("node")
     npm, _ = _managed("npm")
-    ours = f"Hermes's Node {node_version}".strip() if node_version else "Hermes's Node"
+    ours = f"ARGUS's Node {node_version}".strip() if node_version else "ARGUS's Node"
     built = (f"NODE_MODULE_VERSION {versions.group(1)}; {ours} needs {versions.group(2)}" if versions
              else f"it does not load under {ours}")
     # Diagnosis first: the startup banner keeps only the first ~120 characters.
     head = (f"native addon built for a different Node.js ({built}): {module or 'see logs/mcp-stderr.log'}. "
-            "Hermes runs MCP servers on its own Node; rebuild the server under it")
+            "ARGUS runs MCP servers on its own Node; rebuild the server under it")
     if node is None or npm is None:
-        return NodeAbiMismatchError(f"{head}: install Hermes's Node with `hermes pm install npm`, then run "
-                                    f"`hermes mcp test {server_name}`")
+        return NodeAbiMismatchError(f"{head}: install ARGUS's Node with `argus pm install npm`, then run "
+                                    f"`argus mcp test {server_name}`")
     root, package = _package_of(module) if module else (None, "")
     return NodeAbiMismatchError(f"{head}: {_remedy(root, package, node, npm)}")

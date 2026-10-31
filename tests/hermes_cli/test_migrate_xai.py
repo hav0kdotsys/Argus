@@ -22,7 +22,7 @@ def trap_config(tmp_path: Path) -> Path:
     """A config.yaml with retired models AND comments to verify round-trip."""
     p = tmp_path / "config.yaml"
     p.write_text(
-        "# Hermes config (sample)\n"
+        "# ARGUS config (sample)\n"
         "principal:\n"
         "  provider: xai             # the main model\n"
         "  model: grok-4-1-fast-non-reasoning  # retiring May 15\n"
@@ -292,6 +292,6 @@ class TestCrashDurability:
         apply_migration(trap_config, issues, backup=False)
 
         text = trap_config.read_text(encoding="utf-8")
-        assert "# Hermes config (sample)" in text
+        assert "# ARGUS config (sample)" in text
         assert "# the main model" in text
         assert "# not affected" in text

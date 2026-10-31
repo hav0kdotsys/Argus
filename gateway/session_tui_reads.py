@@ -72,7 +72,7 @@ def _status(authority, ref, live, policy, agent, arg) -> str:
                 getattr(agent, 'base_url', None) or policy.base_url, fields['model'])
     project = server._project_info_for_cwd(policy.cwd)
     return '\n'.join([
-        'Hermes TUI Status', '', *status_lines(fields, 'session_id', 'path'),
+        'ARGUS TUI Status', '', *status_lines(fields, 'session_id', 'path'),
         *([f"Project: {project['name']}"] if project else []),
         *status_lines(fields, 'title', 'model', 'created', 'last_activity', 'tokens', 'agent_running')])
 

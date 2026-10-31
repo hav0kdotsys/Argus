@@ -94,12 +94,12 @@ def test_failure_names_the_reason_and_its_remedy(monkeypatch, tmp_path):
     monkeypatch.setattr(hermes_constants, "get_hermes_home", lambda: home)
     monkeypatch.setattr(gateway_runtime, "ensure_gateway_runtime", lambda h, timeout=30, idle_exit=False:
                         SimpleNamespace(state="incompatible", endpoint=None, reason_code="runtime_protocol",
-                                        detail="the gateway belongs to another Hermes install; stop it there"))
+                                        detail="the gateway belongs to another ARGUS install; stop it there"))
     with pytest.raises(RuntimeError) as err:
         module.bootstrap(True)
     assert str(err.value).splitlines() == [
         "gateway incompatible: runtime_protocol",
-        "gateway incompatible: the gateway belongs to another Hermes install; stop it there"]
+        "gateway incompatible: the gateway belongs to another ARGUS install; stop it there"]
 
 
 def test_started_daemon_does_not_inherit_the_launch_time_kanban_board(monkeypatch, tmp_path):

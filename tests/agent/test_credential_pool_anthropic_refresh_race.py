@@ -193,10 +193,10 @@ def test_concurrent_hermes_pkce_refresh_loses_credential_despite_valid_token_on_
     assert loser_entry_after.last_status != STATUS_EXHAUSTED, (
         "regression: the losing process marked its Anthropic hermes_pkce "
         "credential STATUS_EXHAUSTED after a lost refresh race, even "
-        "though the account is not actually exhausted -- a sibling Hermes "
+        "though the account is not actually exhausted -- a sibling ARGUS "
         "process holds a perfectly valid rotated token. This causes "
         "spurious 're-authenticate with Anthropic' failures under "
-        "ordinary concurrent Hermes usage (fleet workers, cron jobs, "
+        "ordinary concurrent ARGUS usage (fleet workers, cron jobs, "
         "multiple CLI sessions)."
     )
 

@@ -169,7 +169,7 @@ class PluginHost:
                 code = proc.wait(timeout=0.5)  # the pipe closes a moment before the exit status lands
             except subprocess.TimeoutExpired:
                 pass
-        return (f"the plugin host for this profile exited (code {code}); Hermes restarts it and reloads "
+        return (f"the plugin host for this profile exited (code {code}); ARGUS restarts it and reloads "
                 f"its plugins automatically" if code is not None else "the plugin host is not running")
 
     def _on_channel_close(self, generation: int, reason: str) -> None:

@@ -648,7 +648,7 @@ def _run_with_activity_heartbeat(agent, function_name: str, fn):
 
 _PRUNED_TOOL_ARGUMENTS_ERROR = "suspected_pruned_tool_arguments"
 _PRUNED_TOOL_ARGUMENTS_MESSAGE = (
-    "Tool was not executed because effect-capable arguments contain a Hermes context-compression artifact. "
+    "Tool was not executed because effect-capable arguments contain an ARGUS context-compression artifact. "
     "Recover the exact content from its durable source or re-read it, then issue a complete new call; "
     "do not retry these arguments. To remove a marker that already landed in a file, match it by its "
     f"{_COMPRESSION_MARKER_PREFIX.strip('⟪:')} prefix (e.g. a terminal sed on that line) instead of quoting the full marker."
@@ -789,7 +789,7 @@ def _run_agent_tool_execution_middleware(
     def _authorized_dispatch(final_args: dict[str, Any]) -> Any:
         with dispatch_lock:
             if state.dispatched:
-                raise RuntimeError("Hermes tool execution callback invoked more than once")
+                raise RuntimeError("ARGUS tool execution callback invoked more than once")
             state.dispatched = True
             state.blocked = False
             state.args = final_args

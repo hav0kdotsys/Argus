@@ -186,7 +186,7 @@ class TestCronDoctor:
         assert job["id"] in out
         assert "last run failed: Provider returned error" in out
         assert "was not delivered (telegram timeout)" in out
-        assert "hermes cron edit" in out
+        assert "argus cron edit" in out
         assert "script not found" in out
 
     def test_doctor_reports_healthy_jobs(self, tmp_cron_dir, capsys):
@@ -220,7 +220,7 @@ class TestCronDoctor:
         out = capsys.readouterr().out
         assert rc == 1
         assert "was not delivered (telegram timeout)" in out
-        assert "hermes cron edit" in out
+        assert "argus cron edit" in out
         assert "last run failed" not in out
         assert "unknown error" not in out
 

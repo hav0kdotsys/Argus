@@ -120,11 +120,11 @@ def _missing_provider_error(configured: Optional[str]) -> str:
     if configured:
         return json.dumps(error_response(
             error=(f"video_gen.provider='{configured}' is set but no plugin registered that name. "
-                   f"Run `hermes plugins list` to see installed video gen backends, or "
-                   f"`hermes tools` → Video Generation to pick one."),
+                   f"Run `argus plugins list` to see installed video gen backends, or "
+                   f"`argus tools` → Video Generation to pick one."),
             error_type="provider_not_registered", provider=configured))
     return json.dumps(error_response(
-        error=("No video generation backend is configured. Run `hermes tools` → "
+        error=("No video generation backend is configured. Run `argus tools` → "
                "Video Generation to enable one (xAI, FAL, OpenRouter, or DeepInfra)."),
         error_type="no_provider_configured"))
 
@@ -249,7 +249,7 @@ _GENERIC_DESCRIPTION = (
     "reference-to-video. Video edit/extend workflows are not part of this "
     "unified surface; use a dedicated provider-specific tool when one is "
     "available. The backend and model family are user-configured via "
-    "`hermes tools` → Video Generation; the agent does not pick them. "
+    "`argus tools` → Video Generation; the agent does not pick them. "
     "Long-running generations may take 30 seconds to several minutes — "
     "the call blocks until the video is ready. Returns the result in the "
     "`video` field — either an HTTP URL or an absolute file path; reference "
@@ -281,7 +281,7 @@ def _build_dynamic_video_schema() -> dict[str, Any]:
     if provider is None:
         parts.append(
             "\nNo video backend is available. Calls will return an error "
-            "until the user picks one via `hermes tools` → Video Generation.")
+            "until the user picks one via `argus tools` → Video Generation.")
         return _schema("\n".join(parts), {"prompt": static_props["prompt"]})
     caps = _provider_call(provider, "capabilities", {})
     models = _provider_call(provider, "list_models", [])

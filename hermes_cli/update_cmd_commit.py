@@ -159,7 +159,7 @@ def _owe_for(root: Path, sha: str) -> None:
     except OSError as exc:
         logger.warning("Could not re-arm the update obligations for %s: %s", sha[:10], exc)
         print(f"  ⚠ Could not record the restart this update still owes for {sha[:10]} ({exc}); "
-              "run `hermes gateway restart` once the update is done.", file=sys.stderr)
+              "run `argus gateway restart` once the update is done.", file=sys.stderr)
 
 
 def debt_sha_for_move(pre: str, target: str) -> str:
@@ -488,7 +488,7 @@ def startup_syntax_error(sources: dict[str, bytes | None], pyproject: bytes | No
         return None
     return broken[0], (f"{broken[1]}\nJudged by Python {platform.python_version()}: the target requires Python "
                        f"{spec} and no installed interpreter satisfies it. Install one (`uv python install "
-                       f"'{spec}'`) and re-run `hermes update` so the release is judged by its own Python.")
+                       f"'{spec}'`) and re-run `argus update` so the release is judged by its own Python.")
 
 
 def read_target_files(git_cmd, root: Path, target_ref: str, relpaths) -> dict[str, bytes | None]:

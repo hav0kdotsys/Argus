@@ -450,7 +450,7 @@ class TestChromiumPostSetup:
             _run_post_setup("chromium")
 
         assert any(str(error) in c.args[0] for c in warn.call_args_list)
-        assert any("hermes tools post-setup chromium" in c.args[0] for c in info.call_args_list)
+        assert any("argus tools post-setup chromium" in c.args[0] for c in info.call_args_list)
 
 
 class TestBrowserExecEngineCheckedForEveryBrowserRow:
@@ -476,7 +476,7 @@ class TestBrowserExecEngineCheckedForEveryBrowserRow:
             _ensure_browser_use_cli()  # must not raise
 
         assert any("browser-harness" in c.args[0] for c in warn.call_args_list)
-        assert any("hermes update" in c.args[0] for c in info.call_args_list)
+        assert any("argus update" in c.args[0] for c in info.call_args_list)
 
 
 class TestImagegenBackendRegistry:

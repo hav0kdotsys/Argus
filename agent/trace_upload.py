@@ -29,9 +29,9 @@ _NO_TOKEN_MESSAGE = (
     "\n"
     "1. Create a token with WRITE access at https://huggingface.co/settings/tokens\n"
     "   (New token -> type \"Write\" -> copy it).\n"
-    "2. Add it to your environment as HF_TOKEN (e.g. in ~/.hermes/.env):\n"
+    "2. Add it to your environment as HF_TOKEN (e.g. in ~/.argus/.env):\n"
     "     HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxx\n"
-    "3. Run /upload-trace again (or `hermes trace upload`)."
+    "3. Run /upload-trace again (or `argus trace upload`)."
 )
 _TOKEN_ENV_VARS = ("HF_TOKEN", "HUGGINGFACE_HUB_TOKEN", "HUGGING_FACE_HUB_TOKEN", "HUGGINGFACE_TOKEN")
 

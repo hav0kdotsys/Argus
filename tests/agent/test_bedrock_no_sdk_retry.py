@@ -108,7 +108,7 @@ def test_throttle_reaches_hermes_retry_loop_on_first_refusal_with_default_timeou
     with pytest.raises(botocore_exceptions.ClientError) as excinfo:
         client.converse(modelId=MODEL, messages=MESSAGES)
 
-    assert len(fake_bedrock["hits"]) == 1, "botocore retried the throttle under Hermes's own backoff"
+    assert len(fake_bedrock["hits"]) == 1, "botocore retried the throttle under ARGUS's own backoff"
     assert client.meta.config.read_timeout == 60, "unset config keeps botocore's own timeouts"
     classified = classify_api_error(excinfo.value, provider="bedrock", model=MODEL)
     assert (classified.reason, classified.retryable) == (FailoverReason.rate_limit, True)

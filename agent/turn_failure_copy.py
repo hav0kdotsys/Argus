@@ -191,7 +191,7 @@ def is_max_iteration_handoff(result: Any) -> bool:
 _NEXT_STEPS_RETRY = "Wait a minute and send /retry, or switch models with /model."
 _NEXT_STEPS_LOOP = (
     "Your message is saved. Send `continue` to try again, or start a new session with /new. "
-    "If it happens again, run `hermes doctor` and share the error details."
+    "If it happens again, run `argus doctor` and share the error details."
 )
 
 # Lead sentence per classifier reason once retries and fallback are exhausted.
@@ -213,18 +213,18 @@ _EXHAUSTED_FIRST_ATTEMPT_LEADS: dict[str, str] = {
 _NONRETRYABLE_COPY: dict[str, str] = {
     FailoverReason.model_not_found.value: (
         "Model '{model}' isn't available on {label}. Pick a different model with /model "
-        "(or `hermes model` in a terminal).{prefix_hint}"
+        "(or `argus model` in a terminal).{prefix_hint}"
     ),
     FailoverReason.format_error.value: (
         "{label} rejected this request as malformed, so the model didn't answer. Start a clean "
-        "session with /new or switch models with /model; if it keeps happening, run `hermes doctor`."
+        "session with /new or switch models with /model; if it keeps happening, run `argus doctor`."
     ),
     FailoverReason.role_alternation.value: (
         "{label} requires user and assistant turns to strictly alternate and rejected this "
         "conversation's shape. Start a clean session with /new or switch models with /model."
     ),
     FailoverReason.ssl_cert_verification.value: (
-        "Hermes couldn't verify {label}'s security certificate, so the connection was refused. "
+        "ARGUS couldn't verify {label}'s security certificate, so the connection was refused. "
         "This is usually a corporate proxy or an outdated certificate store on this computer — "
         "see the terminal or `{home}/logs/agent.log` for the exact fix, or try another provider "
         "with /model."
@@ -255,7 +255,7 @@ _AUTH_COPY: dict[str, str] = {
     "oauth": "{label} rejected your sign-in, so the model can't be reached. Sign in again: `{relogin}`.",
     "api_key": (
         "{label} rejected your API key, so the model can't be reached. Update it in "
-        "Settings → Providers, or run `hermes setup` in a terminal."
+        "Settings → Providers, or run `argus setup` in a terminal."
     ),
 }
 
@@ -306,13 +306,13 @@ def failure_cause_gloss(reason: Any, *, subject: str = "it", possessive: str = "
 # (``empty_response`` is worded by agent/turn_explainers.py, ``session_busy`` by the lease).
 _FAILURE_CODE_COPY: dict[str, str] = {
     "context_overflow": (
-        "This conversation has grown too long for {model} to read, and Hermes couldn't shrink "
+        "This conversation has grown too long for {model} to read, and ARGUS couldn't shrink "
         "it enough automatically. Start a new session with /new (your history is kept), or try "
         "/compress once more. Switching to a model with a bigger context window also works."
     ),
     "truncated": (
         "The model's reply was cut off before it finished (it hit its output length limit), so "
-        "Hermes didn't run the incomplete action. Nothing was changed. Send `continue`, ask for "
+        "ARGUS didn't run the incomplete action. Nothing was changed. Send `continue`, ask for "
         "the work in smaller steps, or raise max_tokens for this model."
     ),
     "invalid_response": (
@@ -320,11 +320,11 @@ _FAILURE_CODE_COPY: dict[str, str] = {
         "or rate-limiting you. " + _NEXT_STEPS_RETRY + "\n\nDetails: {detail}"
     ),
     "loop_error": (
-        "Hermes hit repeated errors and stopped this turn so it wouldn't keep retrying. "
+        "ARGUS hit repeated errors and stopped this turn so it wouldn't keep retrying. "
         + _NEXT_STEPS_LOOP + "\n\nDetails: {detail}"
     ),
     "interpreter_shutdown": (
-        "Hermes was shutting down and stopped this turn. Your conversation is saved — reopen "
+        "ARGUS was shutting down and stopped this turn. Your conversation is saved — reopen "
         "it{resume} and send your message again."
     ),
 }
@@ -334,7 +334,7 @@ _FAILURE_CODE_COPY: dict[str, str] = {
 _ONE_OFF_COPY: dict[str, str] = {
     "payload_too_large": (
         "This conversation (including attachments) has grown too large to send to {model}, and "
-        "Hermes couldn't shrink it enough automatically. Start a new session with /new (your "
+        "ARGUS couldn't shrink it enough automatically. Start a new session with /new (your "
         "history is kept), or try /compress once more."
     ),
     "compression_disabled": (
@@ -347,16 +347,16 @@ _ONE_OFF_COPY: dict[str, str] = {
     # message must stay in the transcript and the session must not be auto-reset.
     "server_context_rejection": (
         "The model server rejected this request as too large, but this conversation is only "
-        "about {tokens:,} tokens — well under the {window:,}-token window Hermes knows for "
+        "about {tokens:,} tokens — well under the {window:,}-token window ARGUS knows for "
         "{model} — so shrinking it would not help. Another request on the same server (for "
         "example a background memory review from an earlier session) was probably holding its "
-        "capacity, or the server runs {model} with a smaller window than Hermes assumes. Wait a "
+        "capacity, or the server runs {model} with a smaller window than ARGUS assumes. Wait a "
         "moment and send /retry; if it keeps happening, check the server's context setting."
     ),
     # Rides failure_reason="truncated": args were cut mid-JSON but the model never reported
     # an output-length stop, so don't claim it hit one (#91717).
     "truncated_unreported": (
-        "The model's action arrived cut off partway through, so Hermes didn't run it. Nothing was changed. The model didn't report hitting its output "
+        "The model's action arrived cut off partway through, so ARGUS didn't run it. Nothing was changed. The model didn't report hitting its output "
         "limit, so this was most likely a dropped connection or a provider/router cutting the "
         "reply short. Send /retry; if it keeps happening, ask for the work in smaller steps."
     ),
@@ -374,7 +374,7 @@ _ONE_OFF_COPY: dict[str, str] = {
     ),
     # Rides failure_reason="loop_error" (advisory; the turn is incomplete, not failed).
     "local_processing_error": (
-        "Hermes hit an internal error while handling the model's reply and stopped this turn. "
+        "ARGUS hit an internal error while handling the model's reply and stopped this turn. "
         + _NEXT_STEPS_LOOP + "\n\nDetails: {detail}"
     ),
     "max_iterations_no_summary": (
@@ -383,7 +383,7 @@ _ONE_OFF_COPY: dict[str, str] = {
     ),
     "nous_rate_limit": (
         "Wait for the reset and send /retry, or switch models with /model. To avoid waits, add "
-        "a backup provider with `hermes fallback add`."
+        "a backup provider with `argus fallback add`."
     ),
 }
 _SITE_COPY: dict[str, str] = {**_FAILURE_CODE_COPY, **_ONE_OFF_COPY}
@@ -410,7 +410,7 @@ def exhausted_copy(reason: str, *, label: str, attempts: int, summary: str, rese
         situation = f"it looks temporarily unavailable. {_NEXT_STEPS_RETRY}"
     return (
         f"{lead} — {situation} To avoid this in future, "
-        f"add a backup provider with `hermes fallback add`.\n\nProvider said: {summary}"
+        f"add a backup provider with `argus fallback add`.\n\nProvider said: {summary}"
     )
 
 
@@ -436,8 +436,8 @@ def oauth_relogin_command(provider: Any) -> str:
 
     slug = str(provider or "").strip().lower()
     if slug == "nous":
-        return f"hermes {profile_cli_selector()}portal"
-    return f"hermes {profile_cli_selector()}auth add {slug} --type oauth"
+        return f"argus {profile_cli_selector()}portal"
+    return f"argus {profile_cli_selector()}auth add {slug} --type oauth"
 
 
 def relogin_command_hint(provider: Any) -> str:
@@ -449,12 +449,12 @@ def relogin_command_hint(provider: Any) -> str:
 
     slug = str(provider or "").strip().lower()
     if not slug:
-        return f"hermes {profile_cli_selector()}auth add <provider>"
+        return f"argus {profile_cli_selector()}auth add <provider>"
     from agent.error_surface import auth_kind
 
     if auth_kind(slug) == "oauth":
         return oauth_relogin_command(slug)
-    return f"hermes {profile_cli_selector()}auth add {slug}"
+    return f"argus {profile_cli_selector()}auth add {slug}"
 
 
 def nonretryable_copy(

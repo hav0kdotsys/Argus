@@ -750,7 +750,7 @@ class GatewayAdapterLifecycleMixin:
         logger.warning(
             "%s has been failing/reconnecting continuously for %.1f hours (%d attempts) — flagging "
             "NEEDS_ATTENTION. Retries continue, but this usually means a permanent problem (revoked "
-            "credentials, missing intents, broken sidecar). Check `hermes status` / `/platform list`.",
+            "credentials, missing intents, broken sidecar). Check `argus status` / `/platform list`.",
             status_key or platform.value, queued_for / 3600.0, info.get("attempts", 0),
         )
         self._update_platform_runtime_status(
@@ -1215,7 +1215,7 @@ class GatewayAdapterLifecycleMixin:
         noted.add((profile_name, platform))
         pv = platform.value
         if platform is Platform.WHATSAPP:
-            message = f"WhatsApp is not paired; pair it: hermes -p {profile_name} whatsapp"
+            message = f"WhatsApp is not paired; pair it: argus -p {profile_name} whatsapp"
             logger.info("[MULTIPLEX] Profile '%s': %s", profile_name, message)
             self._update_platform_runtime_status(
                 f"{profile_name}:{pv}", platform_state="disabled",

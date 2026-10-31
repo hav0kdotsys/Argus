@@ -111,7 +111,7 @@ def _clean_route(provider_name: str, route: Any) -> dict[str, Any]:
 def _profile_home(name: Any) -> Path:
     from hermes_cli.profiles import get_profile_dir, profile_exists
     if not isinstance(name, str) or not name.strip() or not profile_exists(name):
-        raise DelegationRouteError(f"Profile {name!r} does not exist (see `hermes profile list`).")
+        raise DelegationRouteError(f"Profile {name!r} does not exist (see `argus profile list`).")
     return Path(get_profile_dir(name))
 
 

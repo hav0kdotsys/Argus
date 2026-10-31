@@ -87,7 +87,7 @@ SQLITE3_CLI_GUIDANCE = (
 from hermes_cli.sqlite_runtime import is_sqlite_wal_reset_vulnerable as _wal_reset_vulnerable
 
 _WAL_RESET_VULNERABLE_GUIDANCE = (
-    "salvage against a Hermes database with the WAL-reset bug "
+    "salvage against an ARGUS database with the WAL-reset bug "
     "(https://sqlite.org/wal.html#walresetbug, fixed in 3.51.3+ / backports "
     "3.50.7 / 3.44.6; the vulnerable fresh-opener can unlink a live WAL/SHM "
     "pair and split the database into two generations, losing acknowledged "

@@ -141,7 +141,7 @@ class TestTrustLevelFor:
             assert repo in tap_repos, (
                 f"Trusted repo {repo!r} is in TRUSTED_REPOS but missing "
                 "from GitHubSource.DEFAULT_TAPS — its skills will not be "
-                "browsable via `hermes skills browse`."
+                "browsable via `argus skills browse`."
             )
 
 class TestGitHubSourceFileFetch:

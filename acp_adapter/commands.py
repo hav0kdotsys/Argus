@@ -66,7 +66,7 @@ class SlashCommandsMixin:
             "Queue a prompt to run after the current turn finishes",
             "prompt to run next",
         ),
-        "version": ("Show Hermes version", "Show Hermes version", None),
+        "version": ("Show ARGUS version", "Show ARGUS version", None),
     }
 
 
@@ -311,4 +311,4 @@ class SlashCommandsMixin:
     def _cmd_version(self, args: str, state: SessionState) -> str:
         from hermes_cli.version_info import get_version_info
 
-        return f"Hermes Agent v{get_version_info().derived_version}"
+        return f"ARGUS v{get_version_info().derived_version}"

@@ -240,7 +240,7 @@ def _archive_finished_worktree(info: dict[str, str], payload: dict[str, Any]) ->
     if removed:
         payload["note"] = (f"Worktree archived to {ref} and removed; branch {info.get('branch')} kept. "
                            f"Restore the full tree (including uncommitted edits) with "
-                           f"`hermes worktree restore {ref.rsplit('/', 1)[-1]}`.")
+                           f"`argus worktree restore {ref.rsplit('/', 1)[-1]}`.")
     else:
         payload["note"] = (f"Worktree archived to {ref} but kept at {path} ({why}); "
                            f"branch {info.get('branch')} kept.")

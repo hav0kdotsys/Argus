@@ -191,7 +191,7 @@ class QQAdapter(OwnAccessPolicyMixin, BasePlatformAdapter):
         for ok, code, what, hint in (
             (AIOHTTP_AVAILABLE, "qq_missing_dependency", "aiohttp not installed",
              f". Run: {install_hint('messaging')}"),
-            (HTTPX_AVAILABLE, "qq_missing_dependency", "httpx not installed", ". Run: hermes pm repair"),
+            (HTTPX_AVAILABLE, "qq_missing_dependency", "httpx not installed", ". Run: argus pm repair"),
             (self._app_id and self._client_secret, "qq_missing_credentials",
              "QQ_APP_ID and QQ_CLIENT_SECRET are required", "")):
             if not ok:

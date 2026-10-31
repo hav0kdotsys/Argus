@@ -500,7 +500,7 @@ def _migrate_legacy_store(base: Path) -> Optional[Path]:
     if legacy_root is not None:
         logger.info(
             "Migrated pre-v2 checkpoint repos to %s. "
-            "Clear with `hermes checkpoints clear-legacy` when safe.",
+            "Clear with `argus checkpoints clear-legacy` when safe.",
             legacy_root,
         )
     return legacy_root
@@ -565,7 +565,7 @@ def _init_store(store: Path, working_dir: str) -> Optional[str]:
     # exists since we just created the store inside it.
     cfg_wd = str(base)
     _run_git(["config", "user.email", "hermes@local"], store, cfg_wd)
-    _run_git(["config", "user.name", "Hermes Checkpoint"], store, cfg_wd)
+    _run_git(["config", "user.name", "ARGUS Checkpoint"], store, cfg_wd)
     _run_git(["config", "commit.gpgsign", "false"], store, cfg_wd)
     _run_git(["config", "tag.gpgSign", "false"], store, cfg_wd)
     _run_git(["config", "gc.auto", "0"], store, cfg_wd)

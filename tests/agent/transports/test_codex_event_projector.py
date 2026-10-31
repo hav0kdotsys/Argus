@@ -251,7 +251,7 @@ class TestWebSearchProjection:
         # refreshed transcript drops the card and shows a raw JSON note instead.
         from agent.codex_runtime import _codex_item_to_args, _codex_item_to_tool_name, _stable_call_id
 
-        item = {"type": "webSearch", "id": "ws-1", "query": "Hermes Agent docs"}
+        item = {"type": "webSearch", "id": "ws-1", "query": "ARGUS docs"}
         result = CodexEventProjector().project({"method": "item/completed", "params": {"item": item}})
 
         assert result.is_tool_iteration is True

@@ -465,7 +465,7 @@ class TestCacheDirectoryMounts:
         mounts = get_cache_directory_mounts()
         assert "/root/.hermes/composer-pastes" in {m["container_path"] for m in mounts}
 
-        synced = {Path(host) for host, _ in iter_sync_files("~/.hermes")}
+        synced = {Path(host) for host, _ in iter_sync_files("~/.argus")}
         assert paste in synced
 
 
@@ -538,7 +538,7 @@ class TestToAgentVisiblePathPerBackend:
         staged = self._staged(tmp_path, monkeypatch)
         monkeypatch.setenv("TERMINAL_ENV", "ssh")
         from tools.credential_files import to_agent_visible_cache_path
-        assert to_agent_visible_cache_path(staged) == "~/.hermes/attachments/drop.zip"
+        assert to_agent_visible_cache_path(staged) == "~/.argus/attachments/drop.zip"
 
     @pytest.mark.parametrize("backend", ["local", ""])
     def test_untranslated_backends_keep_host_path(self, tmp_path, monkeypatch, backend):

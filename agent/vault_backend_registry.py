@@ -60,7 +60,7 @@ def static_name(provider) -> str:
     if error:
         raise ValueError(error)
     if inspect.getattr_static(provider, "needs_unlock", False) is not False:
-        raise ValueError("plugin login backends cannot use the Hermes master-password prompt (needs_unlock)")
+        raise ValueError("plugin login backends cannot use the ARGUS master-password prompt (needs_unlock)")
     return name
 
 

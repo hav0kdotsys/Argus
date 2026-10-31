@@ -29,7 +29,7 @@ def test_missing_provider_installs_its_catalog_plugin_and_keeps_config(home, mon
     assert mig.migrate_home(home, install=fake_install, say=said.append) == "honcho"
     assert calls == ["honcho"]
     # Must not imply config.yaml's memory.<name> keys still apply: the plugin reads its own (#124038).
-    assert "memory.honcho" not in said[0] and "hermes memory status" in said[0]
+    assert "memory.honcho" not in said[0] and "argus memory status" in said[0]
     assert "workspace: keep-me" in (home / "config.yaml").read_text()
     # present now → nothing to do, nothing said
     assert mig.migrate_home(home, install=fake_install, say=said.append) is None
@@ -152,7 +152,7 @@ def test_startup_recovery_never_asks_a_dependency_question(tmp_path, monkeypatch
     said: list[str] = []
     mig.recover_at_startup(name, say=said.append)
     assert [kw["assume_deps_consent"] for kw in seen] == ([True] if installs else [])
-    assert installs or f"`hermes plugins install {name}`" in said[-1]
+    assert installs or f"`argus plugins install {name}`" in said[-1]
 
 
 def test_update_asks_once_and_names_each_profile(tmp_path, monkeypatch):
@@ -194,8 +194,8 @@ def test_update_asks_once_and_names_each_profile(tmp_path, monkeypatch):
         assert len(prompts) == 1
         if answer == "n":
             assert "[profile 'default']" in said[1] and "dependency install declined" in said[1]
-            assert "hermes -p work-a plugins install twin" in said[2]
-            assert "hermes -p work-b plugins install twin" in said[2]
+            assert "argus -p work-a plugins install twin" in said[2]
+            assert "argus -p work-b plugins install twin" in said[2]
             assert not any((h / "plugins").exists() for h in homes)
         else:
             assert [line.split("]")[0] for line in said[1:]] == [
@@ -250,8 +250,8 @@ def test_startup_hint_installs_into_the_profile_that_printed_it(tmp_path, monkey
 
     default, work = _profile_homes(tmp_path, monkeypatch, "work")
     monkeypatch.setattr(pm_install, "lazy_installs_allowed", lambda: False)
-    for profile_home, command in ((work, "hermes -p work plugins install twin"),
-                                  (default, "hermes plugins install twin")):
+    for profile_home, command in ((work, "argus -p work plugins install twin"),
+                                  (default, "argus plugins install twin")):
         monkeypatch.setattr(mig, "_attempted", set())
         monkeypatch.setenv("HERMES_HOME", str(profile_home))
         said: list[str] = []
@@ -271,7 +271,7 @@ def test_missing_catalog_provider_recovery_names_the_profile_install_command(tmp
     home.mkdir(parents=True)
     (home / "config.yaml").write_text("memory:\n  provider: honcho\n", encoding="utf-8")
     monkeypatch.setenv("HERMES_HOME", str(home))
-    want = "hermes -p work plugins install honcho"
+    want = "argus -p work plugins install honcho"
 
     doctor_state._memory_provider_generic("honcho")
     memory_setup.cmd_status(SimpleNamespace())
@@ -287,11 +287,11 @@ def test_recovery_copy_without_a_catalog_memory_entry_keeps_the_generic_hint(tmp
     from hermes_cli import doctor_state
 
     monkeypatch.setenv("HERMES_HOME", str(tmp_path))  # not a profile home: no -p to add
-    assert mig.catalog_install_hint("honcho", category="memory") == "hermes plugins install honcho"
+    assert mig.catalog_install_hint("honcho", category="memory") == "argus plugins install honcho"
     assert mig.catalog_install_hint("honcho", category="tools") is None
     assert mig.catalog_install_hint("no-such-provider") is None
     doctor_state._memory_provider_generic("no-such-provider")
-    assert "run: hermes memory setup" in capsys.readouterr().out
+    assert "run: argus memory setup" in capsys.readouterr().out
 
 
 def test_startup_recovery_backs_off_after_a_failed_install(tmp_path, monkeypatch):
@@ -310,7 +310,7 @@ def test_startup_recovery_backs_off_after_a_failed_install(tmp_path, monkeypatch
         monkeypatch.setattr(mig, "_attempted", set())  # a fresh process each time
         assert mig.recover_at_startup("hindsight", say=said.append) is False
     assert attempts == ["hindsight"]
-    assert "`hermes plugins install hindsight`" in said[-1]  # still told memory is off, and the fix
+    assert "`argus plugins install hindsight`" in said[-1]  # still told memory is off, and the fix
     monkeypatch.setattr(mig, "STARTUP_RETRY_SECONDS", 0.0)
     monkeypatch.setattr(mig, "_attempted", set())
     mig.recover_at_startup("hindsight")

@@ -82,7 +82,7 @@ def test_emit_hint_for_missing_resolve_turn_limit():
     assert emit_partial_update_hint(exc, file=buf) is True
     text = buf.getvalue()
     assert "resolve_turn_limit" in text
-    assert "hermes update" in text
+    assert "argus update" in text
 
 
 
@@ -114,7 +114,7 @@ def test_cmd_chat_prints_update_hint_when_config_helper_is_missing(
     assert excinfo.value.code == 1
     err = capsys.readouterr().err
     assert name in err
-    assert "hermes update" in err
+    assert "argus update" in err
 
 
 @pytest.mark.parametrize("entry", ["cmd_chat", "_run_oneshot_from_args"])

@@ -135,7 +135,7 @@ def _pending_provider(home: Path, *, say: Callable[[str], None]) -> Optional[str
         return None
     if catalog_source(name) is None:
         say(f"  ⚠ Memory provider '{name}' is configured but not installed and not in the plugin catalog. "
-            f"Install it with `hermes plugins install <source>` or change memory.provider.")
+            f"Install it with `argus plugins install <source>` or change memory.provider.")
         return None
     return name
 
@@ -148,8 +148,8 @@ def _install_command(name: str, home: Path) -> str:
     from hermes_constants import profile_name_for_home
     profile = profile_name_for_home(home)
     if profile is None or (profile == "default" and get_active_profile() == "default"):
-        return f"hermes plugins install {name}"
-    return f"hermes -p {profile} plugins install {name}"
+        return f"argus plugins install {name}"
+    return f"argus -p {profile} plugins install {name}"
 
 
 def _install_pending(home: Path, name: str, *, install: Callable[[str], dict],
@@ -161,7 +161,7 @@ def _install_pending(home: Path, name: str, *, install: Callable[[str], dict],
     if result.get("ok"):
         say(f"  ✓ Memory provider '{name}' moved out of core — installed its plugin from the catalog "
             f"(memory.provider and your stored memories are unchanged; check its settings with "
-            f"`hermes memory status`).")
+            f"`argus memory status`).")
         return True
     error = str(result.get("error") or "unknown error").rstrip(". ")
     say(f"  ⚠ Memory provider '{name}' moved out of core and could not be installed automatically: "
@@ -274,7 +274,7 @@ def migrate_all_homes(*, say: Callable[[str], None] = print) -> list[str]:
                     break
     except KeyboardInterrupt:
         say("  ⚠ Memory provider migration cancelled. Profiles already migrated keep their plugin; "
-            "run `hermes plugins install <name>` (with `-p <profile>`) for the rest.")
+            "run `argus plugins install <name>` (with `-p <profile>`) for the rest.")
     return installed
 
 
@@ -300,7 +300,7 @@ def recover_at_startup(name: str, *, say: Optional[Callable[[str], None]] = None
     from pm.install import lazy_installs_allowed
     if not lazy_installs_allowed():
         report(f"⚠ Memory provider '{name}' is not installed, so external memory is off for this session. "
-               f"security.allow_lazy_installs is off, so Hermes did not fetch it: "
+               f"security.allow_lazy_installs is off, so ARGUS did not fetch it: "
                f"run `{_install_command(name, home)}`.")
         return False
     # Agent init cannot answer a dependency prompt: under the CLI the prompt_toolkit input owns the
@@ -310,7 +310,7 @@ def recover_at_startup(name: str, *, say: Optional[Callable[[str], None]] = None
     if name not in _LEFT_CORE:
         if _pending_provider(home, say=report) == name:
             report(f"⚠ Memory provider '{name}' is not installed, so external memory is off for this session. "
-                   f"It never shipped with Hermes, so Hermes installs it only when you ask: "
+                   f"It never shipped with ARGUS, so ARGUS installs it only when you ask: "
                    f"run `{_install_command(name, home)}`.")
         return False
     if _failed_recently(home, name):

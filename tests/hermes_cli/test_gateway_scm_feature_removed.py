@@ -34,7 +34,7 @@ def test_gateway_subparser_has_no_service_subcommand(capsys):
     except SystemExit:
         pass
     else:
-        raise AssertionError("`hermes gateway service` must stay removed")
+        raise AssertionError("`argus gateway service` must stay removed")
     finally:
         capsys.readouterr()
 

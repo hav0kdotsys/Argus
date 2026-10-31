@@ -18,8 +18,8 @@ OID, ME, NEW = "f" * 32, "a" * 16, "b" * 16
 def _lock(nonce: str) -> dict:
     return {"schemaVersion": 2, "protocolVersion": 1, "ownershipId": OID, "spawnNonce": nonce,
             "tokenFingerprint": "c" * 32, "pid": 4242, "port": 0, "profile": "default",
-            "hermesPath": "/opt/hermes/bin/hermes", "hermesHome": "~/.hermes",
-            "logPath": f"~/.hermes/desktop-ssh/{OID}/{nonce}.log", "startedAt": "2026-10-03T00:00:00Z"}
+            "hermesPath": "/opt/hermes/bin/hermes", "hermesHome": "~/.argus",
+            "logPath": f"~/.argus/desktop-ssh/{OID}/{nonce}.log", "startedAt": "2026-10-03T00:00:00Z"}
 
 
 def test_retires_only_on_a_valid_lock_naming_another_spawn(tmp_path):

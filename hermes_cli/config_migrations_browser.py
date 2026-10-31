@@ -82,11 +82,11 @@ def _config_decided(key: str, current: Any) -> bool:
 # ``browser-use`` meant the built-in tools, on whatever browser the value named.
 _BACKEND_REASONS = {
     "browser-use": "browser_exec (Browser Use mode) is the only browser now",
-    "agent-browser": "agent-browser left Hermes; browser_exec is the browser now",
-    "camofox": "Camofox is now the camofox plugin (`hermes plugins install camofox`)",
-    "local": "browser_exec launches Hermes's packaged Chromium itself (browser.cloud_provider: local)",
+    "agent-browser": "agent-browser left ARGUS; browser_exec is the browser now",
+    "camofox": "Camofox is now the camofox plugin (`argus plugins install camofox`)",
+    "local": "browser_exec launches ARGUS's packaged Chromium itself (browser.cloud_provider: local)",
     **dict.fromkeys(("browserbase", "firecrawl", "nous"),
-                    "a cloud browser is chosen with browser.cloud_provider (`hermes tools` → Browser Automation)"),
+                    "a cloud browser is chosen with browser.cloud_provider (`argus tools` → Browser Automation)"),
 }
 
 
@@ -115,7 +115,7 @@ def move_agent_browser_env(home, browser: dict) -> tuple[list[str], list[str]]:
         if key == "user_data_dir" and new != value:
             # Resolved against this process's cwd, which need not be where Hermes ran before.
             pinned.append(f"pinned browser.user_data_dir to {new}: {name}={value} was relative to the directory "
-                          f"Hermes ran in; check that the browser logins are there")
+                          f"ARGUS ran in; check that the browser logins are there")
     return moved, pinned
 
 
@@ -171,7 +171,7 @@ def migrate_to_52(results: dict[str, Any], quiet: bool) -> None:
         if backend is False or (isinstance(backend, str) and backend.strip().lower() == "off"):
             # config_added is what `hermes update` re-surfaces on its quiet path, so the notice rides in it.
             note = ("removed browser.backend: off — the built-in browser tools are gone and browser_exec is the "
-                    "browser now; to turn browsing off, disable the `browser` toolset in `hermes tools`")
+                    "browser now; to turn browsing off, disable the `browser` toolset in `argus tools`")
             added.append(note)
             messages.append(f"  ✓ {note[0].upper()}{note[1:]}.")
             notices.append(f"{note[0].upper()}{note[1:]}.")

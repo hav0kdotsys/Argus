@@ -315,7 +315,7 @@ class _Systemctl:
             if "--user" not in argv:
                 return _Completed(0, stdout="")
             body = "\n".join(
-                f"{unit} loaded active running Hermes" for unit in self.listed
+                f"{unit} loaded active running ARGUS" for unit in self.listed
             )
             return _Completed(0, stdout=body)
         if "is-active" in argv:
@@ -893,7 +893,7 @@ def _fake_systemctl_path(tmp_path):
         "#!/bin/sh\n"
         f"printf '%s\\n' \"$*\" >> '{log}'\n"
         'case " $* " in\n'
-        '  *" --user list-units hermes-serve* "*) echo "hermes-serve.service loaded active running Hermes" ;;\n'
+        '  *" --user list-units hermes-serve* "*) echo "hermes-serve.service loaded active running ARGUS" ;;\n'
         '  *" is-active "*) echo active ;;\n'
         f"  *\" show \"*) if [ -e '{marker}' ]; then echo 200; else echo 100; fi ;;\n"
         f"  *\" restart \"*) : > '{marker}' ;;\n"

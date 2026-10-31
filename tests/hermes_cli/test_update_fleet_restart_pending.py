@@ -588,7 +588,7 @@ def test_startup_warn_prints_when_marker_present(capsys):
     update_cmd._warn_pending_fleet_restart_on_startup()
     err = capsys.readouterr().err
     assert "did not restart running gateways" in err
-    assert "hermes gateway restart" in err
+    assert "argus gateway restart" in err
 
 
 def test_startup_warn_silent_when_nothing_pending(capsys):

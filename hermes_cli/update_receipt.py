@@ -413,7 +413,7 @@ def record_build_stage(followups) -> None:
     record_stage("build", "failed" if any(step in BUILD_FOLLOWUPS for step, _ in followups) else "success")
 
 
-def record_followup(step: str, reason: str, *, retry: str = "the next launch or `hermes update` retries it") -> None:
+def record_followup(step: str, reason: str, *, retry: str = "the next launch or `argus update` retries it") -> None:
     """A post-commit step failed: print ⚠, keep the run a success, and say what is still owed.
 
     The code already committed, so the update does not fail; the step's own obligation (the
@@ -926,7 +926,7 @@ def finalize_interrupted_update_receipt(stop_reason: str, *, exit_code: int = 13
     along (the completion child persisted stages this process never saw).
     """
     print("⚠ Interrupted after the code was updated: the new code is in place; its remaining steps are owed "
-          "and the next launch or `hermes update` finishes them.", flush=True)
+          "and the next launch or `argus update` finishes them.", flush=True)
     if _current.get() is None:
         return None
     closed = resume_run_record()
@@ -1257,7 +1257,7 @@ _FLEET_ROW_UNKNOWN = "  ? {profile} (pid {pid}) — version unknown (gateway pre
 # so the copy does not claim one.
 _FLEET_ROW_IDENTITY_PENDING = (
     "  ? {profile} (pid {pid}) — new pid since the update, code identity not published yet"
-    " — re-check with `hermes gateway status`"
+    " — re-check with `argus gateway status`"
 )
 
 
@@ -1294,7 +1294,7 @@ def print_fleet_version_matrix(fleet: list[dict[str, Any]]) -> bool:
     if RESTART_PENDING_STATE in states:
         print()
         print("  ℹ A restart-pending gateway has not yet been verified on the new code;")
-        print("    check after this update exits with `hermes gateway status`.")
+        print("    check after this update exits with `argus gateway status`.")
     stale_or_down = sum(1 for entry in fleet if entry.get("state") in ("stale", "down"))
     if stale_or_down:
         print()
@@ -1307,6 +1307,6 @@ def print_fleet_version_matrix(fleet: list[dict[str, Any]]) -> bool:
         print()
         print(
             f"⚠ Gateway restart still owed: {stale_or_down} gateway(s) still running the old code (or stopped).")
-        print("  Run `hermes gateway restart` (or `hermes -p <profile> gateway restart` for a named")
-        print("  profile), then `hermes gateway status` to confirm.")
+        print("  Run `argus gateway restart` (or `argus -p <profile> gateway restart` for a named")
+        print("  profile), then `argus gateway status` to confirm.")
     return stale_or_down > 0

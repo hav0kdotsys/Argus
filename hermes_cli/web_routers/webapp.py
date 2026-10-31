@@ -292,7 +292,7 @@ const params = new URLSearchParams(location.hash.slice(1));
 history.replaceState(null, '', location.pathname);
 const ticket = params.get('ticket') || '';
 const show = message => { document.getElementById('status').textContent = message; };
-const fail = () => show('This launch link was already used or has expired. Run hermes webapp again for a new one.');
+const fail = () => show('This launch link was already used or has expired. Run argus webapp again for a new one.');
 if (!/^[A-Za-z0-9_-]{43}$/.test(ticket)) {
   fail();
 } else {
@@ -304,7 +304,7 @@ if (!/^[A-Za-z0-9_-]{43}$/.test(ticket)) {
       sessionStorage.setItem(`hermes.webapp.session.v1:${JSON.stringify([location.origin, basePath])}`, token);
     } catch {
       show('This browser does not let the Webapp keep its sign-in in this tab. Allow site data for this '
-        + 'address, then run hermes webapp again.');
+        + 'address, then run argus webapp again.');
       return;
     }
     const target = new URL(`${basePath}/`, location.origin);
@@ -340,7 +340,7 @@ async def launch_page(request: Request):
     fragment (never sent to the server), keeps the credential it receives in this tab's
     sessionStorage and enters the Webapp at an address that carries neither."""
     _require_private_webapp(request)
-    return _handoff_page(request, "Opening Hermes", "Opening Hermes Webapp…", _LAUNCH_SCRIPT)
+    return _handoff_page(request, "Opening ARGUS", "Opening ARGUS Webapp…", _LAUNCH_SCRIPT)
 
 
 # No credential appears in this public page or in its URL. The fragment
@@ -352,7 +352,7 @@ history.replaceState(null, '', location.pathname);
 const id = params.get('channel') || '';
 const status = document.getElementById('status');
 if (!/^[a-f0-9-]{36}$/.test(id)) {
-  status.textContent = 'Open this window from an authorized Hermes Webapp tab.';
+  status.textContent = 'Open this window from an authorized ARGUS Webapp tab.';
 } else {
   const channel = new BroadcastChannel(`hermes.webapp.window:${id}`);
   let receiving = false;
@@ -402,4 +402,4 @@ if (!/^[a-f0-9-]{36}$/.test(id)) {
 @router.get("/webapp/window")
 async def child_window_page(request: Request):
     _require_private_webapp(request)
-    return _handoff_page(request, "Opening Hermes", "Authorizing this Hermes window…", _WINDOW_SCRIPT)
+    return _handoff_page(request, "Opening ARGUS", "Authorizing this ARGUS window…", _WINDOW_SCRIPT)

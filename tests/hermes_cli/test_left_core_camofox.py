@@ -334,7 +334,7 @@ def test_a_stamped_camofox_home_without_the_plugin_is_told_where_it_went(tmp_pat
     said = []
     assert lcm.migrate_home(home, install=lambda name: pytest.fail("nothing is installed"), say=said.append) == []
     assert len(said) == 1
-    assert "Camofox browser backend moved out of core" in said[0] and "hermes plugins install camofox" in said[0]
+    assert "Camofox browser backend moved out of core" in said[0] and "argus plugins install camofox" in said[0]
     assert (home / "config.yaml").read_bytes() == before
 
     assert lcm._pending(home, say=said.append, backoff=True) == []
@@ -347,7 +347,7 @@ def test_catalog_miss_names_the_install_command(tmp_path, _fresh):
     said = []
     assert lcm.migrate_home(home, install=lambda name: pytest.fail("no catalog entry"), say=said.append) == []
     assert "cannot find in the plugin catalog yet" in said[0]
-    assert "hermes plugins install camofox" in said[0]
+    assert "argus plugins install camofox" in said[0]
 
 
 def test_camofox_env_stays_out_of_children():

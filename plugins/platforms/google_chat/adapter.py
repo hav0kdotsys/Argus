@@ -1686,8 +1686,8 @@ def interactive_setup() -> None:
     if home:
         save_env_value("GOOGLE_CHAT_HOME_CHANNEL", home.strip())
     print()
-    print_success("Google Chat configuration saved to ~/.hermes/.env")
-    print_info("Restart the gateway: hermes gateway restart")
+    print_success("Google Chat configuration saved to ~/.argus/.env")
+    print_info("Restart the gateway: argus gateway restart")
 
 
 # Strict resource-name patterns: anything outside Chat's documented character set
@@ -1775,7 +1775,7 @@ def register(ctx) -> None:
     """Plugin entry point: registers the ``google_chat`` adapter with the platform registry."""
     ctx.register_platform(
         name="google_chat",
-        dashboard_description="Connect Hermes to Google Chat via Cloud Pub/Sub.",
+        dashboard_description="Connect ARGUS to Google Chat via Cloud Pub/Sub.",
         docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/google_chat",
         label="Google Chat",
         adapter_factory=lambda cfg: GoogleChatAdapter(cfg),
@@ -1784,7 +1784,7 @@ def register(ctx) -> None:
         validate_config=_validate_config,
         is_connected=_is_connected,
         required_env=["GOOGLE_CHAT_SERVICE_ACCOUNT_JSON"],
-        install_hint="Run `hermes setup` to install Google Chat support.",
+        install_hint="Run `argus setup` to install Google Chat support.",
         setup_fn=interactive_setup,
         env_enablement_fn=_env_enablement,
         cron_deliver_env_var="GOOGLE_CHAT_HOME_CHANNEL",
@@ -1803,7 +1803,7 @@ def register(ctx) -> None:
             "in your response. Native file attachments require the user to run /setup-files once in their own DM — "
             "until they do, file requests fall back to a text notice with the host path. Do NOT generate interactive "
             "Card v2 buttons — Google Chat interactivity is not yet supported by this gateway; ask for typed "
-            "confirmations instead. While you are generating a response, a 'Hermes is thinking…' marker message "
+            "confirmations instead. While you are generating a response, a 'ARGUS is thinking…' marker message "
             "appears in the space and is deleted once your response is ready. You do NOT have access to Google "
             "Chat-specific APIs — you cannot search space history, list space members, or manage spaces. Do not "
             "promise to perform these actions; explain that you can only read messages sent directly to you and "

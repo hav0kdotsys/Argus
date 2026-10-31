@@ -171,7 +171,7 @@ def test_a_missing_pinned_browser_is_named_in_the_hint(browser_store, tmp_path):
     ok, hint = launcher.chromium_ready()
     assert ok is False
     assert "browser.executable_path" in hint and str(missing) in hint
-    assert "hermes pm install chromium" not in hint
+    assert "argus pm install chromium" not in hint
 
 
 def test_historical_warmer_is_inert(monkeypatch):

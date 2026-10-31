@@ -111,7 +111,7 @@ def test_a_channel_release_older_than_the_runtime_holds_the_install_and_exits_cl
     assert git(source.root, "rev-parse", "HEAD") == source.installed
     assert "Refusing" not in out and "Downgrading is unsupported" not in out
     assert f"This build is newer than the {name} release {source.release[:12]}" in out
-    assert "hermes update --set-channel main" in out
+    assert "argus update --set-channel main" in out
     assert len(source.completed) == 1 and source.completed[0]["expected_sha"] == source.installed
     # A held install is not up to date with its channel: the closing line says it was held.
     assert source.completed[0]["completion_message"] == f"✓ Holding at this build until a newer {name} release ships."

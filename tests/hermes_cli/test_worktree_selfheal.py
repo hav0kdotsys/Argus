@@ -45,7 +45,7 @@ class TestCleanupFailedWorktreeAdd:
         wt = repo / ".worktrees" / "hermes-dead00"
         _git(repo, "worktree", "add", str(wt), "-b", "hermes/hermes-dead00")
         # Live-pid lock, exactly what `hermes -w` writes before the checkout.
-        _git(repo, "worktree", "lock", str(wt), "--reason", "hermes pid=999999")
+        _git(repo, "worktree", "lock", str(wt), "--reason", "argus pid=999999")
         # Partial materialization: gut the checkout but keep the dir + .git file.
         for child in wt.iterdir():
             if child.name != ".git":

@@ -411,7 +411,7 @@ class TeamsAdapter(BasePlatformAdapter):
             self._app = App(
                 client_id=self._client_id, client_secret=self._client_secret, tenant_id=self._tenant_id,
                 http_server_adapter=_AiohttpBridgeAdapter(aiohttp_app),
-                client=ClientOptions(headers={"User-Agent": "Hermes"}))
+                client=ClientOptions(headers={"User-Agent": "ARGUS"}))
             # Handlers (ours, then plugin on_* decorators) must be wired before initialize(),
             # which registers POST /api/messages on aiohttp_app via the bridge's register_route().
             @self._app.on_message
@@ -795,7 +795,7 @@ _SETUP_CREDENTIALS = (
 _SETUP_INTRO = (  # "" → blank line
     "You'll need the Teams CLI. If you haven't already:", "  npm install -g @microsoft/teams.cli@preview",
     "  teams login", "", "Then expose port 3978 publicly (devtunnel / ngrok / cloudflared),", "and create your bot:",
-    '  teams app create --name "Hermes" --endpoint "https://<tunnel>/api/messages"', "",
+    '  teams app create --name "ARGUS" --endpoint "https://<tunnel>/api/messages"', "",
     "The CLI will print CLIENT_ID, CLIENT_SECRET, and TENANT_ID. Paste them below.", "")
 
 
@@ -826,20 +826,20 @@ def interactive_setup() -> None:
         save_env_value("TEAMS_ALLOW_ALL_USERS", "true")
         print_warning("⚠️  Open access — anyone who can message the bot can command it.")
     print()
-    print_success("Teams configuration saved to ~/.hermes/.env")
+    print_success("Teams configuration saved to ~/.argus/.env")
     print_info("Install the app in Teams:  teams app install --id <teamsAppId>")
-    print_info("Restart the gateway:       hermes gateway restart")
+    print_info("Restart the gateway:       argus gateway restart")
 
 
 def _install_hint() -> str:
     """Point to the setup flow that requests PM's declared Teams extra."""
-    return "Teams SDK missing — run `hermes setup`, configure Teams, then restart the gateway"
+    return "Teams SDK missing — run `argus setup`, configure Teams, then restart the gateway"
 
 
 def register(ctx) -> None:
     ctx.register_platform(
         name="teams", label="Microsoft Teams", adapter_factory=lambda cfg: TeamsAdapter(cfg),
-        dashboard_description="Connect Hermes to Microsoft Teams chats via the Bot Framework.",
+        dashboard_description="Connect ARGUS to Microsoft Teams chats via the Bot Framework.",
         docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/teams",
         check_fn=check_requirements,  # PASSIVE probe — never installs
         ensure_deps_fn=check_teams_requirements,  # ACTIVE lazy-installer, run by create_adapter()

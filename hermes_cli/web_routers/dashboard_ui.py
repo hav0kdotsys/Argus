@@ -284,7 +284,7 @@ async def post_agent_plugin_activate(request: Request):
     home = Path(str((body or {}).get("home") or "")).expanduser()
     profile = profile_name_for_home(home) if str(home) not in ("", ".") else None
     if profile is None:
-        raise HTTPException(status_code=400, detail="Not a Hermes profile home.")
+        raise HTTPException(status_code=400, detail="Not an ARGUS profile home.")
     from hermes_cli.plugins_activation import load_and_go_live
 
     def _run():

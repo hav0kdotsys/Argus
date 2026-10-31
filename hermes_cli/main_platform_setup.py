@@ -32,7 +32,7 @@ def _whatsapp_choose_mode(get_env_value, save_env_value):
         mode_label = "separate bot number" if current_mode == "bot" else "personal number (self-chat)"
         print(f"\n✓ Mode: {mode_label}")
         return current_mode
-    _say("", "How will you use WhatsApp with Hermes?", "",
+    _say("", "How will you use WhatsApp with ARGUS?", "",
          "  1. Separate bot number (recommended)",
          "     People message the bot's number directly — cleanest experience.",
          "     Requires a second phone number with WhatsApp installed on a device.", "",
@@ -174,7 +174,7 @@ def cmd_whatsapp(args):
             # Older installs may have lost WHATSAPP_ENABLED; a kept pairing re-asserts it.
             if (get_env_value("WHATSAPP_ENABLED") or "").lower() != "true":
                 save_env_value("WHATSAPP_ENABLED", "true")
-            _say("\n✓ WhatsApp is configured and paired!", "  Start the gateway with: hermes gateway")
+            _say("\n✓ WhatsApp is configured and paired!", "  Start the gateway with: argus gateway")
             return
 
     # QR code pairing
@@ -204,23 +204,23 @@ def cmd_whatsapp(args):
 
     print()
     if not (session_dir / "creds.json").exists():
-        print("⚠ Pairing may not have completed. Run 'hermes whatsapp' to try again.")
+        print("⚠ Pairing may not have completed. Run 'argus whatsapp' to try again.")
         return
     # Only enable WhatsApp now that pairing actually succeeded (see above).
     save_env_value("WHATSAPP_ENABLED", "true")
     _say("✓ WhatsApp paired successfully!", "")
     if wa_mode == "bot":
-        _say("  Next steps:", "    1. Start the gateway:  hermes gateway",
+        _say("  Next steps:", "    1. Start the gateway:  argus gateway",
              "    2. Send a message to the bot's WhatsApp number",
              "    3. The agent will reply automatically", "",
-             "  Tip: Agent responses are prefixed with '☤ Hermes Agent'")
+             "  Tip: Agent responses are prefixed with '☤ ARGUS'")
     else:
-        _say("  Next steps:", "    1. Start the gateway:  hermes gateway",
+        _say("  Next steps:", "    1. Start the gateway:  argus gateway",
              "    2. Open WhatsApp → Message Yourself",
              "    3. Type a message — the agent will reply", "",
-             "  Tip: Agent responses are prefixed with '☤ Hermes Agent'",
+             "  Tip: Agent responses are prefixed with '☤ ARGUS'",
              "  so you can tell them apart from your own messages.")
-    _say("", "  Or install as a service: hermes gateway install")
+    _say("", "  Or install as a service: argus gateway install")
 
 
 def cmd_whatsapp_cloud(args):
@@ -237,13 +237,13 @@ def cmd_slack(args):
     every gateway command registered as a first-class slash."""
     sub = getattr(args, "slack_command", None)
     if sub in {None, ""}:
-        _err("usage: hermes slack <subcommand>\n"
+        _err("usage: argus slack <subcommand>\n"
              "\n"
              "subcommands:\n"
              "  manifest   Generate a Slack app manifest with every gateway\n"
              "             command registered as a native slash\n"
              "\n"
-             "Run `hermes slack manifest -h` for details.")
+             "Run `argus slack manifest -h` for details.")
         return 1
 
     if sub == "manifest":

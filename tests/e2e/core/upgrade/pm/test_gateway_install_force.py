@@ -42,7 +42,7 @@ def _pm_failures(sb: I.Sandbox, hermes: str) -> list[str]:
         cp = sb.run([hermes, *args], timeout=300)
         if cp.returncode != 0 or I.TRACEBACK in cp.stdout + cp.stderr:
             tail = (cp.stdout + cp.stderr).strip().splitlines()[-1:] or [""]
-            bad.append(f"`hermes {' '.join(args)}` rc={cp.returncode}: {tail[0][:300]}\n{I.describe(cp)}")
+            bad.append(f"`argus {' '.join(args)}` rc={cp.returncode}: {tail[0][:300]}\n{I.describe(cp)}")
     return bad
 
 
@@ -59,7 +59,7 @@ def updated(tmp_path_factory, provider):
     P.configure(sb, provider.base_url)
     installed = P.selected_generation(sb)
     P.publish_dependency_release(origin, root, 1)
-    P.ok(P.update(sb, env=P.lazy_env(sb)), "hermes update failed")
+    P.ok(P.update(sb, env=P.lazy_env(sb)), "argus update failed")
     assert P.selected_generation(sb) != installed, "harness: the update did not select a new generation"
     return sb
 
@@ -69,7 +69,7 @@ def test_gateway_install_force_leaves_the_install_bootable(updated):
     cp = P.run_env(sb, [sb.hermes, "gateway", "install", "--force"], P.lazy_env(sb), timeout=600)
     assert I.TRACEBACK not in cp.stdout + cp.stderr, I.describe(cp)
     bad = _pm_failures(sb, sb.hermes)
-    assert not bad, "hermes pm commands fail after `gateway install --force`:\n" + "\n".join(bad)
+    assert not bad, "argus pm commands fail after `gateway install --force`:\n" + "\n".join(bad)
     gw = P.Gateway(sb, P.lazy_env(sb), sb.root / "after-install-force.log")
     try:
         gw.wait_running()
@@ -81,4 +81,4 @@ def test_pm_commands_run_from_the_managed_environment(updated):
     sb = updated
     exe = str(P.selected_generation(sb) / "venv" / "bin" / "hermes")
     bad = _pm_failures(sb, exe)
-    assert not bad, "hermes pm commands die from the managed environment's hermes:\n" + "\n".join(bad)
+    assert not bad, "argus pm commands die from the managed environment's hermes:\n" + "\n".join(bad)

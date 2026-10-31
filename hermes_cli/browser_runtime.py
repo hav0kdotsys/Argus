@@ -78,14 +78,14 @@ def chromium_missing_hint() -> str:
 
     if pinned := _configured_executable():  # the pin wins over every other source, so name it
         return (f"browser.executable_path is set to {pinned}, which is not a browser on this machine: fix the "
-                "path, or clear it to use Hermes's Chromium.")
+                "path, or clear it to use ARGUS's Chromium.")
     if is_termux():
         return ("No Chromium found: pm builds none for Termux. Install one with "
                 "`pkg install x11-repo && pkg install chromium`, or set browser.executable_path.")
     if BAKED_EXECUTABLE_FILE.exists():
-        return ("The image's Chromium is missing: pull the current Hermes image and recreate the "
+        return ("The image's Chromium is missing: pull the current ARGUS image and recreate the "
                 "container (a volume mounted over the image's tool store hides it).")
     if _pm_has_no_chromium():
         return ("No Chromium found: pm builds none for this platform. Install your distribution's "
                 "chromium package, or set browser.executable_path.")
-    return "Chromium is not installed: run `hermes pm install chromium`."
+    return "Chromium is not installed: run `argus pm install chromium`."

@@ -19,7 +19,7 @@ from hermes_cli import main_desktop
 def _bundle(root: Path, asar: bytes) -> Path:
     app = root / "Hermes.app"
     (app / "Contents" / "MacOS").mkdir(parents=True)
-    (app / "Contents" / "MacOS" / "Hermes").write_bytes(b"\xcf\xfa\xed\xfe")
+    (app / "Contents" / "MacOS" / "ARGUS").write_bytes(b"\xcf\xfa\xed\xfe")
     (app / "Contents" / "Resources").mkdir()
     (app / "Contents" / "Resources" / "app.asar").write_bytes(asar)
     return app
@@ -192,7 +192,7 @@ def test_recorded_app_that_went_missing_comes_back_until_gui_uninstall(rebuilt, 
     monkeypatch.setattr(gui_uninstall, "packaged_gui_app_paths", lambda: [app, user_app])
     monkeypatch.setattr(gui_uninstall, "desktop_userdata_dir", lambda: tmp_path / "userdata")
     monkeypatch.setattr(main_desktop, "_desktop_packaged_executable",
-                        lambda _d: rebuilt / "Contents" / "MacOS" / "Hermes")
+                        lambda _d: rebuilt / "Contents" / "MacOS" / "ARGUS")
     monkeypatch.setattr(main_desktop, "_running_macos_app_bundles", set)
 
     main_desktop._refresh_installed_desktop_apps(tmp_path)  # current copy: recorded, untouched

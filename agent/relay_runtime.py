@@ -188,7 +188,7 @@ def _report_requires_managed_execution(report: Any) -> bool:
 
     def keep_enabled() -> bool:
         logger.warning(
-            "Hermes could not determine whether the Relay plugin configuration is empty; keeping managed "
+            "ARGUS could not determine whether the Relay plugin configuration is empty; keeping managed "
             "execution enabled"
         )
         return True
@@ -277,7 +277,7 @@ class RelayOperationLease:
         """Run cleanup while this lease still owns the runtime lifetime."""
         with self._lock:
             if self._runtime is None:
-                raise RuntimeError("Hermes Relay operation lease is released")
+                raise RuntimeError("ARGUS Relay operation lease is released")
             return self._runtime._run_in_session_untracked(session, callback, *args, **kwargs)
 
     def release(self) -> None:
@@ -307,7 +307,7 @@ class _ProcessRelayPluginConfiguration:
                 if self._state is _RelayPluginConfigurationState.ACTIVE:
                     logger.info(
                         "The Relay plugin host is active process-wide and applies to all profiles hosted by this "
-                        "Hermes process. Configuration files: %s",
+                        "ARGUS process. Configuration files: %s",
                         "; ".join(_activation_config_paths(self._activation)) or "none reported",
                     )
             self._owners.add(id(owner))
@@ -321,11 +321,11 @@ class _ProcessRelayPluginConfiguration:
             self._activation = None
             if _is_relay_host_conflict(exc):
                 logger.warning(
-                    "A process-global Relay plugin configuration is already active outside Hermes native "
+                    "A process-global Relay plugin configuration is already active outside ARGUS native "
                     "ownership; leaving it unchanged and disabling Hermes-managed Relay middleware for this process"
                 )
                 return _RelayPluginConfigurationState.FOREIGN
-            logger.warning("Hermes Relay plugin initialization failed: %s", exc, exc_info=True)
+            logger.warning("ARGUS Relay plugin initialization failed: %s", exc, exc_info=True)
             return _RelayPluginConfigurationState.FAILED
         self._relay = relay
         return _RelayPluginConfigurationState.ACTIVE
@@ -334,7 +334,7 @@ class _ProcessRelayPluginConfiguration:
         """Return a terminal state when the process cannot take ownership; None to proceed."""
         if self._relay is not None and not self._clear_active():
             logger.warning(
-                "Hermes Relay plugin cleanup is still pending; refusing to replace the process-global configuration"
+                "ARGUS Relay plugin cleanup is still pending; refusing to replace the process-global configuration"
             )
             return _RelayPluginConfigurationState.FAILED
         return None
@@ -386,7 +386,7 @@ class _ProcessRelayPluginConfiguration:
             try:
                 step()
             except Exception:
-                logger.warning("Hermes Relay plugin %s failed", what, exc_info=True)
+                logger.warning("ARGUS Relay plugin %s failed", what, exc_info=True)
                 return False
         self._relay = self._activation = None
         return True
@@ -539,7 +539,7 @@ class RelayRuntime:
                 )
             except Exception:
                 logger.warning(
-                    "Hermes Relay segment close failed (session=%s segment=%d); abandoning the old segment span",
+                    "ARGUS Relay segment close failed (session=%s segment=%d); abandoning the old segment span",
                     session.session_id, session.segment - 1, exc_info=True,
                 )
             scope_metadata = runtime_metadata(
@@ -549,7 +549,7 @@ class RelayRuntime:
                 self._open_session_scope(session, scope_metadata, resolve_parent=False)
             except Exception:
                 logger.warning(
-                    "Hermes Relay segment open failed (session=%s segment=%d); keeping the prior scope handle",
+                    "ARGUS Relay segment open failed (session=%s segment=%d); keeping the prior scope handle",
                     session.session_id, session.segment, exc_info=True,
                 )
 
@@ -605,9 +605,9 @@ class RelayRuntime:
         """Copy the current context and overlay the session's saved Relay vars (a copy: re-entrant from callbacks)."""
         with session.lock:
             if session.closing and not allow_closing:
-                raise RuntimeError("Hermes Relay session is closing")
+                raise RuntimeError("ARGUS Relay session is closing")
             if session.context is None or session.handle is None:
-                raise RuntimeError("Hermes Relay session context is unavailable")
+                raise RuntimeError("ARGUS Relay session context is unavailable")
             relay_context = session.context.copy()
         context = contextvars.copy_context()
         for variable, value in relay_context.items():
@@ -677,7 +677,7 @@ class RelayRuntime:
         """Admit one Relay call while keeping process plugins alive."""
         with self._sessions_lock:
             if self._closing:
-                raise RuntimeError("Hermes Relay runtime is shutting down")
+                raise RuntimeError("ARGUS Relay runtime is shutting down")
             self._active_operations += 1
             self._operations_idle.clear()
 
@@ -734,10 +734,10 @@ class RelayRuntime:
                 pop_relay_scope(self.relay, top, output=orphan_output, metadata=metadata)
                 drained += 1
             except Exception:
-                logger.warning("Hermes Relay orphaned scope drain failed", exc_info=True)
+                logger.warning("ARGUS Relay orphaned scope drain failed", exc_info=True)
                 break
         if drained:
-            logger.warning("Hermes Relay drained %d orphaned scope(s) before closing %s", drained, handle)
+            logger.warning("ARGUS Relay drained %d orphaned scope(s) before closing %s", drained, handle)
         try:
             pop_relay_scope(self.relay, handle, output=output, metadata=metadata)
             return None
@@ -793,7 +793,7 @@ class RelayRuntime:
                 del self._sessions[session_id]
             self._forget_subagent(session_id)
         if failure:
-            logger.warning("Hermes Relay session %s closed with errors: %s", session_id, failure)
+            logger.warning("ARGUS Relay session %s closed with errors: %s", session_id, failure)
 
     def shutdown(self) -> None:
         """Close core scopes and release process plugin configuration."""
@@ -814,7 +814,7 @@ class RelayRuntime:
         except Exception:
             with self._sessions_lock:
                 self._shutdown_started = False
-            logger.warning("Hermes Relay deferred shutdown could not start", exc_info=True)
+            logger.warning("ARGUS Relay deferred shutdown could not start", exc_info=True)
 
     def _finish_shutdown(self) -> None:
         try:
@@ -832,7 +832,7 @@ class RelayRuntime:
         except Exception:
             with self._sessions_lock:
                 self._shutdown_started = False
-            logger.warning("Hermes Relay shutdown failed", exc_info=True)
+            logger.warning("ARGUS Relay shutdown failed", exc_info=True)
             return
         with self._sessions_lock:
             self._shutdown_complete.set()
@@ -876,7 +876,7 @@ class RelayHostRegistry:
             try:
                 host = RelayRuntime(profile_key=key)
             except Exception as exc:
-                logger.warning("Hermes Relay runtime initialization failed", exc_info=True)
+                logger.warning("ARGUS Relay runtime initialization failed", exc_info=True)
                 host = NoopRelayRuntime(profile_key=key, reason=str(exc))
             self._hosts[key] = host
             return host
@@ -955,7 +955,7 @@ def _warn_on_error(what: str, callback: Callable[..., Any], *args: Any, **kwargs
     try:
         return callback(*args, **kwargs)
     except Exception:
-        logger.warning("Hermes Relay %s failed", what, exc_info=True)
+        logger.warning("ARGUS Relay %s failed", what, exc_info=True)
         return None
 
 
@@ -998,7 +998,7 @@ class RelaySessionCoordinator:
             try:
                 callback(host, context)
             except Exception:
-                logger.warning("Hermes Relay session initializer failed: %s", name, exc_info=True)
+                logger.warning("ARGUS Relay session initializer failed: %s", name, exc_info=True)
 
     def acquire_conversation(
         self,
@@ -1052,7 +1052,7 @@ class RelaySessionCoordinator:
         metadata: dict[str, Any] | None = None,
     ) -> RelayTurnContext:
         if lease.released:
-            raise RuntimeError("Hermes Relay conversation lease is released")
+            raise RuntimeError("ARGUS Relay conversation lease is released")
         turn = RelayTurnContext(lease=lease, turn_id=turn_id, task_id=task_id)
         key = (lease.profile_key, lease.session_id)
         with self._active_turns_lock:
@@ -1060,7 +1060,7 @@ class RelaySessionCoordinator:
                 # One physical scope stack per session; concurrent turns' sibling scopes would not close LIFO.
                 turn.relay_enabled = False
                 logger.warning(
-                    "Skipping Relay instrumentation for concurrent Hermes turn %s in session %s",
+                    "Skipping Relay instrumentation for concurrent ARGUS turn %s in session %s",
                     turn_id, lease.session_id,
                 )
             else:
@@ -1132,7 +1132,7 @@ class RelaySessionCoordinator:
             turn.lease.session, turn.handle, output={"outcome": outcome}, failure_label="turn scope close failed",
         )
         if failure:
-            logger.warning("Hermes Relay turn finalization failed: %s", failure)
+            logger.warning("ARGUS Relay turn finalization failed: %s", failure)
 
     @_fail_open("deferred session close")
     def _consume_deferred_close(self, lease: ConversationLease) -> None:
@@ -1214,7 +1214,7 @@ class RelaySessionCoordinator:
                 # Stack-owned: if the newest handle cannot close even after drain, older ones cannot either.
                 for pending_request_id, pending_handle in logical_calls:
                     turn.logical_llm_calls.setdefault(pending_request_id, pending_handle)
-            logger.warning("Hermes Relay logical LLM finalization failed: %s", failure)
+            logger.warning("ARGUS Relay logical LLM finalization failed: %s", failure)
             break
 
     @staticmethod
@@ -1341,8 +1341,8 @@ def _configured_plugin_inputs() -> Path | None:
     if config_path is None and (legacy_vars := configured_legacy_relay_env_vars(os.environ)):
         logger.warning(
             "Legacy NeMo Relay exporter variables are set but no %s was provided. %s no longer configure "
-            "Relay exporters; any standard user or system plugins.toml still applies. Run `hermes migrate "
-            "relay` (or `hermes update`, which runs it for every profile) to generate %s and select it in .env.",
+            "Relay exporters; any standard user or system plugins.toml still applies. Run `argus migrate "
+            "relay` (or `argus update`, which runs it for every profile) to generate %s and select it in .env.",
             RELAY_PLUGINS_CONFIG_ENV,
             ", ".join(legacy_vars),
             get_hermes_home() / "relay-plugins.toml",
@@ -1360,11 +1360,11 @@ def _explicit_plugins_toml() -> Path | None:
         with config_path.open("rb") as config_file:
             config = tomllib.load(config_file)
         if "dynamic_plugins" in config:
-            raise ValueError("Hermes [[dynamic_plugins]] records are unsupported; use Relay [[plugins.dynamic]] records")
+            raise ValueError("ARGUS [[dynamic_plugins]] records are unsupported; use Relay [[plugins.dynamic]] records")
         return config_path
     except Exception as exc:
         raise _RelayPluginConfigurationLoadError(
-            f"Hermes Relay plugin configuration could not be loaded from {config_path}; continuing without Relay plugins"
+            f"ARGUS Relay plugin configuration could not be loaded from {config_path}; continuing without Relay plugins"
         ) from exc
 
 

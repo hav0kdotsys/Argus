@@ -368,7 +368,7 @@ def test_hermes_pkce_refresh_writes_back_to_singleton(tmp_path, monkeypatch):
     on_disk = json.loads(oauth_file.read_text(encoding="utf-8"))
     assert on_disk["refreshToken"] == "rt1", (
         "successful hermes_pkce refresh must write back to "
-        "~/.hermes/.anthropic_oauth.json, or _seed_from_singletons() will "
+        "~/.argus/.anthropic_oauth.json, or _seed_from_singletons() will "
         "revert the pool entry to the pre-refresh (spent) token on next load"
     )
 

@@ -458,7 +458,7 @@ def format_auth_error(error: Exception) -> str:
         # Profile-aware: a bare `hermes model` from a named profile re-signs the ROOT store (#114012).
         from hermes_constants import profile_cli_selector
 
-        return f"{error} Run `hermes {profile_cli_selector()}model` to re-authenticate."
+        return f"{error} Run `argus {profile_cli_selector()}model` to re-authenticate."
     if error.code in _ENTITLEMENT_ERROR_CODES:
         if error.provider == "nous":
             return _format_nous_entitlement_auth_error(error)
@@ -619,7 +619,7 @@ def _lock_holder_hint(lock_path: Path) -> str:
         except OSError:
             pass  # exists but is not signalable (e.g. EPERM): still a live holder
     # No example holder: many stores use this lock; the caller's timeout_message names which one.
-    return f"another hermes process (pid {pid}) probably still holds it"
+    return f"another argus process (pid {pid}) probably still holds it"
 
 
 def _stamp_lock_holder_pid(lock_file: Any) -> None:
@@ -1408,7 +1408,7 @@ def _refuse_env_adoption_if_config_corrupt() -> None:
     raise AuthError(
         f"config.yaml at {path} is corrupt ({err}) — refusing to auto-select "
         f"an inference provider from environment keys. Fix the YAML (a backup "
-        f"was saved next to it) or run hermes setup.",
+        f"was saved next to it) or run argus setup.",
         code="corrupt_config")
 
 
@@ -1635,8 +1635,8 @@ def resolve_provider(
     if normalized != "auto":
         from hermes_cli.auth_error_copy import unknown_provider_hint
         hint = unknown_provider_hint(normalized)
-        tail = (f"\n\n{hint}" if hint else " Check 'hermes model' for available providers, "
-                "or run 'hermes doctor' to diagnose config issues.")
+        tail = (f"\n\n{hint}" if hint else " Check 'argus model' for available providers, "
+                "or run 'argus doctor' to diagnose config issues.")
         raise AuthError(f"Unknown provider '{normalized}'." + tail, code="invalid_provider")
 
     if explicit_api_key or explicit_base_url:  # one-off CLI creds always mean openrouter/custom
@@ -1695,8 +1695,8 @@ def resolve_provider(
         pass  # boto3 not installed
     from hermes_constants import display_hermes_home
     raise AuthError(
-        "Hermes is not connected to any AI provider yet. Run `hermes model` to pick one, type `/login` in chat, "
-        f"or add a key with `hermes auth add <provider>`. (Advanced: put an API key such as OPENROUTER_API_KEY in "
+        "ARGUS is not connected to any AI provider yet. Run `argus model` to pick one, type `/login` in chat, "
+        f"or add a key with `argus auth add <provider>`. (Advanced: put an API key such as OPENROUTER_API_KEY in "
         f"{display_hermes_home()}/.env.)",
         code="no_provider_configured")
 
@@ -1821,7 +1821,7 @@ def _resolve_nous_access_token(
 
     with _provider_state_transaction("nous") as (auth_store, state, state_source_path):
         if not state:
-            raise _nous_err("Hermes is not logged into Nous Portal.", "nous_auth_missing", relogin=True)
+            raise _nous_err("ARGUS is not logged into Nous Portal.", "nous_auth_missing", relogin=True)
         portal_base_url = _nous_portal_base_url(state)
         client_id = str(state.get("client_id") or DEFAULT_NOUS_CLIENT_ID)
         verify = _resolve_verify(insecure=insecure, ca_bundle=ca_bundle, auth_state=state)
@@ -2183,9 +2183,9 @@ def _get_azure_foundry_auth_status() -> dict[str, Any]:
                 credential_verified=False, logged_in=bool(installed),
                 hint=(
                     "azure-identity is installed; live credential validation "
-                    "is skipped here. Run `hermes doctor` to verify token acquisition."
+                    "is skipped here. Run `argus doctor` to verify token acquisition."
                 ) if installed else (
-                    "azure-identity not installed. From the Hermes environment, run: "
+                    "azure-identity not installed. From the ARGUS environment, run: "
                     f"{install_hint('azure-identity')}. "
                     "Then restart Hermes."))
         except Exception as exc:
@@ -2369,8 +2369,8 @@ def _reset_config_provider() -> Path:
 
 def login_command(args) -> None:
     """Deprecated: use 'hermes model' or 'hermes setup' instead."""
-    print("The 'hermes login' command has been removed.\nUse 'hermes auth' to manage credentials,\n"
-          "'hermes model' to select a provider, or 'hermes setup' for full setup.")
+    print("The 'argus login' command has been removed.\nUse 'argus auth' to manage credentials,\n"
+          "'argus model' to select a provider, or 'argus setup' for full setup.")
     raise SystemExit(0)
 
 
@@ -2419,6 +2419,6 @@ def logout_command(args) -> None:
     if not should_reset_config:
         print("Model provider configuration was unchanged.")
     elif os.getenv("OPENROUTER_API_KEY"):
-        print("Hermes will use OpenRouter for inference.")
+        print("ARGUS will use OpenRouter for inference.")
     else:
-        print("Run `hermes model` or configure an API key to use Hermes.")
+        print("Run `argus model` or configure an API key to use Hermes.")

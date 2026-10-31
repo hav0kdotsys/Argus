@@ -284,6 +284,6 @@ def restore_interrupted_zip_swap(project_root: Path | None = None) -> bool:
             return changed  # the journal stays: the next launch retries
         journal.unlink(missing_ok=True)
     if changed:
-        print("⚠ A previous ZIP `hermes update` was interrupted mid-swap; the old install was put back. "
-              "`hermes update` updates it again.", file=sys.stderr)
+        print("⚠ A previous ZIP `argus update` was interrupted mid-swap; the old install was put back. "
+              "`argus update` updates it again.", file=sys.stderr)
     return changed

@@ -19,7 +19,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Optional
 
-SERVICE = "Hermes Agent vault key"
+SERVICE = "ARGUS vault key"
 
 # keyring backends that are not an OS credential store: ``fail``/``null`` are what keyring picks on
 # a headless Linux box with no Secret Service, and keyrings.alt's plaintext/encrypted-file keyrings
@@ -44,7 +44,7 @@ def os_keyring():
         import keyring
     except ImportError as exc:
         raise KeychainUnavailable(
-            "the keychain feature is not installed (`hermes pm install --extra keychain`)") from exc
+            "the keychain feature is not installed (`argus pm install --extra keychain`)") from exc
     try:
         backend = keyring.get_keyring()
     except Exception as exc:  # health: allow BLE001 -- backend discovery runs third-party entry points
@@ -85,10 +85,10 @@ def read_ref(path: Path) -> Optional[dict]:
         return None
     except (OSError, ValueError) as exc:
         from agent.vault_store import VaultError
-        raise VaultError(f"{path.name} is unreadable ({type(exc).__name__}); see `hermes vault key`") from exc
+        raise VaultError(f"{path.name} is unreadable ({type(exc).__name__}); see `argus vault key`") from exc
     if not isinstance(data, dict) or data.get("storage") != "keychain" or not data.get("account"):
         from agent.vault_store import VaultError
-        raise VaultError(f"{path.name} does not describe a keychain entry; see `hermes vault key`")
+        raise VaultError(f"{path.name} does not describe a keychain entry; see `argus vault key`")
     return data
 
 

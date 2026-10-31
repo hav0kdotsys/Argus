@@ -326,7 +326,7 @@ class DingTalkAdapter(BasePlatformAdapter):
         if not _is_sdk_incompat(exc) or getattr(self, "_fatal_error_code", None) == "dingtalk_stream_error":
             return
         msg = (f"dingtalk-stream cannot open its websocket with the installed websockets package ({exc}). "
-               "Hermes pins dingtalk-stream==0.24.3 with websockets==15.0.1; reinstall the dingtalk extra "
+               "ARGUS pins dingtalk-stream==0.24.3 with websockets==15.0.1; reinstall the dingtalk extra "
                "so those versions are used (e.g. `pip install 'hermes-agent[dingtalk]'`).")
         logger.error("[%s] %s", self.name, msg)
         # Not retryable: only a reinstall + restart fixes it, and connect() returns True before the
@@ -526,7 +526,7 @@ class DingTalkAdapter(BasePlatformAdapter):
                 return result
             logger.warning("[%s] AI Card send failed, falling back to webhook", self.name)
         logger.debug("[%s] Sending via webhook", self.name)
-        payload = {"msgtype": "markdown", "markdown": {"title": "Hermes", "text": self._normalize_markdown(content[: self.MAX_MESSAGE_LENGTH])}}
+        payload = {"msgtype": "markdown", "markdown": {"title": "ARGUS", "text": self._normalize_markdown(content[: self.MAX_MESSAGE_LENGTH])}}
         try:
             resp = await self._http_client.post(session_webhook, json=payload, timeout=15.0)
             if resp.status_code < 300:
@@ -853,7 +853,7 @@ def register(ctx) -> None:
     ctx.register_platform(
         standalone_send=StandaloneSendPolicy(text_direct=True),
         name="dingtalk", label="DingTalk", adapter_factory=DingTalkAdapter, check_fn=dingtalk_deps_present,
-        dashboard_description="Connect Hermes to DingTalk groups (钉钉).",
+        dashboard_description="Connect ARGUS to DingTalk groups (钉钉).",
         docs_url="https://open.dingtalk.com/document/orgapp/the-robot-development-process",
         dashboard_env_vars=("DINGTALK_CLIENT_ID", "DINGTALK_CLIENT_SECRET"),
         ensure_deps_fn=ensure_dingtalk_deps, is_connected=_is_connected, validate_config=_is_connected,

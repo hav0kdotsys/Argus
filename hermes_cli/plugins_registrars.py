@@ -67,7 +67,7 @@ _SCOPED_PROVIDER_REGISTRARS: tuple[tuple[str, str, str, str, str, str, dict[str,
     ("register_secret_source", "secret_source", "agent.secret_sources.registry",
      "agent.secret_sources.base:SecretSource", "secret source",
      "Register a :class:`agent.secret_sources.base.SecretSource`, run by ``load_hermes_dotenv()`` "
-     "(after ``~/.hermes/.env``, before credentials are read) when ``secrets.<name>`` is enabled. The "
+     "(after ``~/.argus/.env``, before credentials are read) when ``secrets.<name>`` is enabled. The "
      "orchestrator owns ordering/precedence/provenance; the source only fetches. Since dotenv usually "
      "loads before discovery, the manager re-pulls enabled plugin sources afterwards.",
      {"normalize": None, "register": "register_source", "param": "source"}),
@@ -85,7 +85,7 @@ _SCOPED_PROVIDER_REGISTRARS: tuple[tuple[str, str, str, str, str, str, dict[str,
     ("register_delegation_provider", "delegation_provider", "agent.delegation_registry",
      "agent.delegation_provider:DelegationProvider", "delegation provider",
      "Register an :class:`agent.delegation_provider.DelegationProvider`; ``provider.name`` is matched by "
-     "``delegation.backend``. It decides each ``delegate_task`` task's route (model/provider or a Hermes "
+     "``delegation.backend``. It decides each ``delegate_task`` task's route (model/provider or an ARGUS "
      "profile) and may add per-task schema parameters; core keeps the subagent lifecycle.",
      {"normalize": "lower"}),
 )

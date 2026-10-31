@@ -737,7 +737,7 @@ def _complete_logical(
             )
         except Exception:
             # Provider result is authoritative; retain the handle so turn finalization can retry.
-            logger.warning("Hermes Relay logical LLM finalization failed", exc_info=True)
+            logger.warning("ARGUS Relay logical LLM finalization failed", exc_info=True)
             return
         if popped is False:
             # A call running beside the turn (title generation) finishes under the turn's own

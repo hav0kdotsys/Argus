@@ -107,7 +107,7 @@ def test_verify_failure_after_a_committed_update_is_ok_with_warnings(tmp_path: P
     assert code == 0, out
     assert (result['ok'], result['exit_code'], result['manual']) == (True, 0, True), result
     assert [w.split(':')[0] for w in result['warnings']] == ['verify'], result
-    assert result['message'].startswith('Hermes was updated, but'), result
+    assert result['message'].startswith('ARGUS was updated, but'), result
     assert 'previous version' not in result['message']
     # The fleet the Desktop stopped is still brought back.
     assert argv[-1] == ['gateway', 'start', '--all'], argv
@@ -144,7 +144,7 @@ def test_nonzero_exit_after_the_commit_point_is_installed_with_a_followup(tmp_pa
     if ok:
         assert code == 0, out
         assert (result['ok'], result['exit_code'], result['manual']) == (True, 0, True), result
-        assert result['message'].startswith('Hermes was updated, but'), result
+        assert result['message'].startswith('ARGUS was updated, but'), result
         assert [w.split(':')[0] for w in result['warnings']] == ['update'], result
         assert argv[-1] == ['gateway', 'start', '--all'], argv   # the post-commit steps still run
     else:

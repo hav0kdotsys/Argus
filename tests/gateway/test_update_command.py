@@ -538,7 +538,7 @@ class TestSendUpdateNotification:
         assert "ok before" in sent_text
         assert "invalid byte" in sent_text
         assert "continued after" in sent_text
-        assert "Hermes update finished" in sent_text
+        assert "ARGUS update finished" in sent_text
         assert not pending_path.exists()
         assert not output_path.exists()
         assert not exit_code_path.exists()
@@ -598,7 +598,7 @@ class TestWatchUpdateProgress:
         sent = "\n".join(call.args[1] for call in mock_adapter.send.call_args_list)
         assert "ok before" in sent
         assert "continued after" in sent
-        assert "Hermes update finished" in sent
+        assert "ARGUS update finished" in sent
         assert not (hermes_home / ".update_pending.json").exists()
 # ---------------------------------------------------------------------------
 # Install-method refusal gate

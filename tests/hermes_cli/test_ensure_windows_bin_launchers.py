@@ -467,6 +467,6 @@ def test_repo_gitignores_the_legacy_bin_dir():
         check=False,
     )
     assert result.returncode == 0, (
-        "bin/hermes.exe is not gitignored — hermes update's autostash "
+        "bin/hermes.exe is not gitignored — argus update's autostash "
         "(--include-untracked) would sweep pre-migration launchers off disk"
     )

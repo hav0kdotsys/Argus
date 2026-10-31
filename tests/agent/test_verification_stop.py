@@ -206,7 +206,7 @@ def test_nudge_drops_the_unscored_run_warning_once_hermes_verify_records(tmp_pat
     nudge = build_verify_on_stop_nudge(session_id="s1", changed_paths=[changed])
 
     assert nudge is not None
-    assert "hermes verify" in nudge and "did not count" not in nudge
+    assert "argus verify" in nudge and "did not count" not in nudge
 
 # ---------------------------------------------------------------------------
 # Fix C: documentation/prose edits carry no verifiable behavior and must never

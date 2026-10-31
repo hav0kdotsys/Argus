@@ -130,8 +130,8 @@ def test_without_the_plugin_the_backend_error_names_the_install_command(tmp_path
     assert backends._check_plugin_requirements({"env_type": "singularity"}) is False
     reason = backends.terminal_backend_unavailable_reason()
     assert "moved out of core into the 'singularity' plugin" in reason
-    assert "hermes plugins install singularity" in reason
-    with pytest.raises(ValueError, match="hermes plugins install singularity"):
+    assert "argus plugins install singularity" in reason
+    with pytest.raises(ValueError, match="argus plugins install singularity"):
         backends._create_environment("singularity", image="", cwd="/root", timeout=10)
     assert lcm.terminal_backend_install_hint("acmebox") == ""
 

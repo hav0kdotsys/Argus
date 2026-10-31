@@ -27,11 +27,11 @@ _FORCED_STOP_SECONDS = 5.0
 
 # One line each, short enough for the TUI's activity row after its "gateway incompatible: " prefix.
 REFUSAL_DETAIL = {
-    "owner_newer": "a newer Hermes's gateway owns this profile; update Hermes or run: hermes gateway stop",
-    "foreign_install": "another Hermes install's gateway owns this profile; stop it there: hermes gateway stop",
-    "owner_unverified": "an older Hermes gateway owns this profile and was not verified; run: hermes gateway stop",
-    "owner_did_not_exit": "an older Hermes gateway owns this profile and did not stop; run: hermes gateway stop",
-    "owner_unreachable": "an older Hermes gateway owns this profile; run: hermes gateway stop",
+    "owner_newer": "a newer ARGUS's gateway owns this profile; update ARGUS or run: argus gateway stop",
+    "foreign_install": "another ARGUS install's gateway owns this profile; stop it there: argus gateway stop",
+    "owner_unverified": "an older ARGUS gateway owns this profile and was not verified; run: argus gateway stop",
+    "owner_did_not_exit": "an older ARGUS gateway owns this profile and did not stop; run: argus gateway stop",
+    "owner_unreachable": "an older ARGUS gateway owns this profile; run: argus gateway stop",
 }
 
 

@@ -109,7 +109,7 @@ def test_stdlib_fallback_reads_the_real_lock_like_tomllib(monkeypatch):
     monkeypatch.setitem(sys.modules, "tomllib", None)
     assert overridden_versions(REPO_LOCK) == with_tomllib
     assert override_requirements(REPO_LOCK) == requirements
-    assert with_tomllib, "Hermes's lock declares overrides; an empty read means the parser missed them"
+    assert with_tomllib, "ARGUS's lock declares overrides; an empty read means the parser missed them"
 
 
 @pytest.fixture

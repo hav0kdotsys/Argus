@@ -47,8 +47,8 @@ import hermes_bootstrap
     assert "install state is not writable by this user" in result.stderr
     assert str(target) in result.stderr
     assert "source-update completion failed" not in result.stderr
-    assert "run `hermes update`" not in result.stderr
-    assert "hermes pm repair" not in result.stderr
+    assert "run `argus update`" not in result.stderr
+    assert "argus pm repair" not in result.stderr
     assert "Traceback" not in result.stderr
 
 
@@ -99,4 +99,4 @@ raise SystemExit(main(["repair"]))
     monkeypatch.setitem(sys.modules, "pm.recovery", recovery)
     with pytest.raises(PermissionError):
         _early_recovery.recover_if_needed(project, argv=["pm", "repair"], explicit=True)
-    assert "run `hermes pm repair`" not in capsys.readouterr().err
+    assert "run `argus pm repair`" not in capsys.readouterr().err

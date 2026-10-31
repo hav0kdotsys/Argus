@@ -126,7 +126,7 @@ class ChronosCronScheduler(CronScheduler):
         logger.warning(
             "Chronos: NAS rejected this agent's Nous credential for agent-cron (403 invalid_client). "
             "The Nous token in auth.json is not this instance's provisioned identity (an agent:* client "
-            "or the hosted bootstrap session), so no job can be armed. A normal `hermes auth` re-login "
+            "or the hosted bootstrap session), so no job can be armed. A normal `argus auth` re-login "
             "cannot fix this; the hosted credential has to be restored from the Nous Portal. Falling back "
             "to the built-in cron ticker for this process so scheduled jobs keep firing on time.")
         if self._stop_event is None:

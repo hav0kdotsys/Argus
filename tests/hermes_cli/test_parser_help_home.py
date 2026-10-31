@@ -37,4 +37,4 @@ def test_help_text_names_the_profile_config_once_the_process_is_re_homed(sticky_
 
     monkeypatch.setenv("HERMES_HOME", str(sticky_profile_home / "profiles" / "coder"))
 
-    assert _cfg_path() == "~/.hermes/profiles/coder/config.yaml"
+    assert _cfg_path() == "~/.argus/profiles/coder/config.yaml"

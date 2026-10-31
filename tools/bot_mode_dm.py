@@ -932,6 +932,6 @@ if __name__ == "__main__":  # pragma: no cover - exercised as a background proce
             parsed = _runner_argv(sys.argv[1:])
             if not booted and parsed and os.path.exists(_live_intent_file(parsed[2])):
                 print(_live_outcome_unknown(parsed[2], "the delivery runner could not activate "
-                                                       "Hermes dependencies (see stderr)"))
+                                                       "ARGUS dependencies (see stderr)"))
             raise
     raise SystemExit(_delivery_main(sys.argv[1:]))

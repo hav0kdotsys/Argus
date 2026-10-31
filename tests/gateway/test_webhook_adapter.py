@@ -401,11 +401,11 @@ class TestPayloadFilters:
                         "any": [
                             {
                                 "field": "payload.chatId",
-                                "in_file": "~/.hermes/data/watchlist.json",
+                                "in_file": "~/.argus/data/watchlist.json",
                             },
                             {
                                 "field": "payload.id.remote",
-                                "in_file": "~/.hermes/data/watchlist.json",
+                                "in_file": "~/.argus/data/watchlist.json",
                             },
                         ]
                     },

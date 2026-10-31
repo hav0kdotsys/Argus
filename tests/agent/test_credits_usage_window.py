@@ -924,7 +924,7 @@ class TestClassifier:
     def test_window_402_is_billing_and_not_retryable(self):
         from agent.error_classifier import FailoverReason, classify_api_error
         c = classify_api_error(self._err(402, "usage_window_and_credits_exhausted",
-                                         "Your included Hermes usage for today is used up and you have no top-up credits. It resets at 18:00."),
+                                         "Your included ARGUS usage for today is used up and you have no top-up credits. It resets at 18:00."),
                                provider="nous", model="example/model-c")
         assert c.reason == FailoverReason.billing and not c.retryable
         assert c.error_context.get("usage_window") is True
@@ -941,7 +941,7 @@ class TestClassifier:
 
     def test_window_402_carries_the_server_wording_when_sent(self):
         from agent.error_classifier import classify_api_error
-        err = self._err(402, "usage_window_and_credits_exhausted", "Your included Hermes usage for today is used up.")
+        err = self._err(402, "usage_window_and_credits_exhausted", "Your included ARGUS usage for today is used up.")
         assert "display_message" not in classify_api_error(err, provider="nous", model="m").error_context
         err.body = {"status": 402, "code": "usage_window_and_credits_exhausted", "message": "m",
                     "display_message": "Daily limit hit. Back at 4pm."}
@@ -1288,8 +1288,8 @@ class TestRefusalReadsAsTheStopLine:
         quiet = SimpleNamespace(_credits_state=_state(), _credits_latch=new_credits_latch(), model="example/model-b",
                                 base_url="https://inference-api.nousresearch.com/v1")
         refused = SimpleNamespace(error_context={"usage_window": True},
-                                  message="Your included Hermes usage for this week is used up.")
-        assert _usage_window_refusal(quiet, refused)[0] == "Your included Hermes usage for this week is used up."
+                                  message="Your included ARGUS usage for this week is used up.")
+        assert _usage_window_refusal(quiet, refused)[0] == "Your included ARGUS usage for this week is used up."
         assert _usage_window_refusal(quiet, SimpleNamespace(error_context={"usage_window": True}))[0] == ""
 
     def test_the_refusal_names_the_plans_recommended_model(self, monkeypatch):

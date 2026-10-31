@@ -559,7 +559,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             {sessions_html}
             
             <footer>
-                Built with ☤ Hermes Agent • Generated on {generated_at}
+                Built with ☤ ARGUS • Generated on {generated_at}
             </footer>
         </div>
     </div>
@@ -748,7 +748,7 @@ def _sidebar_html(sessions: list[dict[str, Any]]) -> str:
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    {ICON_HERMES} Hermes History
+                    {ICON_HERMES} ARGUS History
                 </div>
                 <div class="search-container">
                     {ICON_SEARCH}
@@ -792,7 +792,7 @@ def generate_multi_session_html_export(sessions: list[dict[str, Any]]) -> str:
         return "<html><body><h1>No sessions to export.</h1></body></html>"
     is_multi = len(sessions) > 1
     return HTML_TEMPLATE.format(
-        page_title="Hermes Session Export" if is_multi else _escape_html(sessions[0].get("title") or "Hermes Session"),
+        page_title="ARGUS Session Export" if is_multi else _escape_html(sessions[0].get("title") or "ARGUS Session"),
         sidebar_html=_sidebar_html(sessions) if is_multi else "",
         sessions_html="\n".join(_session_view_html(s, is_multi) for s in sessions),
         main_margin="var(--sidebar-width)" if is_multi else "0",

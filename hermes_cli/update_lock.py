@@ -954,7 +954,7 @@ def describe_holder(holder: UpdateHolder | None) -> str:
             "  Updating without the lock could let two updates corrupt the install, or run\n"
             "  under a Desktop app, gateway or installer that cannot see it. Make that path\n"
             "  writable (fix its owner or permissions, or remount a read-only filesystem\n"
-            "  read-write), or run `hermes update` as the user that owns the install."
+            "  read-write), or run `argus update` as the user that owns the install."
         )
     minutes, seconds = divmod(int(max(0 if holder is None else holder.age_seconds, 0)), 60)
     elapsed = f"{minutes}m {seconds}s" if minutes else f"{seconds}s"
@@ -962,11 +962,11 @@ def describe_holder(holder: UpdateHolder | None) -> str:
     if holder is not None and holder.held:
         who = "; its owner exited but a process it started still holds the checkout"
     return (
-        f"✗ Another Hermes update is already running (started {elapsed} ago{who}).\n"
+        f"✗ Another ARGUS update is already running (started {elapsed} ago{who}).\n"
         "\n"
         "  Running two at once would corrupt the install. Wait for it to finish\n"
-        "  (watch `hermes logs`), or close the Desktop/dashboard window that\n"
-        "  started it, then run `hermes update` again."
+        "  (watch `argus logs`), or close the Desktop/dashboard window that\n"
+        "  started it, then run `argus update` again."
     )
 
 

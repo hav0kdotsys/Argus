@@ -213,7 +213,7 @@ def _port_to_serve(home: Path, host: str) -> tuple[int, Optional[int]]:
     _create_user_only(lock)
     try:
         with _file_lock(lock, _PORT_CLAIM_HOLDER, _PORT_CLAIM_TIMEOUT_SECONDS,
-                        "Timed out waiting for another Hermes profile to choose its Webapp port"):
+                        "Timed out waiting for another ARGUS profile to choose its Webapp port"):
             claimed = _claimed_ports(home)
             for port in range(DEFAULT_PORT + 1, DEFAULT_PORT + 1 + _PORT_SEARCH):
                 if port not in claimed and _port_free(host, port):
@@ -304,7 +304,7 @@ def build_bundle() -> None:
         prepare_webapp_renderer(get_project_root())
     except WebappBuildError as exc:
         raise WebappAccessError(
-            f"{str(exc).rstrip('.')}. Run hermes webapp --build-only to see the full output, then start again.") from exc
+            f"{str(exc).rstrip('.')}. Run argus webapp --build-only to see the full output, then start again.") from exc
 
 
 def register(callback_url: str) -> None:

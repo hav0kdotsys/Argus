@@ -178,7 +178,7 @@ def test_oauth_provider_status_uses_profile_query(tmp_path, monkeypatch):
         "id": "fake-oauth",
         "name": "Fake OAuth",
         "flow": "pkce",
-        "cli_command": "hermes auth add fake-oauth",
+        "cli_command": "argus auth add fake-oauth",
         "docs_url": "https://example.com",
         "status_fn": fake_status,
     },)
@@ -503,7 +503,7 @@ def test_accounts_offers_every_oauth_provider_from_catalog():
     for d in provider_catalog():
         if d.tab == "accounts":
             assert d.slug in offered, (
-                f"{d.slug} is an accounts-tab provider in `hermes model` but is "
+                f"{d.slug} is an accounts-tab provider in `argus model` but is "
                 f"missing from the desktop Accounts tab (/api/providers/oauth)"
             )
 

@@ -319,7 +319,7 @@ TOOL_CATEGORIES = {
     "x_search": {
         "name": "X (Twitter) Search", "setup_title": "Select xAI Credential Source",
         "setup_note": (
-            "Hermes routes X searches through xAI's built-in x_search Responses tool for read-only public X "
+            "ARGUS routes X searches through xAI's built-in x_search Responses tool for read-only public X "
             "discovery. Use the xurl skill for authenticated X API reads and account actions. Both credential "
             "sources hit the same https://api.x.ai/v1/responses endpoint — pick whichever you already have. "
             "SuperGrok OAuth is preferred when both are set (uses your subscription quota instead of API spend)."
@@ -342,7 +342,7 @@ TOOL_CATEGORIES = {
         "providers": [
             _row("Local Browser", "★ recommended · free", "Headless Chromium, no API key needed", browser_provider="local",
                  browser_engine="auto", post_setup="chromium"),
-            _row("Lightpanda", "free · local · no Chromium", "Zig headless browser spawned by Hermes, text-only (no screenshots)",
+            _row("Lightpanda", "free · local · no Chromium", "Zig headless browser spawned by ARGUS, text-only (no screenshots)",
                  browser_provider="local", browser_engine="lightpanda", post_setup="lightpanda"),
             # Browser Use hosts its own Chromium, so the local-Chromium install and readiness gate must not
             # apply (with "chromium" this row read "needs setup" forever on machines without a local build).
@@ -551,7 +551,7 @@ def _coerce_platform_toolsets_value(value, platform: str):
         logger.warning(
             "platform_toolsets.%s is %r, expected a YAML list of toolset names "
             "(e.g. [terminal, file, web]) - falling back to the platform default. "
-            "Run `hermes tools` to reconfigure.", platform, value)
+            "Run `argus tools` to reconfigure.", platform, value)
     return value
 
 
@@ -700,7 +700,7 @@ def toolsets_partially_stripped(config: dict, enabled_toolsets: set[str]) -> dic
         if by:
             entries = sorted(by)
             clears = all(_disabled_entry_tools(e) <= tools for e in entries)
-            hint = (f"run `hermes tools enable {name}` to restore" if clears
+            hint = (f"run `argus tools enable {name}` to restore" if clears
                     else f"remove {', '.join(entries)} from agent.disabled_toolsets to restore")
             report[name] = (sorted(set().union(*by.values())), entries, hint)
     return report
@@ -775,7 +775,7 @@ def _warn_all_invalid_platform_toolsets(platform: str, explicit: list, config: d
         _warned_invalid_platform_toolsets.add(platform)
         logger.warning(
             "platform '%s' has no valid toolsets configured (unknown "
-            "name(s): %s) - tools will be unavailable. Run `hermes tools` "
+            "name(s): %s) - tools will be unavailable. Run `argus tools` "
             "to reconfigure. See issue #38798.",
             platform, ", ".join(named))
 
@@ -1144,7 +1144,7 @@ def tools_command(args=None, first_install: bool = False, config: dict | None = 
     if getattr(args, "summary", False):
         _print_tools_summary(config, enabled_platforms)
         return
-    print(color("☤ Hermes Tool Configuration", Colors.CYAN, Colors.BOLD))
+    print(color("☤ ARGUS Tool Configuration", Colors.CYAN, Colors.BOLD))
     print(color("  Enable or disable tools per platform.", Colors.DIM))
     print(color("  Tools that need API keys will be configured when enabled.", Colors.DIM))
     print(color("  Guide: https://hermes-agent.nousresearch.com/docs/user-guide/features/tools", Colors.DIM))

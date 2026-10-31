@@ -212,7 +212,7 @@ def release_after_refused_rename(
     closable = [h for h in holders if h.exe]
     for holder in holders:
         if not holder.exe:
-            print(f"  Close {holder.name} (pid {holder.pid}) yourself: Hermes cannot close it.")
+            print(f"  Close {holder.name} (pid {holder.pid}) yourself: ARGUS cannot close it.")
     if not chosen and _ask_at_terminal(closable, input_fn):
         chosen = closable
     if not chosen:
@@ -230,8 +230,8 @@ def describe_block(holders: list[ReleaseHolder], release_dir: Path) -> str:
     return (
         "".join(f"  {h.holder_line()}\n" for h in holders)
         + f"✗ Windows would not replace the desktop app: {names} is using a folder inside {release_dir}.\n"
-        f"    It is not part of Hermes, so it was left running. Close it (Task Manager, or `taskkill {pids}`)\n"
-        "    and run `hermes desktop --force-build`, or run Update now in Hermes Desktop and choose to close it."
+        f"    It is not part of ARGUS, so it was left running. Close it (Task Manager, or `taskkill {pids}`)\n"
+        "    and run `argus desktop --force-build`, or run Update now in ARGUS Desktop and choose to close it."
     )
 
 

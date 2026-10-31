@@ -46,7 +46,7 @@ def run_tool_calls(home: Path, calls: list[tuple[str, dict[str, Any]]], *, cwd: 
         proc = H.run_hermes(["chat", "-q", "run the scripted tools", "-Q"], home, cwd=cwd,
                             extra_env=extra_env, timeout=timeout)
         reqs = srv.main_requests()
-    assert proc.returncode == 0, f"hermes chat -q rc={proc.returncode}\n{proc.stdout[-2000:]}\n{proc.stderr[-4000:]}"
+    assert proc.returncode == 0, f"argus chat -q rc={proc.returncode}\n{proc.stdout[-2000:]}\n{proc.stderr[-4000:]}"
     assert len(reqs) == len(calls) + 1, f"expected {len(calls) + 1} model turns, saw {len(reqs)}\n{proc.stderr[-3000:]}"
     results = {m.get("tool_call_id"): tool_text(m.get("content"))
                for m in reqs[-1]["messages"] if m.get("role") == "tool"}

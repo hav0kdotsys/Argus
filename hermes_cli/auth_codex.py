@@ -249,7 +249,7 @@ def _recover_codex_tokens_from_cli(
         if known and _codex_principal_identity(imported["access_token"]) not in (None, known):
             logger.warning(
                 "Codex CLI recovery refused (%s): the Codex CLI login belongs to a different ChatGPT "
-                "workspace than the Hermes credential. Run `%s` to re-authenticate it.",
+                "workspace than the ARGUS credential. Run `%s` to re-authenticate it.",
                 reason, _codex_relogin_command())
             return None
         logger.info("Codex auth recovered from Codex CLI auth.json (%s).", reason)
@@ -961,14 +961,14 @@ def _login_openai_codex(args, pconfig: ProviderConfig, *, force_new_login: bool 
         cli_tokens = _import_codex_cli_tokens()
         if cli_tokens:
             print("Found existing Codex CLI credentials at ~/.codex/auth.json")
-            print("Hermes will create its own session to avoid conflicts with Codex CLI / VS Code.")
+            print("ARGUS will create its own session to avoid conflicts with Codex CLI / VS Code.")
             if _prompt_yes_no(
                 "Import these credentials? (a separate login is recommended) [y/N]: ", default="n"):
                 _save_codex_tokens(cli_tokens)
                 config_path = _update_config_for_provider("openai-codex", _codex_base_url())
                 print()
                 print("Credentials imported. Note: if Codex CLI refreshes its token,")
-                print("Hermes will keep working independently with its own session.")
+                print("ARGUS will keep working independently with its own session.")
                 print(f"  Config updated: {config_path} (model.provider=openai-codex)")
                 return
 

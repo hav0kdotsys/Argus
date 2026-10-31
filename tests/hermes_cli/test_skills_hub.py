@@ -741,7 +741,7 @@ def test_install_by_name_resolves_to_the_skill_it_names(monkeypatch, tmp_path, i
     assert cli_hub.do_install(identifier, console=console, skip_confirm=True) is False
     # One line, subject and remedy together: the Desktop toast shows only a failed action's last 3 lines.
     error = next(line for line in sink.getvalue().splitlines() if line.startswith("Error:"))
-    assert f"'{name}' is a built-in skill" in error and f"`hermes skills uninstall {name}`" in error
+    assert f"'{name}' is a built-in skill" in error and f"`argus skills uninstall {name}`" in error
     assert "already available" not in sink.getvalue()
     assert (stranger / "SKILL.md").read_text().endswith("stranger\n")
 

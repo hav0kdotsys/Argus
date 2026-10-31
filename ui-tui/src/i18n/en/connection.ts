@@ -19,7 +19,7 @@ export const connectionEn = {
       reconnect: 'Reconnect'
     },
     // {0} app, {1} account name the agent chose
-    namedAccount: (app: string, alias: string) => `Hermes named this ${app} account ${alias}. Rename it anytime.`,
+    namedAccount: (app: string, alias: string) => `ARGUS named this ${app} account ${alias}. Rename it anytime.`,
     header: {
       // {0} title, {1} account name
       account: (title: string, alias: string) => `${title} · ${alias}`,
@@ -56,7 +56,7 @@ export const connectionEn = {
     },
     notice: {
       answerNotDelivered: 'That answer did not reach Hermes. Try again.',
-      restartFailed: 'Hermes could not start that again. Try again.',
+      restartFailed: 'ARGUS could not start that again. Try again.',
       browserDidNotOpen: 'The browser did not open. Copy the link above.'
     }
   },

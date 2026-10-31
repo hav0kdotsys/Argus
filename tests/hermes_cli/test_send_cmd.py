@@ -445,7 +445,7 @@ def test_help_and_empty_list_hint_name_the_resolved_home(tmp_path, monkeypatch, 
     send_parser = send_cmd.register_send_subparser(parser.add_subparsers(dest="command"))
     help_text = send_parser.format_help()
     assert str(home / ".env") in help_text and str(home / "config.yaml") in help_text
-    assert "~/.hermes" not in help_text
+    assert "~/.argus" not in help_text
 
     fake_gw_config = types.ModuleType("gateway.config")
     fake_gw_config.load_gateway_config = lambda: types.SimpleNamespace(get_connected_platforms=list)
@@ -458,4 +458,4 @@ def test_help_and_empty_list_hint_name_the_resolved_home(tmp_path, monkeypatch, 
     assert send_cmd._list_targets(None, json_mode=False) == 0
     out = capsys.readouterr().out
     assert str(home / "channel_directory.json") in out
-    assert "~/.hermes" not in out
+    assert "~/.argus" not in out

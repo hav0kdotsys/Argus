@@ -58,7 +58,7 @@ def cmd_repair_profiles(args) -> int:
         if live:
             names = ", ".join(f"{profile} (pid {pid})" for profile, pid in live)
             print(f"A gateway is running for: {names}. It holds the routing index in memory and would "
-                  "write it back over this repair. Stop it (`hermes gateway stop`), then re-run --apply.",
+                  "write it back over this repair. Stop it (`argus gateway stop`), then re-run --apply.",
                   file=sys.stderr)
             return 1
 

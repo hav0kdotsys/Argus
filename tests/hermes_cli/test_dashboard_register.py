@@ -48,7 +48,7 @@ class TestFastFails:
         assert exc.value.code == 1
         out = capsys.readouterr().out
         assert "not logged into Nous Portal" in out
-        assert "hermes setup" in out
+        assert "argus setup" in out
 
     def test_managed_install_refuses(self, capsys):
         with patch("hermes_cli.config.is_managed", return_value=True):

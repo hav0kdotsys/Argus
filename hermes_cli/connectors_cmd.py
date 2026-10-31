@@ -9,7 +9,7 @@ from typing import Any, Callable, NoReturn
 
 _POLL_SECONDS = 2.0
 _DONE_STATES = frozenset({"connected", "skipped", "failed", "expired", "not_connected"})
-_SIGN_IN = "Run `hermes auth upgrade` to sign in."
+_SIGN_IN = "Run `argus auth upgrade` to sign in."
 
 
 class _CommandError(Exception):
@@ -119,7 +119,7 @@ def _report_connect(app: str, alias: str | None, target: dict[str, Any]) -> int:
     if state == "connected":
         if alias:
             print(f"{app_title(app)} account {alias} is connected. "
-                  f"Rename it anytime: hermes connectors rename {app} {alias} --to <new-name>")
+                  f"Rename it anytime: argus connectors rename {app} {alias} --to <new-name>")
         else:
             print(f"{app_title(app)} is connected.")
         return 0
@@ -209,7 +209,7 @@ def _disconnect(args) -> int:
     if not args.yes:
         if not sys.stdin.isatty():
             _fail("Refusing to remove an account without confirmation. Pass --yes to confirm.")
-        answer = input(f"Remove {app} account {name}? This signs Hermes out of it. [y/N] ").strip().lower()
+        answer = input(f"Remove {app} account {name}? This signs ARGUS out of it. [y/N] ").strip().lower()
         if answer not in ("y", "yes"):
             print("Nothing removed.")
             return 0

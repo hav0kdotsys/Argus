@@ -709,7 +709,7 @@ def _refuse_dead_board_resurrection(path: Path, board: Optional[str]) -> None:
     if meta.get("archived"):
         raise ValueError(f"kanban board {slug!r} is archived; refusing to recreate its database")
     if not _kb.board_metadata_path(slug).exists():
-        raise ValueError(f"kanban board {slug!r} does not exist; create it with `hermes kanban boards create {slug}`")
+        raise ValueError(f"kanban board {slug!r} does not exist; create it with `argus kanban boards create {slug}`")
 
 
 def connect(db_path: Optional[Path] = None, *, board: Optional[str] = None) -> sqlite3.Connection:

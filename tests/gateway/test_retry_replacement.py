@@ -648,7 +648,7 @@ async def test_gateway_retry_paused_refusal_leaves_transcript_unchanged(tmp_path
         [("user", "retry me"), ("assistant", "old answer")],
     )
     before = store._db.get_messages("retry-paused-session", include_inactive=True)
-    paused_notice = "⏸️ Hermes is paused. New work is on hold; run `hermes resume`."
+    paused_notice = "⏸️ ARGUS is paused. New work is on hold; run `argus resume`."
     monkeypatch.setattr("agent.estop.paused_reply", lambda: paused_notice)
 
     result = await gw._handle_retry_command(
@@ -672,7 +672,7 @@ async def test_gateway_retry_paused_refusal_leaves_carrier_rewind_untouched(
         [("user", _composite_carrier()["content"]), ("assistant", "failed answer")],
     )
     before = store._db.get_messages("retry-paused-carrier-session", include_inactive=True)
-    paused_notice = "⏸️ Hermes is paused. New work is on hold; run `hermes resume`."
+    paused_notice = "⏸️ ARGUS is paused. New work is on hold; run `argus resume`."
     monkeypatch.setattr("agent.estop.paused_reply", lambda: paused_notice)
 
     result = await gw._handle_retry_command(

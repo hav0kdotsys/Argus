@@ -168,7 +168,7 @@ def arm_host_obligation(
                  host_obligation_path(), hidden)
     # ASCII: a historical updater's takeover may print through a legacy console code page.
     print("  Warning: could not record the pending gateway-restart obligation where every profile sees it "
-          "(state dir not writable) - restart gateways with `hermes gateway restart` if this update is "
+          "(state dir not writable) - restart gateways with `argus gateway restart` if this update is "
           "interrupted.", file=sys.stderr)
     return False
 

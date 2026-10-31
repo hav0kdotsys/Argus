@@ -12,28 +12,28 @@ export const userMessagesEn = {
     details: (text: string) => `Details: ${text}`,
 
     backend: {
-      restarting: 'Hermes stopped unexpectedly — restarting and reopening your chat (the reply in progress was lost).',
-      restartingActivity: 'Hermes stopped unexpectedly · restarting…',
-      connectionLost: 'Connection to Hermes lost — reconnecting and reopening your chat…',
+      restarting: 'ARGUS stopped unexpectedly — restarting and reopening your chat (the reply in progress was lost).',
+      restartingActivity: 'ARGUS stopped unexpectedly · restarting…',
+      connectionLost: 'Connection to ARGUS lost — reconnecting and reopening your chat…',
       connectionLostActivity: 'connection lost · reconnecting…',
-      gaveUpTitle: 'Hermes stopped and could not be restarted. Your chat is saved.',
+      gaveUpTitle: 'ARGUS stopped and could not be restarted. Your chat is saved.',
       /** `{0}` = process exit code. */
       gaveUpTitleWithCode: (code: string) =>
-        `Hermes stopped (exit code ${code}) and could not be restarted. Your chat is saved.`,
+        `ARGUS stopped (exit code ${code}) and could not be restarted. Your chat is saved.`,
       gaveUpReconnect:
-        'Hermes keeps trying to reconnect in the background and reopens this chat when it succeeds; if it does not, type /resume.',
-      gaveUpLogs: 'Type /logs for the full log, or /quit and run `hermes doctor` to check the install.',
-      gaveUpActivity: 'Hermes stopped · /logs for details',
+        'ARGUS keeps trying to reconnect in the background and reopens this chat when it succeeds; if it does not, type /resume.',
+      gaveUpLogs: 'Type /logs for the full log, or /quit and run `argus doctor` to check the install.',
+      gaveUpActivity: 'ARGUS stopped · /logs for details',
       /** `{0}` = seconds until the next attempt. */
       reconnecting: (secs: string) => `retrying in ${secs}s`,
       /** `{0}` = seconds until the next attempt, `{1}` = attempt number. */
       reconnectingAttempt: (secs: string, attempt: string) => `retrying in ${secs}s (attempt ${attempt})`,
       slowStart:
-        'Hermes is taking longer than usual to start. Still waiting… If it never connects: /logs shows the last backend output; /quit and run `hermes doctor`.',
+        'ARGUS is taking longer than usual to start. Still waiting… If it never connects: /logs shows the last backend output; /quit and run `argus doctor`.',
       slowStartStatus: 'still starting…',
-      stderrProblem: 'Something went wrong inside Hermes · /logs for details',
+      stderrProblem: 'Something went wrong inside ARGUS · /logs for details',
       /** `{0}` = the Python exception class name (e.g. `ValueError`). */
-      stderrProblemNamed: (what: string) => `Something went wrong inside Hermes (${what}) · /logs for details`
+      stderrProblemNamed: (what: string) => `Something went wrong inside ARGUS (${what}) · /logs for details`
     },
 
     rpc: {
@@ -44,23 +44,23 @@ export const userMessagesEn = {
       shellBackendRefusedUnnamed:
         "!commands run on the gateway host, but this session's terminal backend isn't local, so the command was not run. Ask the agent to run it instead.",
       /** `{0}` = the JSON-RPC method name the backend does not serve. Not a version claim. */
-      methodUnavailable: (method: string) => `This Hermes backend does not provide ${method}, so that was not done.`,
+      methodUnavailable: (method: string) => `This ARGUS backend does not provide ${method}, so that was not done.`,
       versionSkew:
-        'The terminal UI and the Hermes backend are out of sync (different versions). Run /update, or exit and run `hermes update`, then start the TUI again.',
+        'The terminal UI and the ARGUS backend are out of sync (different versions). Run /update, or exit and run `argus update`, then start the TUI again.',
       sessionNotFound:
         'This chat is no longer attached to the backend (it was idle or the backend restarted). Your history is saved: type /resume to reopen it.',
       /** The owner refused a control on a chat whose launch API key changed or was removed. */
       launchCredentialsChanged:
         "This chat can't use the API key it was started with any more (it changed or was removed), so that was not done. A chat never switches to a different key on its own. Type /new to start a new chat on your current key.",
       sessionReadOnly:
-        'This chat is stored history Hermes can show but not continue, so your message was not run. Use /new to start a new chat.',
+        'This chat is stored history ARGUS can show but not continue, so your message was not run. Use /new to start a new chat.',
       sessionHasChildren:
         'This chat has child sessions (such as subagent runs) that deleting it would remove too, so it was not deleted.',
       notConnected:
-        'Hermes is not connected right now, so that was not sent. It reconnects automatically; wait a moment and try again, or type /logs if this persists.',
+        'ARGUS is not connected right now, so that was not sent. It reconnects automatically; wait a moment and try again, or type /logs if this persists.',
       /** `{0}` = timeout in seconds. */
       timedOut: (secs: string) =>
-        `Hermes did not answer within ${secs}s. Try again; if it keeps happening, type /logs and report the last lines.`,
+        `ARGUS did not answer within ${secs}s. Try again; if it keeps happening, type /logs and report the last lines.`,
       /** `{0}` = slash command name without the slash. */
       slashTimedOut: (command: string) =>
         `/${command} did not finish: the command helper timed out. Try again; if it keeps happening, type /logs and report the last lines.`,
@@ -103,7 +103,7 @@ export const userMessagesEn = {
         localRuntimeUnavailable: {
           title: 'The local model server is not running',
           hint: 'Try /retry once it is up, or switch with /model.',
-          hintNoRetry: 'Start the local model server (Hermes desktop app, or `hermes model` → Local models), or switch with /model.'
+          hintNoRetry: 'Start the local model server (ARGUS desktop app, or `argus model` → Local models), or switch with /model.'
         },
         modelNotFound: {
           title: 'The model provider does not know this model',
@@ -141,13 +141,13 @@ export const userMessagesEn = {
           title: 'The model provider reports no credit left',
           hint: 'Top up the account or switch with /model.'
         },
-        disk: { title: 'The disk is full, so Hermes could not save the turn', hint: 'Free some space, then /retry.' },
+        disk: { title: 'The disk is full, so ARGUS could not save the turn', hint: 'Free some space, then /retry.' },
         endpoint: {
           title: 'Your custom model endpoint did not answer',
           hint: 'Check the endpoint is running, then /retry.'
         },
         gateway: {
-          title: 'Hermes hit an internal error while running this turn',
+          title: 'ARGUS hit an internal error while running this turn',
           hint: 'Send /retry; type /logs for the trace.',
           hintNoRetry: 'Pick another model with /model; type /logs for the trace.'
         },

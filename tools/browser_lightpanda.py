@@ -56,7 +56,7 @@ def _home_candidates() -> list:
         from hermes_constants import get_hermes_home
         candidates.append(Path(get_hermes_home()) / "bin" / "lightpanda")
     except Exception as e:  # pragma: no cover - defensive
-        logger.debug("hermes home unavailable for lightpanda lookup: %s", e)
+        logger.debug("argus home unavailable for lightpanda lookup: %s", e)
     return candidates
 
 
@@ -205,7 +205,7 @@ def launch_lightpanda(session_name: str, *, block_private_networks: bool = False
     if not binary:
         if os.name == "nt":
             return None, ("browser.engine is 'lightpanda' but Lightpanda has no Windows "
-                          "build. Set browser.engine to auto (or run Hermes under WSL2).")
+                          "build. Set browser.engine to auto (or run ARGUS under WSL2).")
         return None, ("browser.engine is 'lightpanda' but no lightpanda binary was found on PATH, ~/.lightpanda "
                       f"or ~/.local/bin. {LIGHTPANDA_INSTALL_HINT}, or set browser.engine to auto.")
 
@@ -377,4 +377,4 @@ def lightpanda_engine_status() -> tuple[bool, str]:
     from tools.browser_use_cli import _read_browser_cfg, is_legacy_browser_use_cloud_config
     if is_legacy_browser_use_cloud_config(_read_browser_cfg()):
         return False, "Browser Use cloud (BROWSER_USE_API_KEY) is selected"
-    return True, "Hermes spawns `lightpanda serve` per browser session"
+    return True, "ARGUS spawns `lightpanda serve` per browser session"

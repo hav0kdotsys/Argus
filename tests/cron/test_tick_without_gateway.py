@@ -64,10 +64,10 @@ def test_tick_without_gateway_skips_agent_jobs_without_spawning_or_drift(cron_ho
         assert stored[job_id]["last_run_at"] is None
         assert stored[job_id]["next_run_at"] == due_before[job_id]
         assert "pending_slot" not in stored[job_id]
-        assert "hermes gateway start" in stored[job_id]["last_fire_error"]["detail"]
+        assert "argus gateway start" in stored[job_id]["last_fire_error"]["detail"]
     refusals = [r for r in caplog.records if "not running" in r.getMessage()]
     assert len(refusals) == 1, "one log line per tick, not one per job"
-    assert agent["id"] in refusals[0].getMessage() and "hermes gateway start" in refusals[0].getMessage()
+    assert agent["id"] in refusals[0].getMessage() and "argus gateway start" in refusals[0].getMessage()
 
 
 @pytest.mark.platforms("linux")
@@ -129,7 +129,7 @@ def test_tick_holds_agent_jobs_while_gateway_is_starting_or_silent(cron_home, mo
     assert stored["last_run_at"] is None and stored["last_status"] is None
     assert stored["next_run_at"] == due_before, "the slot is held, not consumed"
     assert "pending_slot" not in stored
-    assert "hermes gateway status" in stored["last_fire_error"]["detail"]
+    assert "argus gateway status" in stored["last_fire_error"]["detail"]
     assert len([r for r in caplog.records if "skipped" in r.getMessage()]) == 1
 
 

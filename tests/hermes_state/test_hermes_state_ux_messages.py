@@ -41,7 +41,7 @@ def test_db_unavailable_commands_are_pinned_to_the_failing_profile(monkeypatch, 
     finally:
         hermes_state._set_last_init_error(None)
     for text in (no_cause, network):
-        assert f"`hermes {selector}doctor`" in text and "`hermes doctor`" not in text
+        assert f"`argus {selector}doctor`" in text and "`argus doctor`" not in text
         assert "{profile_arg}" not in text
 
 

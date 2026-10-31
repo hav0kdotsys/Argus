@@ -114,7 +114,7 @@ def test_chat_without_a_pty_bridge_says_what_to_install_as_on_main(pty_keepalive
             ws.receive_text()
 
     assert "Chat unavailable: the embedded terminal requires a POSIX PTY" in text
-    assert "Install Hermes inside WSL2 to use the dashboard's /chat tab" in text
+    assert "Install ARGUS inside WSL2 to use the dashboard's /chat tab" in text
     assert closed.value.code == 1011
     assert pty_keepalive_harness == []
 

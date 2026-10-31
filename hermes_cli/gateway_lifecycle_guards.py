@@ -68,7 +68,7 @@ def _candidate_homes(system: bool = False) -> list[Path]:
     return homes
 
 
-def refusal_lines(verb: str, homes: list[Path], *, flag_hint: str = f"hermes gateway {{verb}} {INTERRUPT_FLAG}",
+def refusal_lines(verb: str, homes: list[Path], *, flag_hint: str = f"argus gateway {{verb}} {INTERRUPT_FLAG}",
                   profile: Optional[str] = None) -> list[str]:
     """Refusal text for ``verb`` while the first answering gateway among ``homes`` has live work, else []."""
     for home in homes:
@@ -99,7 +99,7 @@ def refuse_while_sessions_live(verb: str, args, *, host_home: Optional[Path] = N
     ``host_home``/``profile``: a served profile's stop/restart unserves only that profile in the host,
     so only its work counts."""
     if profile:
-        hint = f"hermes -p {profile} gateway {{verb}} {INTERRUPT_FLAG}"
+        hint = f"argus -p {profile} gateway {{verb}} {INTERRUPT_FLAG}"
         # No answer (control socket down) proceeds: the park marker path exists for exactly that host.
         lines = refusal_lines(verb, [Path(host_home)], profile=profile, flag_hint=hint)
     else:

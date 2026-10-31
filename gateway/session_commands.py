@@ -120,12 +120,12 @@ _REFUSED_ARGUMENTS = {
 # with the client. Rides the ``unsupported_command`` refusal as ``data.detail`` (the reason stays the
 # same, so shipped clients keep working); Ink and Desktop print it under the refusal.
 REFUSAL_HINTS = {
-    'export': 'Run `hermes profile export [name] -o <file>` in a terminal.',
-    'import': 'Run `hermes profile import <archive> [--name <name>]` in a terminal.',
-    'snapshot': 'Run `hermes backup --quick` in a terminal (restore: `hermes --cli`, then /snapshot restore).',
-    'handoff': 'Hand off from the classic CLI: `hermes --cli --resume <session>`, then /handoff <platform>.',
-    'hatch': 'Generate a pet from the classic CLI (`hermes --cli`, then /hatch), or use /pet to pick one.',
-    'worktree': 'Start in a fresh worktree with `hermes -w`, or use the classic CLI (`hermes --cli`).',
+    'export': 'Run `argus profile export [name] -o <file>` in a terminal.',
+    'import': 'Run `argus profile import <archive> [--name <name>]` in a terminal.',
+    'snapshot': 'Run `argus backup --quick` in a terminal (restore: `argus --cli`, then /snapshot restore).',
+    'handoff': 'Hand off from the classic CLI: `argus --cli --resume <session>`, then /handoff <platform>.',
+    'hatch': 'Generate a pet from the classic CLI (`argus --cli`, then /hatch), or use /pet to pick one.',
+    'worktree': 'Start in a fresh worktree with `argus -w`, or use the classic CLI (`argus --cli`).',
     'palette': 'Type / to search commands (the composer completes and filters them).',
 }
 

@@ -8,7 +8,7 @@ import { describeRpcError, isVersionSkewError } from '../app/userMessages.js'
 // that the versions differ, nor into update advice.
 describe('a method the backend says it does not provide', () => {
   const unavailable = new JsonRpcGatewayError(
-    'unknown method: groups.no_such_verb — not available on this Hermes backend',
+    'unknown method: groups.no_such_verb — not available on this ARGUS backend',
     { code: -32601 }
   )
 

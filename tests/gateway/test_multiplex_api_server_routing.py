@@ -147,10 +147,10 @@ async def test_hermes_handle_reaches_the_default_profile_only_when_no_hermes_pro
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("multiplex,legacy_hermes,answers", [
-    (True, True, {"Hermes": "hermes", "HERMES": "hermes", "Worker": "worker", "Default": "default"}),
-    (True, False, {"Hermes": "default", "Worker": "worker"}),
-    (False, True, {"Hermes": _NOT_SERVED}),
-    (False, False, {"Hermes": None}),
+    (True, True, {"ARGUS": "hermes", "HERMES": "hermes", "Worker": "worker", "Default": "default"}),
+    (True, False, {"ARGUS": "default", "Worker": "worker"}),
+    (False, True, {"ARGUS": _NOT_SERVED}),
+    (False, False, {"ARGUS": None}),
 ])
 async def test_profile_prefix_names_the_same_profile_in_any_case(tmp_path, monkeypatch, multiplex, legacy_hermes, answers):
     """Profile ids are lowercase (``normalize_profile_name``), so ``/p/Hermes/`` is ``/p/hermes/``:

@@ -29,7 +29,7 @@ def _build_codex_gpt5_autoraise_notice(
         f"ℹ Codex {model} caps context at {cap}, so auto-compaction was raised "
         f"to {to_pct}% (from {from_pct}%) to use more of the window before "
         f"summarizing.\n"
-        f"  Opt back out: hermes config set compression.codex_gpt55_autoraise false"
+        f"  Opt back out: argus config set compression.codex_gpt55_autoraise false"
     )
 
 

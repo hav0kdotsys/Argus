@@ -1120,7 +1120,7 @@ def test_humanize_404_registration_error_guidance():
     assert msg is not None
     assert "does not support automatic client registration" in msg
     assert "client_id" in msg
-    assert "hermes mcp login gmail" in msg
+    assert "argus mcp login gmail" in msg
 
 
 def test_humanize_404_non_registration_passthrough():

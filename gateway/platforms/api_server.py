@@ -2368,7 +2368,7 @@ class APIServerAdapter(OpenAICompatRoutesMixin, BasePlatformAdapter):
             "runtime": {
                 "mode": "server_agent", "tool_execution": "server", "split_runtime": False,
                 "description": (
-                    "The API server creates a server-side Hermes AIAgent; "
+                    "The API server creates a server-side ARGUS AIAgent; "
                     "tools execute on the API-server host unless a future "
                     "explicit split-runtime mode is enabled.")},
             "features": features,
@@ -3500,7 +3500,7 @@ class APIServerAdapter(OpenAICompatRoutesMixin, BasePlatformAdapter):
                 from agent.estop import check_paused as _estop_check_paused
                 if _estop_check_paused("cron-webhook", logger):
                     return web.json_response(
-                        {"error": "hermes is paused (ESTOP)", "job_id": job_id},
+                        {"error": "argus is paused (ESTOP)", "job_id": job_id},
                         status=503,
                         headers={"Retry-After": str(60)},
                     )

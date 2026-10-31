@@ -10,12 +10,12 @@ import subprocess
 
 
 def test_webapp_build_only_reuses_the_baked_bundle(built_image: str) -> None:
-    inner = "source /opt/hermes/.venv/bin/activate && cd /opt/data && hermes webapp --build-only"
+    inner = "source /opt/hermes/.venv/bin/activate && cd /opt/data && argus webapp --build-only"
     r = subprocess.run(
         ["docker", "run", "--rm", "--network=none", "--entrypoint", "su", built_image,
          "hermes", "-s", "/bin/bash", "-c", inner],
         capture_output=True, text=True, timeout=120, check=False,
     )
     out = r.stdout + r.stderr
-    assert r.returncode == 0, f"hermes webapp --build-only failed in the image:\n{out[-2000:]}"
+    assert r.returncode == 0, f"argus webapp --build-only failed in the image:\n{out[-2000:]}"
     assert "up to date" in out, out[-2000:]

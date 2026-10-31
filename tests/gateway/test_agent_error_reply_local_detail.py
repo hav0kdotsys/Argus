@@ -22,7 +22,7 @@ def _committed_error(platform):
     runner._session_state = lambda key: SimpleNamespace(turn=SimpleNamespace(agent=None))
     source = SessionSource(platform=platform, chat_id="c", user_id="u")
     prepared = runner._PreparedTurn([], "", None, None, None, None)
-    err = ImportError("The 'anthropic' package is required for the Anthropic provider: restart Hermes")
+    err = ImportError("The 'anthropic' package is required for the Anthropic provider: restart ARGUS")
     captured = {}
     token = execution_result.set(captured)
     try:

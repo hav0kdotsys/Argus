@@ -252,7 +252,7 @@ def test_agent_permission_is_never_granted_and_fs_reads_stay_in_cwd(outcomes):
     sc = _flow_ok(outcomes)
     outcomes_seen = [r["msg"]["result"]["outcome"] for r in sc.fake.records() if r.get("kind") == "permission_outcome"]
     assert len(outcomes_seen) == 1, sc.fake.records()
-    assert outcomes_seen[0].get("outcome") != "selected", f"Hermes granted an agent-side permission: {outcomes_seen}"
+    assert outcomes_seen[0].get("outcome") != "selected", f"ARGUS granted an agent-side permission: {outcomes_seen}"
     reads = [r for r in sc.fake.records() if r.get("kind") == "fs_read_result"]
     assert len(reads) == 2 and not any(r["errors"] for r in reads), reads
     inside, outside = reads[0]["msg"], reads[1]["msg"]

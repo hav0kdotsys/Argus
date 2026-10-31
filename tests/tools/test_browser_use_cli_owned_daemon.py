@@ -168,7 +168,7 @@ def test_a_sigkilled_owner_takes_its_harness_daemon_with_it(tmp_path):
         owner.kill()
         owner.wait(timeout=10)
         wait_until(lambda: not _group_alive(daemon_pid), timeout=15,
-                   what="the harness daemon to die with the kill -9'd Hermes process that drove it")
+                   what="the harness daemon to die with the kill -9'd ARGUS process that drove it")
     finally:
         if daemon_pid is not None:
             try:

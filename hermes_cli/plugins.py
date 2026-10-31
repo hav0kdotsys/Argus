@@ -1338,7 +1338,7 @@ class PluginManager(PluginLoaderMixin, PluginDispatchMixin, PluginLedgerMixin):
         enabled = _get_enabled_plugins()  # None = opt-in default (nothing enabled)
         stale_relay_keys = legacy_relay_plugin_keys(enabled)
         if stale_relay_keys:
-            logger.warning("Removed Hermes plugin %s is still listed in plugins.enabled; "
+            logger.warning("Removed ARGUS plugin %s is still listed in plugins.enabled; "
                            "remove it and configure a standard user or system Relay plugins.toml, or use %s "
                            "for an explicit user-file override",
                            ", ".join(stale_relay_keys), RELAY_PLUGINS_CONFIG_ENV)

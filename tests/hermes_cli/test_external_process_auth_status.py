@@ -251,7 +251,7 @@ def test_cli_command_reflects_configured_executable(tmp_path, monkeypatch, acme_
 def test_cli_command_untouched_for_non_external_providers(acme_acp):
     from hermes_cli.web_server_oauth import _external_process_cli_command
 
-    assert _external_process_cli_command("nous", "hermes auth add nous") == "hermes auth add nous"
+    assert _external_process_cli_command("nous", "argus auth add nous") == "argus auth add nous"
 
 
 def test_cli_command_default_when_no_override(monkeypatch, acme_acp):

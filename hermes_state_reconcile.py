@@ -135,18 +135,18 @@ def _repair_command(home: Path) -> str:
     from gateway.status import _profile_label_for_home  # never raises: None when unknown
     label = _profile_label_for_home(home)
     if label == 'default':
-        return 'hermes sessions repair'
+        return 'argus sessions repair'
     if label:
-        return f'hermes -p {label} sessions repair'
-    return f'HERMES_HOME={home} hermes sessions repair'
+        return f'argus -p {label} sessions repair'
+    return f'HERMES_HOME={home} argus sessions repair'
 
 
 def _owner_remedy(home: Path) -> tuple[str, str]:
     from gateway.status import _profile_label_for_home  # never raises: None when unknown
     label = _profile_label_for_home(home)
     if label and label != 'default':
-        return label, f'hermes -p {label} gateway restart'
-    return label or str(home), 'hermes gateway restart'
+        return label, f'argus -p {label} gateway restart'
+    return label or str(home), 'argus gateway restart'
 
 
 def _owning_gateway_restart(home: Path) -> str:
@@ -331,7 +331,7 @@ def _reserving(home: Path):
             stack.enter_context(exclusive_maintenance([home], purpose=BROWSE_RECONCILE_PURPOSE))
         except OSError as exc:
             raise DeclarativeDriftError(
-                f'Session store is behind this Hermes version, but its gateway.lock cannot be used '
+                f'Session store is behind this ARGUS version, but its gateway.lock cannot be used '
                 f'({exc}); nothing was changed.') from exc
         yield
 
@@ -410,15 +410,15 @@ def reconcile_drift_for_browse(path: Path) -> bool:
         except RuntimeError as exc:
             raise DeclarativeDriftError(
                 f'Session store is missing its history tables ({reason}); this is not upgrade drift. '
-                'Run `hermes sessions recover`.') from exc
+                'Run `argus sessions recover`.') from exc
     home = path.parent
     label, _ = _owner_remedy(home)
 
     def owned(drift, holder=None):
-        restart = 'hermes gateway restart' if holder else _owning_gateway_restart(home)
+        restart = 'argus gateway restart' if holder else _owning_gateway_restart(home)
         who = f' ({holder})' if holder else ''
         return DeclarativeDriftError(
-            f"Session store for profile '{label}' is behind this Hermes version ({drift}), and a "
+            f"Session store for profile '{label}' is behind this ARGUS version ({drift}), and a "
             f'running gateway owns it{who}, so browsing will not write to it. Restart that gateway '
             f'(`{restart}`) to bring the store up to date.', owned=True)
 
@@ -429,7 +429,7 @@ def reconcile_drift_for_browse(path: Path) -> bool:
         # Otherwise no gateway owns the store: never tell the user to restart one that is not
         # running. The repair path has no time limit.
         return DeclarativeDriftError(
-            f"Session store for profile '{label}' is behind this Hermes version ({reason}) and is too "
+            f"Session store for profile '{label}' is behind this ARGUS version ({reason}) and is too "
             f'large to verify and update within {BROWSE_RECONCILE_BUDGET_S:.0f}s while browsing. Your '
             f'history is untouched: nothing was changed and the list was not cleared. Run '
             f'`{_repair_command(home)}` to bring it up to date (it has no time limit), then reload.')
@@ -463,7 +463,7 @@ def reconcile_drift_for_browse(path: Path) -> bool:
                         f'({reason}); nothing was changed. Retry in a moment; the list was not cleared.')
                 def not_writable(why):
                     return DeclarativeDriftError(
-                        f"Session store for profile '{label}' is behind this Hermes version ({reason}), "
+                        f"Session store for profile '{label}' is behind this ARGUS version ({reason}), "
                         f'but {why} is not writable by this user, so browsing cannot add the missing '
                         f'tables/columns; nothing was changed. Fix the permissions, then reload.')
                 # The shared column reconciler logs a readonly ALTER failure and continues, so check
@@ -479,19 +479,19 @@ def reconcile_drift_for_browse(path: Path) -> bool:
                     raise
                 except DeclarativeDriftError as exc:
                     raise DeclarativeDriftError(
-                        f"Session store for profile '{label}' is behind this Hermes version and could not "
-                        f'be caught up ({exc}); nothing was changed. Run `hermes sessions repair` for that '
+                        f"Session store for profile '{label}' is behind this ARGUS version and could not "
+                        f'be caught up ({exc}); nothing was changed. Run `argus sessions repair` for that '
                         'profile.') from exc
         except BrowseBudgetExceeded as exc:
             raise too_slow() from exc
         except _SiblingStillBusy as exc:
             raise DeclarativeDriftError(
-                f"Session store for profile '{label}' is being brought up to date by another Hermes "
+                f"Session store for profile '{label}' is being brought up to date by another ARGUS "
                 f'process ({exc}). Retry in a moment; the list was not cleared.') from exc
     if after := schema_drift_reason(path):
         raise DeclarativeDriftError(
-            f"Session store for profile '{label}' is behind this Hermes version and could not be "
-            f'caught up ({after}). Run `hermes sessions repair` for that profile.')
+            f"Session store for profile '{label}' is behind this ARGUS version and could not be "
+            f'caught up ({after}). Run `argus sessions repair` for that profile.')
     logging.getLogger(__name__).warning(
         'state.db at %s lagged SCHEMA_SQL (%s); added the missing tables/columns for browsing', path, reason)
     return True

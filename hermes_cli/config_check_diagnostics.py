@@ -29,6 +29,6 @@ def config_check_diagnostics(config: dict[str, Any], get_env_value: Callable[[st
         if required and all(get_env_value(env) for env in required):
             diagnostics.append(
                 f"platform plugin '{key}' is disabled while its required credentials are configured. "
-                f"Run `hermes plugins enable {key}` if you want it active."
+                f"Run `argus plugins enable {key}` if you want it active."
             )
     return diagnostics

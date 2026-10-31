@@ -58,7 +58,7 @@ def _cmd_boards_list(args: argparse.Namespace) -> int:
     if _json_out(args, boards):
         return 0
     if not boards:
-        print("(no boards — create one with `hermes kanban boards create <slug>`)")
+        print("(no boards — create one with `argus kanban boards create <slug>`)")
         return 0
     print(f"{'':2s}  {'SLUG':24s}  {'NAME':28s}  COUNTS")
     for b in boards:
@@ -67,7 +67,7 @@ def _cmd_boards_list(args: argparse.Namespace) -> int:
         print(f"{marker:2s}  {b['slug']:24s}  {name:28s}  {_fmt_counts(b['counts'] or {}, '(empty)')}")
     print(f"\nCurrent board: {current}")
     if len(boards) > 1:
-        print("Switch boards with `hermes kanban boards switch <slug>`.")
+        print("Switch boards with `argus kanban boards switch <slug>`.")
     return 0
 
 
@@ -87,7 +87,7 @@ def _cmd_boards_create(args: argparse.Namespace) -> int:
         kb.set_current_board(meta["slug"])
         print(f"  Switched to {meta['slug']!r}.")
     else:
-        print(f"  Use `hermes kanban boards switch {meta['slug']}` to make it current.")
+        print(f"  Use `argus kanban boards switch {meta['slug']}` to make it current.")
     return 0
 
 
@@ -116,7 +116,7 @@ def _cmd_boards_switch(args: argparse.Namespace) -> int:
     if not kb.board_exists(normed):
         return _err(
             f"kanban boards switch: board {normed!r} does not exist. "
-            f"Create it with `hermes kanban boards create {normed}`."
+            f"Create it with `argus kanban boards create {normed}`."
         )
     # An archived board has a tombstone board.json; switching to it would pin
     # `current` at a dead slug (#43243).
@@ -180,7 +180,7 @@ def _cmd_boards_export(args: argparse.Namespace) -> int:
           f"  Tasks:       {counts['tasks']}\n"
           f"  Comments:    {counts['task_comments']}\n"
           f"  Attachments: {counts['attachment_files']}\n"
-          "Import it with `hermes kanban boards import <archive>`.")
+          "Import it with `argus kanban boards import <archive>`.")
     return 0
 
 
@@ -202,7 +202,7 @@ def _cmd_boards_import(args: argparse.Namespace) -> int:
     if res["activated"]:
         print(f"  Active board is now {res['board']!r}.")
     else:
-        print(f"  Switch to it with `hermes kanban boards switch {res['board']}`.")
+        print(f"  Switch to it with `argus kanban boards switch {res['board']}`.")
     return 0
 
 

@@ -92,7 +92,7 @@ def _render_state_db_stats(stats: dict, holders=None, host_note: str = "") -> li
             lines.append(("warn", f"state.db FTS repair is blocked after {deferral.get('attempts') or '?'} deferral(s) "
                           f"by PID(s) {pids}",
                           "(stop the listed processes; the host gateway's own retry then rebuilds, or run "
-                          "'hermes sessions optimize-storage' with every holder stopped)"))
+                          "'argus sessions optimize-storage' with every holder stopped)"))
     # Oversized DB: suggest auto_prune, plus the offline optimize-storage pass when the FTS rebuild is
     # pending, an earlier run stopped before tearing down the old index, or the stored FTS layout is an
     # older release's (not just a lagging marker).
@@ -100,7 +100,7 @@ def _render_state_db_stats(stats: dict, holders=None, host_note: str = "") -> li
         detail = "consider enabling sessions.auto_prune in config.yaml to bound growth"
         structural_fts_upgrade = bool(stats.get("fts_storage_upgrade_needed"))
         if stats.get("fts_rebuild_pending") or stats.get("fts_teardown_pending") or structural_fts_upgrade:
-            detail += "; run 'hermes sessions optimize-storage' offline (with the host gateway stopped) to compact FTS storage"
+            detail += "; run 'argus sessions optimize-storage' offline (with the host gateway stopped) to compact FTS storage"
         lines.append(("warn", f"state.db is large ({_human_bytes(logical)})", f"({detail})"))
     # WAL runaway is deliberately NOT warned here: _state_db_wal already warns above 50 MB and offers --fix.
     return lines
@@ -209,11 +209,11 @@ def _check_directory_structure(should_fix: bool, f: Finding) -> None:
         else:  # template comments only (no real content)
             check_info(f"{_DHH}/SOUL.md exists but is empty — edit it to customize personality")
     else:
-        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Hermes a custom personality)")
+        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give ARGUS a custom personality)")
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
-            soul_path.write_text("# Hermes Agent Persona\n\n<!-- Edit this file to customize how Hermes communicates. -->\n\n"
-                                 "You are Hermes, a helpful AI assistant.\n", encoding="utf-8")
+            soul_path.write_text("# ARGUS Persona\n\n<!-- Edit this file to customize how ARGUS communicates. -->\n\n"
+                                 "You are ARGUS, a helpful AI assistant.\n", encoding="utf-8")
             check_ok(f"Created {_DHH}/SOUL.md with basic template")
             f.fixed += 1
     # Only enabled built-in stores: users can disable either legacy file target, and stale migration files
@@ -274,7 +274,7 @@ def _check_scratch_dir(hermes_home: Path, _DHH: str) -> None:
         )
     tmpdir = os.environ.get("TMPDIR", "")
     if tmpdir and tmpdir != os.environ.get(SCRATCH_DIR_MARKER_ENV, ""):
-        check_info(f"TMPDIR={tmpdir} is set by you or the OS, so Hermes leaves it alone")
+        check_info(f"TMPDIR={tmpdir} is set by you or the OS, so ARGUS leaves it alone")
 
 
 def _session_count(state_db_path: Path):
@@ -300,7 +300,7 @@ def _write_health_reason(state_db_path: Path, *, should_fix: bool):
         return _db_opens_cleanly(state_db_path)
     if not should_fix and state_db_path.stat().st_size > _WRITE_PROBE_SNAPSHOT_MAX_BYTES:
         check_info("state.db write-health probe skipped: store is held by a live writer and larger than 1 GB "
-                   "(run 'hermes doctor --fix' to probe it)")
+                   "(run 'argus doctor --fix' to probe it)")
         return None
     import sqlite3
     import tempfile
@@ -325,16 +325,16 @@ _STATE_DB_REPAIRS = {
     "fts": ("Repaired state.db FTS write health",
             "state.db FTS write-health repair did not recover automatically",
             "state.db FTS write corruption and auto-repair failed — restore from the backup copy beside state.db",
-            "state.db FTS write corruption — run 'hermes doctor --fix' (or 'hermes sessions repair') to rebuild the FTS index"),
+            "state.db FTS write corruption — run 'argus doctor --fix' (or 'argus sessions repair') to rebuild the FTS index"),
     "schema": ("Repaired state.db schema ({count} sessions recovered)",
                "state.db schema repair did not recover automatically",
                "state.db schema malformed and auto-repair failed — restore from the backup copy beside state.db",
-               "state.db schema malformed — run 'hermes doctor --fix' (or 'hermes sessions repair') to recover hidden sessions"),
+               "state.db schema malformed — run 'argus doctor --fix' (or 'argus sessions repair') to recover hidden sessions"),
 }
 _STATE_DB_STRUCTURAL_ISSUE = (
     "state.db structural corruption (canonical tables/indexes damaged, not the FTS index) — an FTS rebuild "
-    "cannot repair it. Stop the gateway, then run 'hermes {profile_arg}sessions recover --source {db_path} "
-    "--inspect-only' and, if it reports recoverable, 'hermes {profile_arg}sessions recover --source {db_path} "
+    "cannot repair it. Stop the gateway, then run 'argus {profile_arg}sessions recover --source {db_path} "
+    "--inspect-only' and, if it reports recoverable, 'argus {profile_arg}sessions recover --source {db_path} "
     "--output recovered-state.db'. Do NOT restore a .malformed-backup copy beside state.db: it is a snapshot "
     "of the same corrupt file."
 )
@@ -417,7 +417,7 @@ def _state_db_stats(issues: list, state_db_path: Path) -> None:
             check_warn(_text, _detail)
             if "auto_prune" in _detail:
                 issues.append("state.db is large — enable sessions.auto_prune in config.yaml"
-                              + (" and run 'hermes sessions optimize-storage' offline (gateway stopped)" if "optimize-storage" in _detail else ""))
+                              + (" and run 'argus sessions optimize-storage' offline (gateway stopped)" if "optimize-storage" in _detail else ""))
 
 
 def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
@@ -434,7 +434,7 @@ def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
             from hermes_state_repair import _exclusive_repair_db_guard, _live_writer_holds_db
             title = f"WAL file is large ({size // (1024*1024)} MB)"
             _SKIP = ("Large WAL file — cannot prove state.db is quiet (stop the profile's gateway first, then "
-                     "run 'hermes doctor --fix' to checkpoint)")
+                     "run 'argus doctor --fix' to checkpoint)")
             # Honest disjunction (gate C1): a True here means "held OR unprovable" — never assert a live
             # writer as fact.
             if _live_writer_holds_db(state_db_path):
@@ -446,11 +446,11 @@ def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
             check_warn(title, "(may indicate missed checkpoints)")
             if not should_fix:
                 return f.issues.append(
-                    "Large WAL file — stop the profile's gateway, then run 'hermes doctor --fix' to checkpoint")
+                    "Large WAL file — stop the profile's gateway, then run 'argus doctor --fix' to checkpoint")
             with _exclusive_repair_db_guard(state_db_path) as (guard, guard_error):
                 if guard is None:
                     check_warn("WAL checkpoint skipped: could not take exclusive ownership of state.db",
-                               f"({guard_error}; stop the profile's gateway and re-run 'hermes doctor --fix')")
+                               f"({guard_error}; stop the profile's gateway and re-run 'argus doctor --fix')")
                     return f.issues.append(_SKIP)
                 guard.execute("PRAGMA wal_checkpoint(PASSIVE)")
             check_ok(f"WAL checkpoint performed ({size // 1024}K → {wal_size() // 1024}K)")
@@ -473,9 +473,9 @@ def _retired_wal_holders(f: Finding, state_db_path: Path, _DHH: str) -> bool:
     check_warn(f"{_DHH}/state.db: {len(pids)} process(es) still hold a retired WAL generation ({rendered})",
                "(every new session refuses to open until they exit; health/stats probes skipped)")
     f.issues.append(f"state.db retired WAL generation held by {rendered}{host_gateway_note()} — stop the host "
-                    f"gateway, dashboard and cron writers among them ('hermes {profile_cli_selector()}gateway "
+                    f"gateway, dashboard and cron writers among them ('argus {profile_cli_selector()}gateway "
                     "stop' stops the ONE host process serving every profile, quit the Desktop app), do not "
-                    "delete the WAL yourself, then rerun 'hermes doctor'")
+                    "delete the WAL yourself, then rerun 'argus doctor'")
     return True
 
 
@@ -580,7 +580,7 @@ def _gh_authenticated() -> bool:
 def _check_skills_hub(should_fix: bool, f: Finding) -> None:
     from hermes_cli.doctor import HERMES_HOME, _DHH
     hub_dir = HERMES_HOME / "skills" / ".hub"
-    if check_bool(hub_dir.exists(), "Skills Hub directory exists", ("Skills Hub directory not initialized", "(run: hermes skills list)")):
+    if check_bool(hub_dir.exists(), "Skills Hub directory exists", ("Skills Hub directory not initialized", "(run: argus skills list)")):
         lock_file = hub_dir / "lock.json"
         if lock_file.exists():
             with warn_on_error("Lock file", "(corrupted or unreadable)"):
@@ -611,7 +611,7 @@ def _memory_provider_generic(name: str) -> None:
     if _provider and _provider.is_available():
         check_ok(f"{name} provider active")
     elif _provider:
-        check_warn(f"{name} configured but not available", "run: hermes memory status")
+        check_warn(f"{name} configured but not available", "run: argus memory status")
     else:
         from plugins.memory import find_provider_dir
         from hermes_cli.memory_provider_migration import catalog_install_hint
@@ -630,7 +630,7 @@ def _check_memory_provider(should_fix: bool, f: Finding) -> None:
     from plugins.memory import parked_provider_notice
     if parked_provider_notice(name):
         check_warn(f"{name} is turned off", "(plugins.disabled lists it, so built-in memory is used)")
-        f.manual_issues.append(f"Memory provider '{name}' is turned off — run: hermes plugins enable {name}")
+        f.manual_issues.append(f"Memory provider '{name}' is turned off — run: argus plugins enable {name}")
         return
     checker, missing_row, missing_issue, label = _MEMORY_PROVIDER_CHECKS.get(name, (None, None, None, name))
     try:
@@ -659,7 +659,7 @@ def _check_plugins_disabled_by_update(should_fix: bool, f: Finding) -> None:
         reason = entry.get("reason", "") if isinstance(entry, dict) else ""
         check_warn(f"{name} is off", f"({reason})" if reason else "")
         f.manual_issues.append(f"Plugin '{name}' was turned off by an update; a later update retries it, "
-                               f"or run: hermes plugins enable {name}")
+                               f"or run: argus plugins enable {name}")
 
 
 @doctor_check("")  # best-effort: an unreadable config is the config check's finding
@@ -674,8 +674,8 @@ def _check_plugins_in_both_lists(should_fix: bool, f: Finding) -> None:
     for name in both:
         check_warn(f"{name} will not load", "(plugins.disabled wins)")
         f.manual_issues.append(f"Plugin '{name}' is in both plugins.enabled and plugins.disabled, so it is off. "
-                               f"Turn it on with `hermes plugins enable {name}` (a memory provider also needs "
-                               f"memory.provider set), or keep it off with `hermes plugins disable {name}`")
+                               f"Turn it on with `argus plugins enable {name}` (a memory provider also needs "
+                               f"memory.provider set), or keep it off with `argus plugins disable {name}`")
 
 
 @doctor_check("")  # best-effort: profile enumeration must never break doctor
@@ -702,10 +702,10 @@ def _check_profiles(should_fix: bool, f: Finding) -> None:
             if not wrapper.is_file():
                 continue
             with warn_on_error(""):
-                _m = _re.search(r"hermes -p (\S+)", wrapper.read_text(encoding="utf-8-sig"))
+                _m = _re.search(r"(?:hermes|argus) -p (\S+)", wrapper.read_text(encoding="utf-8-sig"))
                 if _m and not profile_exists(_m.group(1)):
                     alias = wrapper.stem if _wrapper_path(wrapper.stem) == wrapper else wrapper.name
-                    fix = f"hermes profile alias {alias} --remove" if PROFILE_ID_RE.match(alias) else f"delete {wrapper}"
+                    fix = f"argus profile alias {alias} --remove" if PROFILE_ID_RE.match(alias) else f"delete {wrapper}"
                     check_warn(f"Orphan alias: {alias} → profile '{_m.group(1)}' no longer exists", f"(remove with: {fix})")
     # Same helper as the multiplex migration preflight, so doctor names the duplicates that make
     # `hermes gateway migrate --multiplex` refuse (and made pre-multiplex standalone gateways race).

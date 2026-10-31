@@ -243,7 +243,7 @@ def canonical(value: object) -> bytes:
 
 def _identity(name: str, token: str) -> dict:
     pascal = f"HermesChannel{token}"
-    return {"token": token, "displayName": f"Hermes {name}", "appId": f"ai.hermes.channel.h{token}",
+    return {"token": token, "displayName": f"ARGUS {name}", "appId": f"ai.hermes.channel.h{token}",
             "appNamePascal": pascal, "artifactNamePascal": pascal, "cliName": f"hermes-{name}",
             "windowsExecutableName": pascal, "msixAppIdWithOrg": f"NousResearch.{pascal}"}
 
@@ -356,4 +356,4 @@ def assert_nothing_changed(inst: Installed, before: dict, r: Result, what: str) 
     after = inst.state()
     assert after == before, f"{what}: install state moved {before} -> {after}\n" + r.report(inst)
     v = inst.version_works()
-    assert v.rc == 0 and I.TRACEBACK not in v.out, f"{what}: `hermes --version` broken afterwards\n" + I.describe(v.cp)
+    assert v.rc == 0 and I.TRACEBACK not in v.out, f"{what}: `argus --version` broken afterwards\n" + I.describe(v.cp)

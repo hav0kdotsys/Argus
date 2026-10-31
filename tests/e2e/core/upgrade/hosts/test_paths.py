@@ -62,7 +62,7 @@ def test_install_update_gateway_and_turn_under_a_non_ascii_spaced_home(odd_home,
     assert not X.reran_completion(t1), "the first launch after install re-ran the completion:\n" + I.describe(t1)
 
     # A new login shell finds the launcher through the rc line the installer wrote.
-    probe = X.login_shell(sb, "command -v hermes; hermes --version >/dev/null && echo LAUNCH-OK")
+    probe = X.login_shell(sb, "command -v hermes; argus --version >/dev/null && echo LAUNCH-OK")
     assert probe.returncode == 0, H.describe(probe)
     lines = probe.stdout.strip().splitlines()
     assert lines and lines[0] == sb.hermes and "LAUNCH-OK" in lines, (
@@ -77,7 +77,7 @@ def test_install_update_gateway_and_turn_under_a_non_ascii_spaced_home(odd_home,
                               {"docs/e2e-host-paths-marker.txt": "release 1\n"})
     up = sb.cli("update", "--yes", "--branch", "main", timeout=X.UPDATE_TIMEOUT)
     assert up.returncode == 0 and I.TRACEBACK not in up.stdout + up.stderr, (
-        "hermes update failed under a non-ASCII, spaced HOME:\n" + I.describe(up))
+        "argus update failed under a non-ASCII, spaced HOME:\n" + I.describe(up))
     assert I.git("rev-parse", "HEAD", cwd=sb.checkout) == target, "update exited 0 but HEAD is not the new release"
     t2 = X.turn(sb, provider, "turn after updating under a non-ASCII home")
     assert not X.reran_completion(t2), "the first launch after a finished update re-ran the completion:\n" + I.describe(t2)

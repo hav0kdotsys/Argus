@@ -100,7 +100,7 @@ NO_BUNDLED_SKILLS_MARKER = ".no-bundled-skills"
 
 # Header seeded into a profile's empty .env so it owns a credentials file from day one.
 _PLACEHOLDER_ENV = (
-    "# Per-profile secrets for this Hermes profile.\n"
+    "# Per-profile secrets for this ARGUS profile.\n"
     "# API keys and tokens set here override the shell environment.\n"
     "# Behavioral settings belong in config.yaml, not here.\n"
 )
@@ -320,24 +320,25 @@ def _is_our_wrapper(path: Path) -> bool:
     """True when *path* reads as a Hermes-generated wrapper (``hermes -p`` in its head)."""
     try:
         with open(path, encoding="utf-8-sig") as f:
-            return "hermes -p" in f.read(_WRAPPER_READ_LIMIT)
+            head = f.read(_WRAPPER_READ_LIMIT)
+            return "hermes -p" in head or "argus -p" in head  # rebrand: keep
     except Exception:
         return False
 
 
 def _missing_profile_error(canon: str) -> FileNotFoundError:
-    return FileNotFoundError(f"Profile '{canon}' does not exist. Create it with: hermes profile create {canon}")
+    return FileNotFoundError(f"Profile '{canon}' does not exist. Create it with: argus profile create {canon}")
 
 
 def _unknown_profile_error(canon: str) -> FileNotFoundError:
     """For delete/rename/export of a name that matches no profile (likely a typo)."""
-    return FileNotFoundError(f"No profile named '{canon}'. See your profiles with: hermes profile list")
+    return FileNotFoundError(f"No profile named '{canon}'. See your profiles with: argus profile list")
 
 
 def _profile_exists_error(canon: str) -> FileExistsError:
     return FileExistsError(
-        f"A profile named '{canon}' already exists. Switch to it with `hermes profile use {canon}`, "
-        "see all profiles with `hermes profile list`, or choose a different name."
+        f"A profile named '{canon}' already exists. Switch to it with `argus profile use {canon}`, "
+        "see all profiles with `argus profile list`, or choose a different name."
     )
 
 
@@ -357,7 +358,7 @@ def _invalid_profile_name_error(name: str) -> ValueError:
     suggestion = _suggest_profile_name(name)
     return ValueError(
         f"{name!r} is not a valid profile name. {_PROFILE_NAME_RULE} (for example: {suggestion}). "
-        f"Then run `hermes profile create {suggestion}`."
+        f"Then run `argus profile create {suggestion}`."
     )
 
 
@@ -406,7 +407,7 @@ def validate_profile_name(name: str) -> None:
     if name in _RESERVED_NAMES:
         raise ValueError(
             f"Profile name {name!r} is reserved — it collides with either "
-            f"the Hermes installation itself or a common system binary.  "
+            f"the ARGUS installation itself or a common system binary.  "
             f"Pick a different name."
         )
 
@@ -520,7 +521,7 @@ def check_alias_collision(name: str) -> Optional[str]:
     if canon in _RESERVED_NAMES:
         return f"'{canon}' is a reserved name"
     if canon in _HERMES_SUBCOMMANDS:
-        return f"'{canon}' conflicts with a hermes subcommand"
+        return f"'{canon}' conflicts with a argus subcommand"
     try:
         result = subprocess.run(
             ["where" if sys.platform == "win32" else "which", canon],
@@ -611,7 +612,7 @@ def build_alias_map() -> dict[str, str]:
     if not wrapper_dir.is_dir():
         return result
     is_windows = sys.platform == "win32"
-    prefix = "hermes -p "
+    prefixes = ("hermes -p ", "argus -p ")  # rebrand: keep
     for entry in sorted(wrapper_dir.iterdir()):
         if not entry.is_file():
             continue
@@ -623,9 +624,10 @@ def build_alias_map() -> dict[str, str]:
                 content = f.read(_WRAPPER_READ_LIMIT)
         except (OSError, UnicodeDecodeError):
             continue  # UnicodeDecodeError = a binary on PATH, not a wrapper
-        idx = content.find(prefix)
-        if idx == -1:
+        hit = next(((content.find(p), p) for p in prefixes if content.find(p) != -1), None)
+        if hit is None:
             continue
+        idx, prefix = hit
         rest = content[idx + len(prefix):]
         # Profile id is the first whitespace-delimited token after the flag.
         canon = rest.split(None, 1)[0].strip() if rest.strip() else ""
@@ -1363,7 +1365,7 @@ def create_profile(
         raise ValueError("--clone-channels only applies to a clone (--clone, --clone-from or --clone-all).")
     canon = _canon_valid(name)
     if canon == "default":
-        raise ValueError("Cannot create a profile named 'default' — it is the built-in profile (~/.hermes).")
+        raise ValueError("Cannot create a profile named 'default' — it is the built-in profile (~/.argus).")
     profile_dir = get_profile_dir(canon)
     if profile_dir.exists() and not named_profile_has_identity(profile_dir):
         if named_profile_is_deleted(profile_dir):
@@ -1693,7 +1695,7 @@ class ProfileIdentitySettlementPending(RuntimeError):
     def __init__(self, profile: str, path: Path):
         self.profile = profile
         self.path = path
-        self.retry_command = f"hermes profile purge-identity {profile}"
+        self.retry_command = f"argus profile purge-identity {profile}"
         super().__init__(
             f"Profile '{profile}' was deleted, but its session/routing identity settlement is "
             f"still pending — run: {self.retry_command}")
@@ -1704,7 +1706,7 @@ def delete_profile(name: str, yes: bool = False) -> Path:
     to prevent auto-restart, gateway stopped if running)."""
     canon = normalize_profile_name(name)
     if canon == "default":
-        raise ValueError("Cannot delete the default profile (~/.hermes).\nTo remove everything, use: hermes uninstall")
+        raise ValueError("Cannot delete the default profile (~/.argus).\nTo remove everything, use: argus uninstall")
     canon, profile_dir = _existing_profile_dir(canon)
     gw_running = _check_gateway_running(profile_dir)
     wrapper_path = _find_our_wrapper(canon)
@@ -2207,7 +2209,7 @@ def import_profile(archive_path: str, name: Optional[str] = None) -> Path:
     if not inferred_name:
         raise ValueError(
             "Cannot determine profile name from archive. "
-            "Specify it explicitly: hermes profile import <archive> --name <name>"
+            "Specify it explicitly: argus profile import <archive> --name <name>"
         )
     if archive_root is None:
         raise ValueError("Profile archive must contain exactly one top-level directory.")
@@ -2217,8 +2219,8 @@ def import_profile(archive_path: str, name: Optional[str] = None) -> Path:
     canon = _canon_valid(inferred_name)
     if canon == "default":
         raise ValueError(
-            "Cannot import as 'default' — that is the built-in root profile (~/.hermes). "
-            "Specify a different name: hermes profile import <archive> --name <name>"
+            "Cannot import as 'default' — that is the built-in root profile (~/.argus). "
+            "Specify a different name: argus profile import <archive> --name <name>"
         )
     profile_dir = get_profile_dir(canon)
     if profile_dir.exists():
@@ -2337,7 +2339,7 @@ def rename_profile(old_name: str, new_name: str) -> Path:
             _notify_multiplexer(old_canon)
         _maybe_register_gateway_service(old_canon)
         if service_removed:
-            print(f"⚠ The gateway service was removed. Reinstall it with: hermes -p {old_canon} gateway install")
+            print(f"⚠ The gateway service was removed. Reinstall it with: argus -p {old_canon} gateway install")
         raise
     print(f"✓ Renamed {old_dir.name} → {new_dir.name}")
     # The tombstone lives at profiles/.deleted/<old_name>; old_dir is gone so nothing can
@@ -2377,7 +2379,7 @@ def rename_profile(old_name: str, new_name: str) -> Path:
         _notify_multiplexer(new_canon)
     _maybe_register_gateway_service(new_canon)
     if service_removed:
-        print(f"⚠ The gateway service was removed. Reinstall it with: hermes -p {new_canon} gateway install")
+        print(f"⚠ The gateway service was removed. Reinstall it with: argus -p {new_canon} gateway install")
     return new_dir
 
 

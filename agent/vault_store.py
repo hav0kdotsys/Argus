@@ -300,16 +300,16 @@ class VaultStore:
 
     def _missing_key_message(self, why: str) -> str:
         return (f"The vault key could not be found ({why}). vault.json.enc in {self._base} was left untouched. "
-                "If this profile came from another machine, run `hermes vault key migrate --to file` there and "
+                "If this profile came from another machine, run `argus vault key migrate --to file` there and "
                 "copy its vault.key next to vault.json.enc; if the keychain entry was deleted, restore it from a "
-                "keychain backup. `hermes vault key` shows where the key is expected. To start over instead, "
+                "keychain backup. `argus vault key` shows where the key is expected. To start over instead, "
                 "delete vault.json.enc (its saved items are lost).")
 
     def _conflicting_key_message(self) -> str:
         # Never overwrite or delete the other copy here: it may be the only key that opens the vault.
         return (f"{self._key_path} does not decrypt vault.json.enc, so the key was not moved and nothing "
                 "was deleted. If the vault's key is in the OS keychain, move this vault.key aside and run "
-                "`hermes vault key` again.")
+                "`argus vault key` again.")
 
     def _create_key(self) -> bytes:
         from cryptography.fernet import Fernet
@@ -358,7 +358,7 @@ class VaultStore:
         except kc.KeychainUnavailable as exc:
             raise VaultError(
                 f"its key is in the OS keychain, which this session cannot use ({exc}). Clone from a session "
-                "that can reach the keychain, or run `hermes vault key migrate --to file` on the source first.") from exc
+                "that can reach the keychain, or run `argus vault key migrate --to file` on the source first.") from exc
         try:
             kc.write_ref(self._keyref_path, mine)
         except OSError:

@@ -448,7 +448,7 @@ def _clone_failure_message(git_url: str, git_error: str) -> str:
     not parsed as markup."""
     from rich.markup import escape
     return (f"Could not download the plugin from {git_url}. Check the address (browse the catalog "
-            "with `hermes plugins search`), check your internet connection, or, if the repository "
+            "with `argus plugins search`), check your internet connection, or, if the repository "
             "is private, sign in first with `gh auth login` (or set GITHUB_TOKEN in your .env).\n"
             f"Details: {escape(git_error.strip())}")
 
@@ -473,9 +473,9 @@ def _unknown_plugin_message(name: str, *, downloaded_only: bool = False) -> str:
     from hermes_cli.left_core_migration import moved_plugin_hint
     if moved := moved_plugin_hint(name):
         return f"[red]No plugin named '{name}'.[/red] {moved}"
-    return (f"[red]No plugin named '{name}'.[/red] Run `hermes plugins list` to see the exact names "
+    return (f"[red]No plugin named '{name}'.[/red] Run `argus plugins list` to see the exact names "
             f"(nested plugins use their full key, e.g. web/firecrawl).{scope} "
-            "To add one: `hermes plugins install <owner/repo>`.")
+            "To add one: `argus plugins install <owner/repo>`.")
 
 
 # ``plugins.disabled`` is an explicit deny-list that wins over the ``plugins.enabled`` allow-list.
@@ -526,7 +526,7 @@ def _admit_and_save_plugin_sets(
             console.print(f"[red]✗[/red] {action} refused: {exc}")
             console.print(
                 "[dim]config.yaml and the active environment are unchanged. "
-                "Run `hermes pm install` to resolve dependencies, then retry.[/dim]"
+                "Run `argus pm install` to resolve dependencies, then retry.[/dim]"
             )
         raise
 
@@ -724,7 +724,7 @@ def cmd_enable(name: str, allow_tool_override: Optional[bool] = None) -> None:
         if plugin in LEGACY_RELAY_PLUGIN_KEYS:
             _fail(console, (
                 f"[red]Plugin '{plugin}' was removed.[/red] Relay lifecycle is owned "
-                "by Hermes core; configure a standard user or system Relay plugins.toml, or use "
+                "by ARGUS core; configure a standard user or system Relay plugins.toml, or use "
                 f"{RELAY_PLUGINS_CONFIG_ENV} for an explicit user-file override."))
 
     _refuse_legacy_relay(name)
@@ -1084,11 +1084,11 @@ def _catalog():
 def _action_update(args):
     if args.name:
         if getattr(args, "yes", False):
-            _fail(_console(), "[red]Error:[/red] --yes only applies to `hermes plugins update` with no name.")
+            _fail(_console(), "[red]Error:[/red] --yes only applies to `argus plugins update` with no name.")
         cmd_update(args.name, force=getattr(args, "force", False))
         return
     if getattr(args, "force", False):
-        _fail(_console(), "[red]Error:[/red] --force applies to one named plugin: `hermes plugins update <name> --force`.")
+        _fail(_console(), "[red]Error:[/red] --force applies to one named plugin: `argus plugins update <name> --force`.")
     from hermes_cli.plugins_cmd_update_all import cmd_update_all
     cmd_update_all(yes=getattr(args, "yes", False))
 

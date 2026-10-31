@@ -35,7 +35,7 @@ def pooled_served_process(tmp_path, monkeypatch):
     from gateway import status
     # Liveness is a verified identity; this pytest process passes as the default gateway only by
     # wearing a gateway command line.
-    monkeypatch.setattr(status, "_read_process_cmdline", lambda pid: "hermes gateway run")
+    monkeypatch.setattr(status, "_read_process_cmdline", lambda pid: "argus gateway run")
     monkeypatch.setattr(hermes_constants, "_default_hermes_root_memo", None)
     from hermes_cli import profiles as profiles_mod
     monkeypatch.setattr(profiles_mod, "_check_gateway_running", lambda home: False)

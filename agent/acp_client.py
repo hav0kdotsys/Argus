@@ -59,7 +59,7 @@ _PROMPT_PREAMBLE = (
 _INITIALIZE_PARAMS = {
     "protocolVersion": 1,
     "clientCapabilities": {"fs": {"readTextFile": True, "writeTextFile": True}},
-    "clientInfo": {"name": "hermes-agent", "title": "Hermes Agent", "version": "0.0.0"},
+    "clientInfo": {"name": "hermes-agent", "title": "ARGUS", "version": "0.0.0"},
 }
 def _acp_supported(command: str, args: list[str]) -> bool | None:
     """Tri-state ``--acp`` probe (a CLI without the flag exits 1 and the parent would wait the
@@ -556,7 +556,7 @@ class ACPClient:
                 except Exception as exc:
                     response = _jsonrpc_error(message_id, -32602, str(exc))
         else:
-            response = _jsonrpc_error(message_id, -32601, f"ACP client method '{method}' is not supported by Hermes yet.")
+            response = _jsonrpc_error(message_id, -32601, f"ACP client method '{method}' is not supported by ARGUS yet.")
         process.stdin.write(json.dumps(response) + "\n")
         process.stdin.flush()
         return True

@@ -65,7 +65,7 @@ def test_offline_provisioning_of_a_missing_tool_fails_loudly(inst):
         before = inst.state()
         r = inst.hermes("pm", "install", "ripgrep", edge=None, timeout=300)
         assert r.secs < FAST, f"offline provisioning took {r.secs:.0f}s to give up\n" + r.report(inst)
-        S.assert_nothing_changed(inst, before, r, "offline `hermes pm install ripgrep`")
+        S.assert_nothing_changed(inst, before, r, "offline `argus pm install ripgrep`")
         assert "ripgrep" in r.out and "download failed" in r.out, (
             "the failure does not name the tool and the failed download\n" + r.report(inst))
         assert not (inst.sb.hermes_home / "tools" / tool["entry"]).exists(), (
@@ -133,4 +133,4 @@ def test_pm_download_retries_then_refuses_a_digest_mismatch(inst, tool_name):
             f"{tool_name}: the failure does not say the download failed verification\n" + r.report(inst))
         assert not (inst.sb.hermes_home / "tools" / tool["entry"]).exists(), (
             f"{tool_name}: unverified bytes were published to the tool store\n" + r.report(inst))
-        S.assert_nothing_changed(inst, before, r, f"`hermes pm install {tool_name}` with a digest mismatch")
+        S.assert_nothing_changed(inst, before, r, f"`argus pm install {tool_name}` with a digest mismatch")

@@ -53,10 +53,10 @@ def test_a_task_reminder_opens_with_its_skills_and_drops_a_bundled_skill_this_in
 
 def test_a_task_prompt_names_the_label_they_clicked_and_reads_in_sections():
     record = new_record(MAC)
-    record["picks"]["build_options"] = [{"id": "repo", "label": "Map the hermes repo"}]
+    record["picks"]["build_options"] = [{"id": "repo", "label": "Map the argus repo"}]
     text = reminder("build_repo", record, MAC)
 
-    assert text.startswith('They picked "Map the hermes repo". Your job: ')
+    assert text.startswith('They picked "Map the argus repo". Your job: ')
     for section in ("\nSteps:\n1. ", "\nOutput: ", "\nQuality bar: ", "\nDone when: ", "\n\nHow to work:\n- ",
                     "\n\nThis computer:\n- This Mac", "\n\nWhen it is shown:\n"):
         assert section in text, section

@@ -347,7 +347,7 @@ def handle_computer_use(args: dict[str, Any], **kwargs) -> Any:
         backend = call.enter_context(_backend_for_call(session_id))
     except Exception as e:
         from plugins.computer_use import DEFAULT_BACKEND, configured_backend_name
-        hint = ({"hint": "If the cua-driver binary is missing, run `hermes computer-use install`. If a Python "
+        hint = ({"hint": "If the cua-driver binary is missing, run `argus computer-use install`. If a Python "
                          "dependency is missing, the error above shows the exact install command."}
                 if configured_backend_name() == DEFAULT_BACKEND else {})
         return json.dumps({"error": f"computer_use backend unavailable: {e}", **hint})

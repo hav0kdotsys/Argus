@@ -283,10 +283,10 @@ def gate_manifest(
     # Relay lifecycle is core-owned; an old plugin copy would compete for its registries.
     if names & LEGACY_RELAY_PLUGIN_KEYS:
         error = (
-            "removed — Relay lifecycle is owned by Hermes core; configure a standard user or system Relay "
+            "removed — Relay lifecycle is owned by ARGUS core; configure a standard user or system Relay "
             f"plugins.toml, or use {RELAY_PLUGINS_CONFIG_ENV} for an explicit user-file override"
         )
-        return _placeholder(error, logging.WARNING, "Refusing to load removed Hermes Relay plugin '%s'; %s", error)
+        return _placeholder(error, logging.WARNING, "Refusing to load removed ARGUS Relay plugin '%s'; %s", error)
     if names & disabled:
         if enabled and names & enabled:
             # Contradictory config (#131980): the disable wins, but a silent DEBUG skip hides the
@@ -319,7 +319,7 @@ def gate_manifest(
             return ManifestGate("defer")
     if enabled is None or not names & enabled:
         return _placeholder(
-            f"not enabled in config (run `hermes plugins enable {lookup_key}` to activate)", logging.DEBUG,
+            f"not enabled in config (run `argus plugins enable {lookup_key}` to activate)", logging.DEBUG,
             "Skipping '%s' (not in plugins.enabled)",
         )
     if manifest.source != "bundled":
@@ -328,7 +328,7 @@ def gate_manifest(
         from hermes_cli.plugins_cmd_catalog import installed_plugin_removal
         removed = installed_plugin_removal(manifest.name, manifest.path)
         if removed is not None:
-            error = f"removed from the Hermes plugin catalog: {removed.reason or 'no reason recorded'}"
-            return _placeholder(error, logging.WARNING, "Refusing to load plugin '%s' — %s; run `hermes plugins remove`",
+            error = f"removed from the ARGUS plugin catalog: {removed.reason or 'no reason recorded'}"
+            return _placeholder(error, logging.WARNING, "Refusing to load plugin '%s' — %s; run `argus plugins remove`",
                                 error)
     return ManifestGate("load")

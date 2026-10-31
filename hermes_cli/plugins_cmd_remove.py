@@ -114,7 +114,7 @@ def cmd_remove(name: str) -> None:
     console.print(f"[red]✗[/red] Plugin [bold]{name}[/bold] removed from {plugins_dir}")
     if result.get("cleared_memory_provider"):
         console.print("[yellow]memory.provider pointed at this plugin and was reset; "
-                      "run `hermes memory setup` to pick another.[/yellow]")
+                      "run `argus memory setup` to pick another.[/yellow]")
     console.print()
 
 

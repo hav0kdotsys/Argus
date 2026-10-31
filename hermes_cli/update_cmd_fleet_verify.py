@@ -30,7 +30,7 @@ def _print_legacy_units_warning() -> None:
     if not (supports_systemd_services() and has_legacy_hermes_units()):
         return
     print()
-    print("⚠ Legacy Hermes gateway unit(s) detected:")
+    print("⚠ Legacy ARGUS gateway unit(s) detected:")
     for name, path, is_sys in _find_legacy_hermes_units():
         scope = "system" if is_sys else "user"
         print(f"    {path}  ({scope} scope)")
@@ -39,7 +39,7 @@ def _print_legacy_units_warning() -> None:
     print("  hermes-gateway.service for the bot token and cause SIGTERM")
     print("  flap loops. Remove them with:")
     print()
-    print("    hermes gateway migrate-legacy")
+    print("    argus gateway migrate-legacy")
     print()
     print("  (add `sudo` if any are in system scope)")
 
@@ -269,7 +269,7 @@ def _split_unaccounted(outcomes) -> tuple[bool, set]:
 # part below starts with it and the gateway part always comes first (#141071).
 SERVE_ONLY_REASON_PREFIX = "serve/dashboard "
 _GATEWAY_OWED_REASON = "gateways may still run pre-update code or were stopped without a successor"
-_GATEWAY_RECOVERY = "; recover with `hermes gateway restart`"
+_GATEWAY_RECOVERY = "; recover with `argus gateway restart`"
 
 
 def _owed_restart_reason(restart, stopped, *, gateway_owed: bool, stale_serves: set, down_serves: set) -> str:
@@ -292,7 +292,7 @@ def _owed_restart_reason(restart, stopped, *, gateway_owed: bool, stale_serves: 
     if down_serves:
         parts.append(
             f"{SERVE_ONLY_REASON_PREFIX}process(es) {', '.join(map(str, sorted(down_serves)))} were stopped during the"
-            " update and not brought back; relaunch `hermes serve` / `hermes dashboard`")
+            " update and not brought back; relaunch `argus serve` / `argus dashboard`")
     if stale_serves - down_serves:
         parts.append(
             f"{SERVE_ONLY_REASON_PREFIX}process(es) {', '.join(map(str, sorted(stale_serves - down_serves)))} still run"
@@ -350,7 +350,7 @@ def _verify_fleet_after_update(restart, *, _pre_update_plan, _windows_gateway_re
 
     print()
     print("Tip: You can now select a provider and model:")
-    print("  hermes model              # Select provider and model")
+    print("  argus model              # Select provider and model")
 
     # Compare every live gateway's stamped code_sha against the fresh checkout
     # instead of assuming the restart phase worked.
@@ -500,4 +500,4 @@ def _verify_fleet_after_update(restart, *, _pre_update_plan, _windows_gateway_re
         maybe_auto_migrate_after_update()
     except (Exception, SystemExit) as exc:  # health: allow BLE001 -- a SystemExit here must not fail a committed update
         logger.warning('Multiplex auto-migration after update failed: %s', exc)
-        print(f"  ⚠ Gateway multiplex migration did not finish: {exc} (run `hermes gateway migrate` later)")
+        print(f"  ⚠ Gateway multiplex migration did not finish: {exc} (run `argus gateway migrate` later)")

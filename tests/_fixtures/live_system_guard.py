@@ -190,7 +190,7 @@ def _live_system_guard(request, monkeypatch):
         "hermes_cli.main gateway",
         "hermes_cli/main.py gateway",
         "gateway/run.py",
-        "hermes gateway",
+        "argus gateway",
     )
     _MUTATING_VERBS = (
         "restart", "start", "stop", "kill", "reload",
@@ -357,7 +357,7 @@ def _live_system_guard(request, monkeypatch):
             raise RuntimeError(
                 f"tests/conftest.py live-system guard: blocked "
                 f"subprocess.{name}({cmd!r}) — would mutate a live "
-                "Hermes systemd unit (hermes-gateway*, hermes-dashboard*, "
+                "ARGUS systemd unit (hermes-gateway*, hermes-dashboard*, "
                 "hermes-serve*, ...). Mock "
                 "subprocess.run / _run_systemctl in the test, or "
                 "mark with @pytest.mark.live_system_guard_bypass."
@@ -395,7 +395,7 @@ def _live_system_guard(request, monkeypatch):
             raise RuntimeError(
                 f"tests/conftest.py live-system guard: blocked "
                 f"subprocess.{name}({cmd!r}) — this command would run "
-                "`hermes update` against the real checkout, fetching "
+                "`argus update` against the real checkout, fetching "
                 "from origin and overwriting repo files (e.g. "
                 "pyproject.toml) mid-test-run. This corrupts every "
                 "subsequent subprocess in the same runner. "
@@ -427,7 +427,7 @@ def _live_system_guard(request, monkeypatch):
             raise RuntimeError(
                 f"tests/conftest.py live-system guard: blocked "
                 f"subprocess.{name}({cmd!r}) — this would spawn a REAL "
-                "hermes gateway runtime that outlives the test (it is "
+                "argus gateway runtime that outlives the test (it is "
                 "detached), restarts the developer's live gateway, and "
                 "holds the webhook port. Patch the spawn seam where "
                 "production reads it (hermes_cli.web_server_gateway."

@@ -138,5 +138,5 @@ def offer_interactive(*, cprint, ask=input) -> Optional[bool]:
         decide(switch, approve=False)
         cprint(f"  ✓ terminal.docker_image = {switch.current_image}; unset it in config.yaml to be asked again.")
         return False
-    cprint("  Later. `hermes config set terminal.docker_image <image>` decides it any time.")
+    cprint("  Later. `argus config set terminal.docker_image <image>` decides it any time.")
     return None

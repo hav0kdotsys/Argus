@@ -146,7 +146,7 @@ def _assert_generic_refusal(result, caplog, *homes):
     """The model/chat sees a generic refusal pointing at a log every host writes (errors.log; gateway.log
     too on a gateway); the log keeps the check's code and the homes."""
     error = result.get("error", "")
-    assert "refused" in error and "hermes logs errors" in error, result
+    assert "refused" in error and "argus logs errors" in error, result
     assert _REFUSAL_CODE not in error and not any(str(home) in error for home in homes), result
     logged = "\n".join(r.getMessage() for r in caplog.records if r.name == "agent.memory_caller_scope")
     assert _REFUSAL_CODE in logged, logged
@@ -360,7 +360,7 @@ def test_tool_calls_reuse_what_initialize_bound(homes, monkeypatch):
 def test_refused_checkpoint_compression_fails_closed(homes):
     alpha_home, beta_home = homes
     alpha = _manager(alpha_home)
-    with _Scope(beta_home), pytest.raises(RuntimeError, match="hermes logs errors"):
+    with _Scope(beta_home), pytest.raises(RuntimeError, match="argus logs errors"):
         alpha.on_pre_compress([{"role": "user", "content": "x"}], require_checkpoint=True)
 
 

@@ -306,8 +306,8 @@ def test_seven_physical_else_if_levels_block(tmp_path, capsys):
     ('Path.home() / ".hermes" / "x"', True),
     ('Path.home() / ".hermes-profile-exports"', False),
     ('Path.home() / ".hermes_backup"', False),
-    ('os.path.expanduser("~/.hermes")', True),
-    ('os.path.expanduser("~/.hermes/config.yaml")', True),
+    ('os.path.expanduser("~/.argus")', True),
+    ('os.path.expanduser("~/.argus/config.yaml")', True),
     ('os.path.expanduser("~/.hermes-profile-exports")', False),
 ])
 def test_hardcoded_home_matches_the_exact_component(expr, flagged):

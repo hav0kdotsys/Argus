@@ -119,7 +119,7 @@ class TestFindBashCollapsedToPmShell:
         with pytest.raises(RuntimeError) as exc_info:
             _find_bash()
         assert "No shell found" in str(exc_info.value)
-        assert "hermes pm install" in str(exc_info.value)
+        assert "argus pm install" in str(exc_info.value)
 
 
 

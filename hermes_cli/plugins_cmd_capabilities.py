@@ -81,8 +81,8 @@ def _run_capability_consent(console, plugin_id: str, declared: list, *, context:
         console.print(
             "  [yellow]Non-interactive session: capabilities NOT granted "
             "(fail closed).[/yellow] Run "
-            f"`hermes plugins capabilities {plugin_id}` to review and "
-            f"`hermes plugins enable {plugin_id}` to grant interactively.")
+            f"`argus plugins capabilities {plugin_id}` to review and "
+            f"`argus plugins enable {plugin_id}` to grant interactively.")
         return False
 
     if _pc()._ask_yes("  Grant these capabilities? [y/N] ", console.input):
@@ -95,7 +95,7 @@ def _run_capability_consent(console, plugin_id: str, declared: list, *, context:
     console.print(
         f"  [dim]Declined. {plugin_id} stays enabled with these capabilities "
         "off; it should degrade gracefully (ctx.has_capability()). Re-run "
-        f"`hermes plugins enable {plugin_id}` to grant later.[/dim]")
+        f"`argus plugins enable {plugin_id}` to grant later.[/dim]")
     return False
 
 
@@ -168,5 +168,5 @@ def _resolve_tool_override_grant(console, key: str, allow_tool_override: Optiona
     else:
         console.print(
             f"[dim]{key} may not override built-in tools. Re-run "
-            f"`hermes plugins enable {key} --allow-tool-override` to grant "
+            f"`argus plugins enable {key} --allow-tool-override` to grant "
             "this later.[/dim]")

@@ -122,7 +122,7 @@ def _single_query_run(root: Path, single_query_mode: str) -> dict[str, Any]:
                    config=MANUAL + f"  single_query_mode: {single_query_mode}\n")
         proc = run_hermes(["chat", "-q", "run the maintenance commands", "-Q"], home, timeout=180, cwd=victims)
         requests = srv.main_requests()
-    assert proc.returncode == 0, f"hermes chat -q failed rc={proc.returncode}\n{proc.stdout[-2000:]}\n{proc.stderr[-2000:]}"
+    assert proc.returncode == 0, f"argus chat -q failed rc={proc.returncode}\n{proc.stdout[-2000:]}\n{proc.stderr[-2000:]}"
     results = _tool_results(requests)
     missing = [n for n, t in VARIANTS.items() if t.format(X=n) not in results] + (
         [] if CONTROL in results else ["control"])

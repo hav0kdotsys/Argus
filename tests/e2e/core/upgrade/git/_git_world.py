@@ -156,7 +156,7 @@ class World:
 
     def update(self, *extra: str, timeout: float = 1200) -> subprocess.CompletedProcess:
         cp = self.sb.cli("update", "--yes", "--branch", "main", *extra, timeout=timeout)
-        self.transcripts.append(f"$ hermes update --yes --branch main {' '.join(extra)} -> rc={cp.returncode}\n"
+        self.transcripts.append(f"$ argus update --yes --branch main {' '.join(extra)} -> rc={cp.returncode}\n"
                                 f"{(cp.stdout or '')[-8000:]}\n{(cp.stderr or '')[-4000:]}")
         return cp
 

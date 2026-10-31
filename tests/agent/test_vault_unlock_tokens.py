@@ -141,7 +141,7 @@ def test_session_token_reaches_only_the_manager_call_that_uses_it(tmp_path):
     unlock_call, list_call = calls
     assert "BW_SESSION" not in unlock_call["env"], "the unlock call has no session yet"
     assert list_call["env"]["BW_SESSION"] == token
-    assert token not in os.environ.values(), "the token never enters Hermes' own environment"
+    assert token not in os.environ.values(), "the token never enters ARGUS' own environment"
     # Every other child (terminal tool, MCP servers, hooks) starts from that environment; even the
     # unscrubbed factory variant must not carry it.
     assert token not in build_subprocess_env(scrub_secrets=False).values()

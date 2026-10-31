@@ -2131,7 +2131,7 @@ if config_exists(_config_path):
             file=sys.stderr)
         print(
             "  Gateway will fall back to .env values, which may not match "
-            "your current config.yaml. Run `hermes doctor` to investigate.",
+            "your current config.yaml. Run `argus doctor` to investigate.",
             file=sys.stderr)
 
 # IPv4 preference must apply before any HTTP clients are created.
@@ -4831,7 +4831,7 @@ def _start_gateway_make_restart_signal_handler(runner):
         # systemd's `reload` verb (ExecReload=kill -USR1) lands here too; say so, because operators
         # expect `reload` to mean an in-process config reload, not a drain-and-relaunch (#117267).
         logger.info(
-            "SIGUSR1 received (systemctl reload / hermes gateway restart): performing a graceful "
+            "SIGUSR1 received (systemctl reload / argus gateway restart): performing a graceful "
             "gateway restart — drain active turns, exit, supervisor relaunches. Not an in-process "
             "config reload.")
         runner.request_restart(detached=False, via_service=True)
@@ -4907,7 +4907,7 @@ def _claim_host_gateway_role(force: bool = False) -> None:
         # The lock is per OS user, so a second tenant root can never win it against the first:
         # refusing 75 here would retry forever and its gateway would never start (#121352).
         logger.warning(
-            "Another Hermes home's gateway owns this host (%s); starting this home's gateway beside it.",
+            "Another ARGUS home's gateway owns this host (%s); starting this home's gateway beside it.",
             hr.describe(owner))
         return
     if profile_is_standalone(get_hermes_home()):
@@ -4981,7 +4981,7 @@ def _refuse_second_host_gateway(owner) -> None:
         f"   second one (it would double-bind this profile's platforms).\n"
         f"   Fold every profile onto the owner:  {_migrate_command()}\n"
         f"   Or stop the other gateway first, then start this one.\n"
-        f"   Or start one anyway (skips the host-lock check):  hermes gateway run --force\n"
+        f"   Or start one anyway (skips the host-lock check):  argus gateway run --force\n"
         f"   (--replace does not skip this check; it only replaces an owner that serves this profile.)")
     logger.error("Refusing to start a second gateway on this host: %s", who)
     print(message)
@@ -5147,7 +5147,7 @@ def main():
         logger.debug("boot bootstrap failed", exc_info=True)
 
     import argparse
-    parser = argparse.ArgumentParser(description="Hermes Gateway - Multi-platform messaging")
+    parser = argparse.ArgumentParser(description="ARGUS Gateway - Multi-platform messaging")
     parser.add_argument("--config", "-c", help="Path to gateway config file")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     args = parser.parse_args()

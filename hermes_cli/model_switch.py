@@ -99,7 +99,7 @@ def _bare_custom_provider_def(current_base_url: str) -> Optional[ProviderDef]:
 
 _HERMES_MODEL_WARNING = (
     "Nous Research Hermes 3 & 4 models are NOT agentic and are not designed "
-    "for use with Hermes Agent. They lack the tool-calling capabilities "
+    "for use with ARGUS Agent. They lack the tool-calling capabilities "
     "required for agent workflows. Consider using an agentic model instead "
     "(Claude, GPT, Gemini, DeepSeek, etc.).")
 
@@ -1057,13 +1057,13 @@ def _unknown_provider_message(explicit_provider: str) -> str:
     if moved := provider_install_hint(explicit_provider):
         return f"Unknown provider '{explicit_provider}'. {moved}"
     msg = (
-        f"Unknown provider '{explicit_provider}'. Check 'hermes model' for available "
+        f"Unknown provider '{explicit_provider}'. Check 'argus model' for available "
         f"providers, or define it in config.yaml under 'providers:'.")
     try:  # Surface common config issues that cause provider resolution failures
         from hermes_cli.config import validate_config_structure
         issues = validate_config_structure()
         if issues:
-            msg += "\n\nRun 'hermes doctor' — config issues detected:" + "".join(f"\n  • {ci.message}" for ci in issues[:3])
+            msg += "\n\nRun 'argus doctor' — config issues detected:" + "".join(f"\n  • {ci.message}" for ci in issues[:3])
     except Exception:
         pass
     return msg
@@ -1486,7 +1486,7 @@ def _creds_for_switched_provider(st: _Switch) -> Optional[ModelSwitchResult]:
                 return st.fail_on_target(str(e))
             return st.fail_on_target(
                 f"{st.provider_label} is not connected: no API key or login was found for it. Add one with "
-                f"`hermes auth add {st.target_provider}`, or pick a connected provider in /model.\n"
+                f"`argus auth add {st.target_provider}`, or pick a connected provider in /model.\n"
                 f"  Details: {e}")
     return None
 

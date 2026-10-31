@@ -511,7 +511,7 @@ def _spawn_hermes_action(
             message = (
                 f"{name} targets the system-scope gateway service, which requires root, and "
                 "passwordless sudo is unavailable for the dashboard user. Run "
-                f"'sudo hermes {' '.join(subcommand)}' on the host, or grant that user NOPASSWD sudo."
+                f"'sudo argus {' '.join(subcommand)}' on the host, or grant that user NOPASSWD sudo."
             )
             log_file.write(f"{message}\n".encode())
             log_file.close()
@@ -658,9 +658,9 @@ def multiplexed_profile_refusal(profile: Optional[str], verb: str) -> Optional[s
     if _installed_services(profile_dir):
         return None  # a --force-installed fleet member is not NEW; its own service is started normally
     return (f"Profile '{requested}' does not get a gateway of its own: one host gateway serves every "
-            f"profile. Install or start it from the default profile (hermes gateway install), or fold an "
-            f"existing per-profile fleet with `hermes gateway migrate --multiplex`; "
-            f"`hermes -p {requested} gateway install --force` starts a separate one anyway.")
+            f"profile. Install or start it from the default profile (argus gateway install), or fold an "
+            f"existing per-profile fleet with `argus gateway migrate --multiplex`; "
+            f"`argus -p {requested} gateway install --force` starts a separate one anyway.")
 
 
 def live_session_refusal(profile: Optional[str], verb: str) -> Optional[str]:

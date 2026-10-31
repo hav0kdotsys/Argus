@@ -59,10 +59,10 @@ PREVIEW_FULL_CONNECTORS_ENV = "HERMES_PREVIEW_FULL_CONNECTORS"
 GUEST_MINT_TIMEOUT_SECONDS = 5.0
 # Copy shared by every surface that names the free tier (R-USR-1): never guest / anonymous / account.
 FREE_TIER_LABEL = "Nous · free tier"
-UPGRADE_HINT = "Run `hermes auth upgrade` to sign in with a Nous account, or /login inside a chat."
+UPGRADE_HINT = "Run `argus auth upgrade` to sign in with a Nous account, or /login inside a chat."
 FREE_TIER_NOT_SIGNED_IN = (
     "You're not signed in. Free inference and connectors are always on. "
-    "Run `hermes auth` to sign in with a Nous account.")
+    "Run `argus auth` to sign in with a Nous account.")
 
 
 class AnonCredentialDead(AuthError):
@@ -116,7 +116,7 @@ ANON_UNREACHABLE_CODES = frozenset({ANON_UNREACHABLE, ANON_SERVER_ERROR})
 _SIGNIN_IS_FREE = "Signing in is free."
 ANON_FAILURE_COPY = {
     ANON_GATE_CLOSED: f"This version can't be used without a Nous account. {_SIGNIN_IS_FREE}",
-    ANON_GATE_PAUSED: f"Using Hermes without signing in is paused for a moment. {_SIGNIN_IS_FREE}",
+    ANON_GATE_PAUSED: f"Using ARGUS without signing in is paused for a moment. {_SIGNIN_IS_FREE}",
     ANON_RATE_LIMITED: "Lots of people are getting started right now. Try again in {wait}. "
                        "Signing in is free and skips the wait.",
     ANON_POW_REQUIRED: "The Nous server asked for a proof of work, but that isn't implemented in your "
@@ -728,7 +728,7 @@ def refresh_guest_state(state: dict[str, Any], client: httpx.Client, *, purpose:
     if purpose == "inference" and not free_inference_active(state):
         # The one place a guest's inference token is minted: only the welcome trial on the desktop's
         # local backend carries one. Not terminal: the guest stays for connectors.
-        raise AuthError("Hermes is not logged into Nous Portal.", provider="nous", code="nous_auth_missing")
+        raise AuthError("ARGUS is not logged into Nous Portal.", provider="nous", code="nous_auth_missing")
     anon_token = state.get("anon_token")
     if not isinstance(anon_token, str) or not anon_token:
         raise AnonCredentialDead(ANON_FAILURE_COPY[ANON_CREDENTIAL_DEAD], code=ANON_CREDENTIAL_DEAD)
@@ -788,7 +788,7 @@ WELCOME_TIER_GATE_REASONS = frozenset({"model_not_free", "feature_not_free"})
 # Gateway messages (lowercased substrings) for a request on the wrong host or a dark tier.
 _WELCOME_ROUTE_REFUSALS = (
     ("anonymous accounts must use", "anon_on_paid_host"),
-    ("serves anonymous hermes agent accounts only", "named_on_welcome_host"),
+    ("serves anonymous argus agent accounts only", "named_on_welcome_host"),
     ("anonymous accounts are not accepted", "tier_disabled"),
     # The gateway's answer to an expired or unreadable bearer: the credential, not the tier. A
     # retry that waited out a long rate limit outlives the 15-minute free-tier JWT and lands here.
@@ -800,17 +800,17 @@ _WELCOME_ROUTE_COPY = {
     "anon_on_paid_host": "This install is set to use a different Nous server (NOUS_INFERENCE_BASE_URL). "
                          "Unset it to use the free model, or sign in. {signin}",
     "named_on_welcome_host": "This Nous account needs to reconnect. {model_hint}",
-    "tier_disabled": "Using Hermes without signing in is switched off right now. "
+    "tier_disabled": "Using ARGUS without signing in is switched off right now. "
                      "Sign in to keep chatting, it's free. {signin}",
     # Only reachable when re-exchanging the free credential failed (``turn_recovery._recover_welcome_tier``).
-    "session_expired": "Hermes couldn't renew its connection to the free model. "
+    "session_expired": "ARGUS couldn't renew its connection to the free model. "
                        "Send your message again, or sign in to keep chatting, it's free. {signin}",
 }
 # The sign-in door, phrased for a chat surface (slash command) and for a terminal.
 _SIGNIN_CHAT = "To sign in: /login."
-_SIGNIN_TERMINAL = "To sign in: `hermes auth upgrade`."
+_SIGNIN_TERMINAL = "To sign in: `argus auth upgrade`."
 _MODEL_HINT_CHAT = "Run /model and pick the Nous row again."
-_MODEL_HINT_TERMINAL = "Run `hermes model` and pick the Nous row again."
+_MODEL_HINT_TERMINAL = "Run `argus model` and pick the Nous row again."
 # Terminal copy for a free-model outage once the retries are spent (5xx, transport failure).
 FREE_TIER_OUTAGE_COPY = ("The free model is having trouble responding right now. "
                          "Try sending your message again in a minute.")
@@ -853,7 +853,7 @@ def welcome_refusal_copy(refusal: dict[str, Any], *, model: str = "", in_chat: b
     wait = friendly_wait(retry) if retry > 0 else "a little while"
     if reason == "model_not_free":
         what = f"{model} isn't" if model else "That model isn't"
-        return (f"{what} available without signing in, so Hermes uses {serves} for now. "
+        return (f"{what} available without signing in, so ARGUS uses {serves} for now. "
                 f"Sign in for more models. {signin}").rstrip()
     if reason == "feature_not_free":
         return f"That isn't available without signing in. Sign in to use it, it's free. {signin}".rstrip()
@@ -866,7 +866,7 @@ def welcome_refusal_copy(refusal: dict[str, Any], *, model: str = "", in_chat: b
     if reason == "rate_limited":
         return (f"You've used up the allowance for chatting without signing in. It refreshes in {wait}. "
                 f"Sign in for a bigger allowance, it's free. {signin}").rstrip()
-    return f"Hermes couldn't send that without signing in. Signing in is free. {signin}".rstrip()
+    return f"ARGUS couldn't send that without signing in. Signing in is free. {signin}".rstrip()
 
 
 def welcome_route_refusal(status: Any, message: Any, base_url: Any = None) -> Optional[str]:
@@ -891,7 +891,7 @@ def welcome_route_refusal(status: Any, message: Any, base_url: Any = None) -> Op
 
 
 def welcome_route_refusal_copy(kind: str, *, in_chat: bool = True, door: bool = True) -> str:
-    template = _WELCOME_ROUTE_COPY.get(kind) or "Hermes couldn't reach the free model on this route."
+    template = _WELCOME_ROUTE_COPY.get(kind) or "ARGUS couldn't reach the free model on this route."
     return template.format(
         host=DEFAULT_NOUS_WELCOME_URL, signin=(_SIGNIN_CHAT if in_chat else _SIGNIN_TERMINAL) if door else "",
         model_hint=_MODEL_HINT_CHAT if in_chat else _MODEL_HINT_TERMINAL).rstrip()

@@ -238,8 +238,8 @@ def test_update_drain_hint_names_the_draining_profile(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setenv("HERMES_HOME", str(root))
     work = [{"kind": "chat", "session": "s1"}]
-    assert "`hermes -p work --tui`" in format_drain_report(work, remaining_s=60, home=root / "profiles" / "work")
-    assert "`hermes --tui`" in format_drain_report(work, remaining_s=60, home=root)
+    assert "`argus -p work --tui`" in format_drain_report(work, remaining_s=60, home=root / "profiles" / "work")
+    assert "`argus --tui`" in format_drain_report(work, remaining_s=60, home=root)
 
 
 @pytest.mark.asyncio

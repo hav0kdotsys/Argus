@@ -30,10 +30,10 @@ _GREETINGS = {
     "de": "Hallo, ich bin Hermes. Richten wir alles für Sie ein. Danach machen wir etwas Cooles.",
     "es": "Hola, soy Hermes. Vamos a dejarlo todo listo para ti. Luego haremos algo genial.",
     "fr": "Bonjour, je suis Hermes. Configurons tout pour vous. Ensuite, nous ferons quelque chose de génial.",
-    "ja": "こんにちは、Hermes です。まずはあなたに合わせて設定しましょう。そのあと、何かすごいものを作りましょう。",
+    "ja": "こんにちは、ARGUS です。まずはあなたに合わせて設定しましょう。そのあと、何かすごいものを作りましょう。",
     "ru": "Привет, я Hermes. Давайте всё настроим под вас. А потом сделаем что-нибудь классное.",
-    "zh": "你好，我是 Hermes。我们先帮你把一切设置好，然后一起做点很酷的事。",
-    "zh-hant": "你好，我是 Hermes。我們先幫你把一切設定好，然後一起做點很酷的事。",
+    "zh": "你好，我是 ARGUS。我们先帮你把一切设置好，然后一起做点很酷的事。",
+    "zh-hant": "你好，我是 ARGUS。我們先幫你把一切設定好，然後一起做點很酷的事。",
 }
 
 _NAME_QUESTIONS = {
@@ -100,7 +100,7 @@ _NVIDIA = {
 
 
 def facts_block(facts: Facts) -> str:
-    whose = ("the computer running Hermes, which is not the one in front of the user"
+    whose = ("the computer running ARGUS, which is not the one in front of the user"
              if facts.facts_source == "remote" else "this computer")
     lines = [f"What you know about {whose}: {facts.os} on {facts.arch or 'an unknown architecture'}, "
              f"a {facts.machine_kind}."]
@@ -116,7 +116,7 @@ def facts_block(facts: Facts) -> str:
 def opening_prompt(facts: Facts) -> str:
     """The hidden first turn of the onboarding chat: every rule of the run."""
     dimensions = "\n".join(f"- {name}: {buckets}" for name, buckets in PROFILE_DIMENSIONS)
-    return f"""[System note: This is the user's first time opening the Hermes desktop app. You run their first-run onboarding in this chat. The beats, in order: their name, the theme (accent colour; light or dark only if they ask), the layout, connectors, plugins, a tour, then the first thing you build for them.
+    return f"""[System note: This is the user's first time opening the ARGUS desktop app. You run their first-run onboarding in this chat. The beats, in order: their name, the theme (accent colour; light or dark only if they ask), the layout, connectors, plugins, a tour, then the first thing you build for them.
 
 How it works:
 - setup_beat shows a beat's card and waits for the user. setup_beat(beat="next") shows the next beat. Its result carries their answer and a reminder of what to do next. Follow the reminder.
@@ -231,7 +231,7 @@ _OS_LINES = {
 _ARM_WINDOWS = ("On Windows on Arm, read arm64 vs x64 from winget's install output, not the manifest, and say when "
                 "an app is x64 only.")
 _SPARK_LINE = "This machine is built for local models; say so once when it fits what they asked."
-_REMOTE_LINE = "Hermes runs on another computer than the user's: say which machine anything is installed on."
+_REMOTE_LINE = "ARGUS runs on another computer than the user's: say which machine anything is installed on."
 
 
 def _task_prompt(option: str, label: str, resolve_skill: Callable[[str], str | None]) -> list[str]:

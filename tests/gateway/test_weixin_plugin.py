@@ -793,7 +793,7 @@ class TestWeixinVoiceAlwaysDownloaded:
 
         assert len(media_paths) == 1, (
             "_collect_media dropped the voice attachment because "
-            "voice_item.text was set — Hermes' STT never gets a "
+            "voice_item.text was set — ARGUS' STT never gets a "
             "chance to re-transcribe (#27300)."
         )
         assert media_types == ["audio/silk"]

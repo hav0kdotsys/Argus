@@ -510,7 +510,7 @@ def _attach_local(key: str, user_data_dir: str, home_key: str,
         if time.monotonic() >= deadline:
             return None, (f"The browser profile {user_data_dir} is in use by Chromium pid {pid}, which is not "
                           "responding on its DevTools endpoint (paused, hung, or started without remote debugging). "
-                          "Hermes will not start a second browser on it; try again once it responds, or stop it.")
+                          "ARGUS will not start a second browser on it; try again once it responds, or stop it.")
         time.sleep(min(delay, max(0.0, deadline - time.monotonic())))
         delay *= 2
         attached = _attach_running(key, user_data_dir, home_key)
@@ -519,7 +519,7 @@ def _attach_local(key: str, user_data_dir: str, home_key: str,
 
 def _foreign_unreachable(user_data_dir: str) -> str:
     return (f"The browser profile {user_data_dir} is in use by a Chromium in another environment (a container or "
-            "the host) that this process can neither reach nor verify, so Hermes will not start a second browser "
+            "the host) that this process can neither reach nor verify, so ARGUS will not start a second browser "
             "on it. Stop that browser, or set browser.user_data_dir to another directory for this environment; if "
             f"no browser runs there any more, delete {os.path.join(user_data_dir, 'SingletonLock')}.")
 
@@ -1121,7 +1121,7 @@ def _reclaim_throwaway_dirs(home: str) -> None:
             logger.debug("browser: keeping the throwaway profile %s: a Chromium still runs on it", entry)
             continue
         shutil.rmtree(entry, ignore_errors=True)  # a symlink is refused, never followed
-        logger.info("browser: removed the throwaway profile %s of a Hermes process that is gone", entry)
+        logger.info("browser: removed the throwaway profile %s of an ARGUS process that is gone", entry)
 
 
 def _served_home_keys(homes) -> set[str]:

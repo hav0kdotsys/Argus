@@ -53,7 +53,7 @@ def test_stdio_server_dying_on_a_node_abi_mismatch_names_the_rebuild_under_herme
                                         "connect_timeout": 20})
 
     reason = _probe_failure_reason(caught.value)
-    assert "NODE_MODULE_VERSION 127; Hermes's Node 26.7.0 needs 147" in reason
+    assert "NODE_MODULE_VERSION 127; ARGUS's Node 26.7.0 needs 147" in reason
     assert f"rm -rf {entry}" in reason
     assert f"PATH={node.parent}:\"$PATH\" {npm} rebuild better-sqlite3 --prefix {entry}" in reason
     # Every retry loads the same binary: parked at once, not walked through the retry ladder.

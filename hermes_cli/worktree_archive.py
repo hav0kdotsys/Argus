@@ -34,10 +34,10 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 ARCHIVE_PREFIX = "refs/hermes/archive/"
-_SUBJECT = "hermes worktree archive: "
+_SUBJECT = "argus worktree archive: "
 _IDENTITY = {
-    "GIT_AUTHOR_NAME": "Hermes worktree archive", "GIT_AUTHOR_EMAIL": "hermes-archive@localhost",
-    "GIT_COMMITTER_NAME": "Hermes worktree archive", "GIT_COMMITTER_EMAIL": "hermes-archive@localhost",
+    "GIT_AUTHOR_NAME": "ARGUS worktree archive", "GIT_AUTHOR_EMAIL": "hermes-archive@localhost",
+    "GIT_COMMITTER_NAME": "ARGUS worktree archive", "GIT_COMMITTER_EMAIL": "hermes-archive@localhost",
 }
 # Raw bytes in, raw bytes out: no line-ending conversion on either side of the round trip.
 _RAW_CONFIG = (("core.autocrlf", "false"), ("core.safecrlf", "false"), ("core.eol", "lf"))
@@ -248,7 +248,7 @@ def _create_ref(repo_root: str, name: str, sha: str, env) -> str:
     stamp = time.strftime("%Y%m%dT%H%M%S")
     for ref in (base, f"{base}--{stamp}", *(f"{base}--{stamp}-{i}" for i in range(2, 50))):
         # Empty old value = create only: two racing sweeps never overwrite each other's archive.
-        if _run(["update-ref", "-m", "hermes worktree archive", ref, sha, ""], repo_root, env).returncode == 0:
+        if _run(["update-ref", "-m", "argus worktree archive", ref, sha, ""], repo_root, env).returncode == 0:
             return ref
     raise ArchiveError(f"could not create an archive ref for {name}")
 

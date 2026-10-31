@@ -262,7 +262,7 @@ def _expected_final(path: Path) -> str | None:
 
 def _warn_refused(path: Path, exc: BaseException) -> None:
     log.warning("Not granting the current user access to %s while elevated (%s): an elevated grant "
-                "never follows a junction or link out of the Hermes home. If this is your own link, "
+                "never follows a junction or link out of the ARGUS home. If this is your own link, "
                 "point HERMES_HOME (or the link) at the real directory.", path, exc)
 
 
@@ -296,7 +296,7 @@ def grant_user_access(path: str | Path, *, elevated: bool | None = None, repair_
         return False
     except Exception as exc:  # health: allow BLE001 -- pywintypes.error is not an OSError; never fail the mkdir
         log.warning("Could not grant the current user access to %s created while elevated (%s); a "
-                    "non-elevated Hermes may not be able to use it. To repair, from an elevated prompt run: "
+                    "non-elevated ARGUS may not be able to use it. To repair, from an elevated prompt run: "
                     'icacls "%s" /reset /t', target, exc, target)
         return False
     if repair_children and children_owed:

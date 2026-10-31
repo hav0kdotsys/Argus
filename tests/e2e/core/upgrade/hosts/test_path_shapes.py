@@ -118,7 +118,7 @@ def _user_toolchain(root: Path) -> dict[str, Path]:
             f"  --version|-v) echo {ver}; exit 0 ;;\n"
             f"{serve}"
             "esac\n"
-            f'echo "user {name} {ver}: refusing to run \'$*\' (Hermes must use its managed toolchain here)" >&2\n'
+            f'echo "user {name} {ver}: refusing to run \'$*\' (ARGUS must use its managed toolchain here)" >&2\n'
             "exit 1\n", encoding="utf-8")
         p.chmod(0o755)
     return {"bin": sysbin, "calls": calls, "server_js": server_js, "marker": marker}
@@ -205,13 +205,13 @@ def test_mcp_server_runs_on_the_managed_node_and_an_abi_mismatch_names_the_rebui
     ran_js = [c for c in _calls(world)[before:] if c.startswith("node ") and c.endswith("server.js")]
     managed = user["marker"].read_text(encoding="utf-8").split()[0] if user["marker"].exists() else ""
     assert I.TRACEBACK not in out, I.describe(probe)
-    assert not ran_js, f"the user's node ({USER_NODE_VERSION}) ran the MCP server instead of Hermes's: {ran_js}"
+    assert not ran_js, f"the user's node ({USER_NODE_VERSION}) ran the MCP server instead of ARGUS's: {ran_js}"
     assert managed.startswith(str(sb.home / ".hermes")), (
-        f"the MCP server did not run on Hermes's managed node (ran on {managed!r}):\n" + I.describe(probe))
-    assert probe.returncode == 1, "`hermes mcp test` passed for a server that died at startup:\n" + I.describe(probe)
+        f"the MCP server did not run on ARGUS's managed node (ran on {managed!r}):\n" + I.describe(probe))
+    assert probe.returncode == 1, "`argus mcp test` passed for a server that died at startup:\n" + I.describe(probe)
     # The failure reaches the user with the remedy: drop the npx entry, or rebuild with Hermes's own npm
     # under Hermes's own node (never "point the server at your node").
     assert "NODE_MODULE_VERSION 127" in out and f"rm -rf {sb.home / NPX_ENTRY}" in out, (
         "the ABI mismatch was not surfaced with the npx-cache remedy:\n" + I.describe(probe))
     assert f"PATH={Path(managed).parent}:" in out and " rebuild better-sqlite3 --prefix " in out, (
-        "the rebuild command does not run Hermes's npm under Hermes's node:\n" + I.describe(probe))
+        "the rebuild command does not run ARGUS's npm under ARGUS's node:\n" + I.describe(probe))

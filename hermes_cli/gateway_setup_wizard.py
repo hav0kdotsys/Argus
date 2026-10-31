@@ -40,7 +40,7 @@ _PLATFORMS = [
              "password": False, "is_allowlist": True, "help": "Your Mattermost user ID from step 4 above."},
             {"name": "MATTERMOST_HOME_CHANNEL",
              "prompt": "Home channel ID (for cron/notification delivery, or empty to set later with /set-home)",
-             "password": False, "help": "Channel ID where Hermes delivers cron results and notifications."},
+             "password": False, "help": "Channel ID where ARGUS delivers cron results and notifications."},
             {"name": "MATTERMOST_REPLY_MODE",
              "prompt": "Reply mode — 'off' for flat messages, 'thread' for threaded replies (default: off)",
              "password": False,
@@ -148,7 +148,7 @@ _UNAUTHORIZED_ACCESS_CHOICES = {
         "Keep unknown senders silent"),
     False: (1,
         "Enable open access (anyone can message the bot)",
-        "Use DM pairing (unknown users request access, you approve with 'hermes pairing approve')",
+        "Use DM pairing (unknown users request access, you approve with 'argus pairing approve')",
         "Politely decline unknown senders (one-time message, then silence)",
         "Skip for now (bot will deny all users until configured)"),
 }
@@ -167,14 +167,14 @@ def _prompt_unauthorized_access(platform_key: str) -> None:
         if is_email:
             _set_platform_unauthorized_dm_behavior("email", "pair")
         _gw().print_success("  DM pairing mode — users will receive a code to request access.")
-        _gw().print_info("  Approve with: hermes pairing approve <platform> <code>")
+        _gw().print_info("  Approve with: argus pairing approve <platform> <code>")
     elif access_idx == 2:
         _set_platform_unauthorized_dm_behavior(platform_key, "decline")
         _gw().print_success("  Unknown senders get one polite decline, then silence (unauthorized_dm_behavior: decline).")
     elif is_email:
         _gw().print_success("  Unknown email senders will be ignored.")
     else:
-        _gw().print_info("  Skipped — configure later with 'hermes gateway setup'")
+        _gw().print_info("  Skipped — configure later with 'argus gateway setup'")
 
 
 def _telegram_auto_setup(token_var: str) -> tuple[bool, object]:
@@ -344,7 +344,7 @@ def _configure_platform(platform: dict) -> None:
     print_setup_header(f"{platform.get('emoji', '🔌')} {label}")
     required = entry.required_env if entry else []
     if required:
-        _gw().print_info(f"  Set these env vars in ~/.hermes/.env: {', '.join(required)}")
+        _gw().print_info(f"  Set these env vars in ~/.argus/.env: {', '.join(required)}")
     else:
         _gw().print_info(f"  Configure {label} in config.yaml under gateway.platforms.{platform['key']}")
     if platform.get("install_hint"):
@@ -370,7 +370,7 @@ def _setup_service_action(
             _gw()._service_call(backend, action, None if action == "restart" else system)
         elif action == "restart" and windows:
             _gw().stop_profile_gateway()
-            _gw().print_info("Start manually: hermes gateway")
+            _gw().print_info("Start manually: argus gateway")
     except _gw().UserSystemdUnavailableError as e:
         _gw().print_error(f"  {failed_label} — user systemd not reachable:")
         _gw()._print_indented(str(e))
@@ -398,16 +398,16 @@ _WIZARD_BACKEND_LABELS = {"systemd": "systemd", "launchd": "launchd", "windows":
 # Post-setup guidance when no service backend applies, keyed by the fallthrough reason.
 _WIZARD_NO_SERVICE_LINES = {
     "wsl": (
-        "  WSL detected but systemd is not running.", "  Run in foreground: hermes gateway run",
-        "  For persistence:   tmux new -s hermes 'hermes gateway run'",
+        "  WSL detected but systemd is not running.", "  Run in foreground: argus gateway run",
+        "  For persistence:   tmux new -s hermes 'argus gateway run'",
         "  To enable systemd: add systemd=true to /etc/wsl.conf, then 'wsl --shutdown'",
     ),
     "termux": (
-        "  Termux does not use systemd/launchd services.", "  Run in foreground: hermes gateway run",
-        "  Or start it manually in the background (best effort): nohup hermes gateway run >{home}/logs/gateway.log 2>&1 &",
+        "  Termux does not use systemd/launchd services.", "  Run in foreground: argus gateway run",
+        "  Or start it manually in the background (best effort): nohup argus gateway run >{home}/logs/gateway.log 2>&1 &",
     ),
     "unsupported": (
-        "  Service install not supported on this platform.", "  Run in foreground: hermes gateway run",
+        "  Service install not supported on this platform.", "  Run in foreground: argus gateway run",
     ),
 }
 
@@ -466,10 +466,10 @@ def _wizard_install_service(backend: str) -> None:
     )
     if not (start_now or start_on_login):
         _gw().print_info("  Skipped start and auto-start setup.")
-        _gw().print_info("  You can install later: hermes gateway install")
+        _gw().print_info("  You can install later: argus gateway install")
         if _gw().supports_systemd_services():
-            _gw().print_info("  Or as a boot-time service: sudo hermes gateway install --system")
-        _gw().print_info("  Or run in foreground:  hermes gateway run")
+            _gw().print_info("  Or as a boot-time service: sudo argus gateway install --system")
+        _gw().print_info("  Or run in foreground:  argus gateway run")
         return
     try:
         installed_scope, did_install = None, True
@@ -487,12 +487,12 @@ def _wizard_install_service(backend: str) -> None:
             _gw()._setup_service_action("start", failed_label="Start failed", system=installed_scope == "system")
     except subprocess.CalledProcessError as e:
         _gw().print_error(f"  Install failed: {e}")
-        _gw().print_info("  You can try manually: hermes gateway install")
+        _gw().print_info("  You can try manually: argus gateway install")
     except SystemExit:
         # The backend installers exit non-zero on a refused write (a unit pinning another home);
         # setup reports it and goes on rather than ending the wizard.
         _gw().print_warning("  Gateway service install did not complete.")
-        _gw().print_info("  You can try manually: hermes gateway install")
+        _gw().print_info("  You can try manually: argus gateway install")
 
 
 def _wizard_post_setup() -> None:
@@ -546,6 +546,6 @@ def gateway_setup():
         _gw()._wizard_post_setup()
     else:
         print()
-        _gw().print_info("No platforms configured. Run 'hermes gateway setup' when ready.")
+        _gw().print_info("No platforms configured. Run 'argus gateway setup' when ready.")
 
     print()

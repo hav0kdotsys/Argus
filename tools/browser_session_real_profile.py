@@ -54,7 +54,7 @@ def _snapshot_error(err: str) -> str:
     from hermes_cli.browser_connect import _PROFILE_LOCKED_PREFIX
     if err and err.startswith(_PROFILE_LOCKED_PREFIX):
         return (err[len(_PROFILE_LOCKED_PREFIX):] + " To close it (only after the user approves — it "
-                "quits their browser and loses unsaved tabs), run: `hermes browser close-profile`; the next "
+                "quits their browser and loses unsaved tabs), run: `argus browser close-profile`; the next "
                 "browser session then uses the profile.")
     return f"{_RP}{err}"
 
@@ -138,7 +138,7 @@ def real_profile_cdp() -> tuple[Optional[str], Optional[str]]:
     lock = _home_lock()
     if not lock.acquire(timeout=_LOCK_TIMEOUT_S):
         return None, (_RP + "the real-profile browser is already being prepared by another call that has not "
-                      "finished. Retry after that call completes, or restart Hermes if it was abandoned.")
+                      "finished. Retry after that call completes, or restart ARGUS if it was abandoned.")
     try:
         from tools.browser_launcher import get_browser
         running = get_browser(real_profile_key())

@@ -66,8 +66,8 @@ def mark_storage_corrupt(db_path, reason: object) -> None:
         _corrupt[key] = str(reason)
     logger.error(
         "state.db at %s is structurally corrupt (%s); session storage is reported as corrupt "
-        "until Hermes restarts on a recovered or restored file. Stop Hermes, then run "
-        "`hermes sessions recover --source %s --inspect-only` or restore a snapshot.",
+        "until ARGUS restarts on a recovered or restored file. Stop ARGUS, then run "
+        "`argus sessions recover --source %s --inspect-only` or restore a snapshot.",
         db_path, reason, db_path,
     )
 

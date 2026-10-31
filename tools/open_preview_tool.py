@@ -85,5 +85,5 @@ def open_preview_tool(url: str, label: str = "") -> str:
         "preview.open",
         {"url": target, "label": label},
         "Failed to open the preview pane: ",
-        "The preview pane is only available in the Hermes desktop app.",
+        "The preview pane is only available in the ARGUS desktop app.",
         {"success": True, "url": target, "label": label})

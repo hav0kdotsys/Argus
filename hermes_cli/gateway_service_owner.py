@@ -80,7 +80,7 @@ def definition_belongs_to_home(definition_path: Path, home: Path, action: str) -
     print(f"✗ Refusing to {action} {definition_path}: it runs HERMES_HOME={raw}, "
           f"but this process has HERMES_HOME={home}.")
     print("  That file is another install's gateway. Use that install, or pass --force-unit-path")
-    print("  to `hermes gateway install` if you really mean to repoint it at this home.")
+    print("  to `argus gateway install` if you really mean to repoint it at this home.")
     return False
 
 
@@ -138,7 +138,7 @@ def refuse_foreign_systemd_unit(action: str, system: bool) -> None:
     gw.print_error(
         f"Refusing to {action} {gw.get_service_name()}: that {gw._service_scope_label(system)} unit runs "
         f"HERMES_HOME={unit_home}, but this process has HERMES_HOME={gw.get_hermes_home()}.\n"
-        f"It belongs to another Hermes install. Run this from that install's HERMES_HOME."
+        f"It belongs to another ARGUS install. Run this from that install's HERMES_HOME."
     )
     sys.exit(1)
 

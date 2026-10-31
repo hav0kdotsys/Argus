@@ -164,8 +164,8 @@ def launchd_label_foreign_home(label: str, scope: set[Path] | None = None) -> st
 def describe_skipped_runtime(kind: str, name: str, home: str | None) -> str:
     """One notice line for a runtime the update leaves alone (foreign home or unreadable ownership)."""
     if home is None:
-        return f"  ↷ {name}: {kind} whose Hermes home could not be read — left alone (not restarted)"
-    return f"  ↷ {name}: {kind} of another Hermes home ({home}) — left alone (not restarted)"
+        return f"  ↷ {name}: {kind} whose ARGUS home could not be read — left alone (not restarted)"
+    return f"  ↷ {name}: {kind} of another ARGUS home ({home}) — left alone (not restarted)"
 
 
 def announce_skipped_runtime(kind: str, name: str, home: str | None) -> None:

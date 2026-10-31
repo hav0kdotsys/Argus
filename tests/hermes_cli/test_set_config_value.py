@@ -819,7 +819,7 @@ class TestMalformedYAMLConfigPreservation:
 
         captured = capsys.readouterr()
         combined = captured.out + captured.err
-        assert "formatting error" in combined and "`hermes config edit`" in combined
+        assert "formatting error" in combined and "`argus config edit`" in combined
         # Original config must remain intact
         raw = _read_config(_isolated_hermes_home)
         assert raw == self.BROKEN_CONFIG, f"Config was overwritten:\n{raw}"
@@ -835,7 +835,7 @@ class TestMalformedYAMLConfigPreservation:
 
         captured = capsys.readouterr()
         combined = captured.out + captured.err
-        assert "formatting error" in combined and "`hermes config edit`" in combined
+        assert "formatting error" in combined and "`argus config edit`" in combined
         raw = _read_config(_isolated_hermes_home)
         assert raw == self.BROKEN_CONFIG
 

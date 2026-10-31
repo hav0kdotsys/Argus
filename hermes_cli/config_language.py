@@ -35,7 +35,7 @@ def display_language_error(value: str) -> Optional[str]:
     from agent.i18n import supported_languages
     return (f"✗ Unknown language {value!r} for {DISPLAY_LANGUAGE_KEY}. Available: "
             f"{', '.join(supported_languages())}.\n  Install a language pack plugin "
-            "(hermes plugins install <pack>) or drop <HERMES_HOME>/locales/<id>.yaml to add one.")
+            "(argus plugins install <pack>) or drop <HERMES_HOME>/locales/<id>.yaml to add one.")
 
 
 __all__ = ["DISPLAY_LANGUAGE_KEY", "display_language_error", "resolve_display_language"]

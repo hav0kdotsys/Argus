@@ -29,7 +29,7 @@ def served_root(tmp_path, monkeypatch):
         "gateway.status.is_gateway_runtime_lock_active",
         lambda lock_path=None: lock_path == root / "gateway.lock",
     )
-    monkeypatch.setattr("gateway.status._read_process_cmdline", lambda pid: "hermes gateway run")
+    monkeypatch.setattr("gateway.status._read_process_cmdline", lambda pid: "argus gateway run")
     root.joinpath("gateway.pid").write_text(json.dumps({"pid": os.getpid()}))
     root.joinpath("config.yaml").write_text("gateway:\n  multiplex_profiles: true\n")
     return root
@@ -63,22 +63,22 @@ def test_status_preserves_profile_health_contract(served_root, capsys, monkeypat
         mode in {"missing", "fresh", "stale"})
     assert ("will fire automatically" in output) == (mode in {"fresh", "local"})
     if mode in {"missing", "stale"}:
-        assert "hermes --profile default gateway restart" in output
+        assert "argus --profile default gateway restart" in output
     if mode == "missing":
         assert "has not reported a heartbeat" in output
     if mode == "stale":
         assert "STALLED" in output
     if mode in {"disabled", "excluded", "unrelated_pid"}:
         assert "No scheduler is serving profile" in output
-        assert "hermes --profile default gateway install" in output
-        assert "sudo hermes --profile default gateway install --system" in output
-        assert "hermes --profile default gateway run" in output
+        assert "argus --profile default gateway install" in output
+        assert "sudo argus --profile default gateway install --system" in output
+        assert "argus --profile default gateway run" in output
         # Multiplex-only: a per-profile service is not offered at all any more, not even as a
         # "legacy" fallback -- the one host gateway is the only topology, and an old per-profile
         # install is something to FOLD IN, not something to reinstall.
         assert "gateway migrate --multiplex" in output
         assert "LEGACY" not in output
-        assert "hermes gateway install   # starts a SECOND gateway" not in output
+        assert "argus gateway install   # starts a SECOND gateway" not in output
     if mode == "external":
         assert "managed scheduler" in output
         assert "STALLED" not in output
@@ -106,8 +106,8 @@ def test_host_record_rung_names_the_roster_and_a_runnable_restart(served_root, c
 
     assert f"Scheduler host: the host gateway (PID {os.getpid()}) serving profiles default, probe" in output
     assert "Scheduler host: the host gateway (multiplexing this profile)" not in output
-    assert "hermes --profile default gateway restart" in output
-    assert "\n  If heartbeat never appears, restart: hermes gateway restart" not in output
+    assert "argus --profile default gateway restart" in output
+    assert "\n  If heartbeat never appears, restart: argus gateway restart" not in output
 
 
 @pytest.mark.parametrize("heartbeat", ["missing", "fresh", "stale"])
@@ -131,7 +131,7 @@ def test_satellite_list_and_create_require_own_heartbeat(served_root, capsys, mo
     cron.cron_list()
     listed = capsys.readouterr().out
     for output in (created, listed):
-        assert ("Check status:  hermes cron status" in output) == (heartbeat != "fresh")
+        assert ("Check status:  argus cron status" in output) == (heartbeat != "fresh")
     cron.cron_status()
     assert ("will fire automatically" in capsys.readouterr().out) == (heartbeat == "fresh")
 
@@ -148,7 +148,7 @@ def test_standalone_guidance_matches_profile_membership(served_root, monkeypatch
     monkeypatch.setattr("gateway.status.is_gateway_runtime_lock_active", lambda lock_path=None: False)
     cron_status()
     output = capsys.readouterr().out
-    assert "hermes --profile default gateway install" in output
+    assert "argus --profile default gateway install" in output
     # A named profile is told the host gateway serves it and how to fold an older per-profile
     # install in; it is never offered a second host process, legacy or otherwise.
     assert ("gateway migrate --multiplex" in output) == (home_kind == "named")
@@ -181,7 +181,7 @@ def test_desktop_serve_ticker_is_not_reported_as_no_gateway(tmp_path, monkeypatc
     assert cron._builtin_gateway_liveness() is True
     cron.cron_status()
     output = capsys.readouterr().out
-    assert "Scheduler host: an in-process ticker (hermes serve / Desktop backend) ticking profile 'default'" in output
+    assert "Scheduler host: an in-process ticker (argus serve / Desktop backend) ticking profile 'default'" in output
     assert "will fire automatically" in output
     assert "No scheduler is serving profile" not in output
     assert "gateway install" not in output
@@ -266,7 +266,7 @@ def test_doctor_bounds_persisted_fire_errors(served_root, capsys, detail):
         assert "missed scheduled fire at test-time: unreachable" in output
         line = next(line for line in output.splitlines() if "missed scheduled fire at" in line)
         assert len(line.split(". The messaging gateway")[0]) < 200
-        assert f"hermes cron run {records[0]['id']}" in line
+        assert f"argus cron run {records[0]['id']}" in line
         assert detail not in output
         assert "secret second line" not in output
     else:
@@ -294,7 +294,7 @@ def test_doctor_reports_persisted_dispatch_health(served_root, capsys, dispatch)
     output = capsys.readouterr().out
     expected = {"catch_up": "catch-up", "late": "last fire was late", "forward_error": "loopback unavailable"}
     assert expected[dispatch] in output
-    assert "Review the findings above, then run `hermes cron doctor` again." in output
+    assert "Review the findings above, then run `argus cron doctor` again." in output
     jobs.mark_job_run(job["id"], success=True)
     if dispatch == "forward_error":
         assert cron_doctor() == 0

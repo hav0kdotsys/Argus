@@ -295,7 +295,7 @@ def _namespace(w: G.World) -> Iterator[NamespaceHost]:
 
 def _ns_cli(host: NamespaceHost, w: G.World, *args: str, timeout: float = 600):
     cp = host.run([w.sb.hermes, *args], timeout=timeout)
-    w.transcripts.append(f"$ hermes {' '.join(args)} -> rc={cp.returncode}\n{(cp.stdout or '')[-6000:]}\n"
+    w.transcripts.append(f"$ argus {' '.join(args)} -> rc={cp.returncode}\n{(cp.stdout or '')[-6000:]}\n"
                          f"{(cp.stderr or '')[-3000:]}")
     return cp
 
@@ -372,7 +372,7 @@ def test_failed_web_build_after_commit_is_a_followup_not_a_failed_update(w):
 
     assert w.head() == target, f"premise: the release never committed, so this is no post-commit cell:\n{diag}"
     assert WEB_FAULT_TEXT in out + log, f"premise: the hostile web build never ran (web UI not seen stale?):\n{diag}"
-    assert cp.returncode == 0, f"the code committed, yet a failed web build failed `hermes update`:\n{diag}"
+    assert cp.returncode == 0, f"the code committed, yet a failed web build failed `argus update`:\n{diag}"
     assert _warn_lines(out), f"the failed web build was not surfaced with a ⚠ line:\n{diag}"
     assert rec.get("outcome") == "success", f"receipt outcome is not success after the commit:\n{diag}"
     assert "build" in _followup_steps(rec), f"receipt followups do not name the failed `build` step:\n{diag}"
@@ -419,11 +419,11 @@ def test_gateway_that_cannot_reboot_is_an_owed_restart_not_a_failed_update(w):
             facts = _facts(w, cp, gateway_before=f"pid {ident.get('pid')} sha {before_sha[:12]} (spawned {gw})",
                            identify_after=_identify(w), obligation_after_update=obligation_after_update)
             diag = (facts + w.diag(cp) + "\n--- gateway logs ---\n" + _gateway_logs(w)[-6000:]
-                    + "\n--- sandbox ---\n" + host.ps_text() + "\n--- hermes status ---\n" + G.output(status)[-3000:])
+                    + "\n--- sandbox ---\n" + host.ps_text() + "\n--- argus status ---\n" + G.output(status)[-3000:])
 
             assert w.head() == target, f"premise: the release never committed:\n{diag}"
             assert not _serving(w, target), f"premise: a gateway serves the new commit; the restart fault never fired:\n{diag}"
-            assert cp.returncode == 0, f"the code committed, yet a failed gateway restart failed `hermes update`:\n{diag}"
+            assert cp.returncode == 0, f"the code committed, yet a failed gateway restart failed `argus update`:\n{diag}"
             assert _warn_lines(out), f"the failed gateway restart was not surfaced with a ⚠ line:\n{diag}"
             assert rec.get("outcome") == "success", f"receipt outcome is not success after the commit:\n{diag}"
             assert "gateway_restart" in _followup_steps(rec), \
@@ -443,7 +443,7 @@ def test_gateway_that_cannot_reboot_is_an_owed_restart_not_a_failed_update(w):
             status = _ns_cli(host, w, "status", timeout=300)
             diag = (_facts(w, cp, identify_after=_identify(w)) + w.diag(cp) + "\n--- gateway logs ---\n"
                     + _gateway_logs(w)[-6000:] + "\n--- sandbox ---\n" + host.ps_text()
-                    + "\n--- hermes status ---\n" + G.output(status)[-3000:])
+                    + "\n--- argus status ---\n" + G.output(status)[-3000:])
             assert cp.returncode == 0, f"the retrying update failed:\n{diag}"
             assert served, f"the retry did not relaunch the paused gateway on {target[:12]}:\n{diag}"
             assert OWED_RESTART not in G.output(status), \
@@ -550,14 +550,14 @@ def test_sticky_profile_update_logs_and_receipts_land_in_the_root_home(w):
             f"pm's sync receipt for this update is missing from the profile home {prof_receipts}:\n{diag}"
         pm_cp = w.sb.cli("pm", "status", timeout=300)
         assert pm_cp.returncode == 0 and json.loads(pm_cp.stdout).get("update_id") == rec.get("update_id"), \
-            f"`hermes pm status` under the profile does not show this run's newest receipt:\n{H.describe(pm_cp)}\n{diag}"
+            f"`argus pm status` under the profile does not show this run's newest receipt:\n{H.describe(pm_cp)}\n{diag}"
         assert log1 > log0, f"the root update.log did not grow:\n{diag}"
         assert rec.get("update_id") != prev.get("update_id") and rec.get("outcome") == "success", \
             f"root latest.json is not this run's success:\n{diag}"
         # The readers follow the writers: `hermes logs update` under the profile shows the root log.
         logs_cp = w.sb.cli("logs", "update", "-n", "400", timeout=300)
-        assert logs_cp.returncode == 0 and "hermes update started" in G.output(logs_cp), \
-            f"`hermes logs update` under the sticky profile does not show the root update.log:\n{H.describe(logs_cp)}\n{diag}"
+        assert logs_cp.returncode == 0 and "argus update started" in G.output(logs_cp), \
+            f"`argus logs update` under the sticky profile does not show the root update.log:\n{H.describe(logs_cp)}\n{diag}"
     finally:
         w.sb.cli("profile", "use", "default", timeout=300)
 
@@ -577,7 +577,7 @@ def test_dependency_sync_failure_after_commit_is_a_followup_not_a_failed_update(
 
     assert w.head() == target, f"premise: the release never committed, so this is no post-commit cell:\n{diag}"
     assert DEPS_FAULT_TEXT in out, f"premise: the hostile dependency sync never ran:\n{diag}"
-    assert cp.returncode == 0, f"the code committed, yet a failed dependency sync failed `hermes update`:\n{diag}"
+    assert cp.returncode == 0, f"the code committed, yet a failed dependency sync failed `argus update`:\n{diag}"
     assert any(DEPS_OWED in line for line in _warn_lines(out)), \
         f"no ⚠ line says the dependencies are not installed yet:\n{diag}"
     assert rec.get("outcome") == "success", f"receipt outcome is not success after the commit:\n{diag}"

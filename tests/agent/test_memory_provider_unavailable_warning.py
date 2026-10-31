@@ -69,7 +69,7 @@ def test_parked_provider_is_reported_and_never_reinstalled(monkeypatch):
     assert agent_init.resolve_memory_provider("parkedmem", say=said.append) is None
     assert agent_init.resolve_memory_provider("parkedmem", say=said.append) is None
     assert len(said) == 1
-    assert "hermes plugins enable parkedmem" in said[0] and "requires Python <3.14" in said[0]
+    assert "argus plugins enable parkedmem" in said[0] and "requires Python <3.14" in said[0]
 
 
 def test_provider_that_still_fails_after_recovery_is_reported(monkeypatch):

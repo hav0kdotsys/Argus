@@ -289,7 +289,7 @@ async def test_gateway_slash_commands_bypass_estop(hermes_home):
         reply = await runner._handle_message(_FakeCmdEvent())
     except Exception:
         return
-    assert reply is None or "hermes is paused" not in (reply or "").lower()
+    assert reply is None or "argus is paused" not in (reply or "").lower()
 
 
 class _FakePauseEvent(_FakeEvent):

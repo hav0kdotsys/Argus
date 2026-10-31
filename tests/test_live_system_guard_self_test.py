@@ -224,9 +224,9 @@ def test_subprocess_run_setsid_systemctl_blocked():
 def test_host_gateway_start_blocked_but_container_exec_allowed():
     """A host-side ``hermes gateway start`` spawns a real runtime; the same words addressed to
     a container via ``docker exec`` stay inside it and are the Docker harness's business."""
-    with pytest.raises(RuntimeError, match="REAL hermes gateway runtime"):
+    with pytest.raises(RuntimeError, match="REAL argus gateway runtime"):
         subprocess.run(["hermes", "-p", "p", "gateway", "start"], check=False)
-    argv = ["docker", "exec", "-u", "hermes", "hermes-test-x", "sh", "-c", "hermes -p p gateway start"]
+    argv = ["docker", "exec", "-u", "hermes", "hermes-test-x", "sh", "-c", "argus -p p gateway start"]
     # Past the guard the call reaches the real subprocess.run; a missing binary is fine here.
     with pytest.raises(FileNotFoundError):
         subprocess.run(argv, env={"PATH": "/nonexistent"}, check=False)

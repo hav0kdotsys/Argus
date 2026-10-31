@@ -47,23 +47,23 @@ _PREVIEW_ACTION_PROBE_TIMEOUT_S = 10
 _PREVIEW_ACTION_REPROBE_COOLDOWN_S = 30
 _PREVIEW_ACTION_BRIDGE_UNAVAILABLE = json.dumps({
     "success": False,
-    "error": ("No Hermes Desktop window answered the preview action request. The drive_preview / "
+    "error": ("No ARGUS Desktop window answered the preview action request. The drive_preview / "
               "annotate_preview bridge is served by the desktop app's renderer, which updates "
               "separately from this backend, so an app build older than the tool has nothing "
-              "listening. Update the Hermes Desktop app, open a page with open_preview, and try "
+              "listening. Update the ARGUS Desktop app, open a page with open_preview, and try "
               "again in this session after a short cooldown.")})
 
 # main: tui_gateway/theme_bridge.py and tui_gateway/server.py's tour ladder.
 _THEME_TIMEOUT_S = 15
 _THEME_PICK_TIMEOUT_S = 300
-_THEME_UNANSWERED = {"success": False, "error": "No Hermes Desktop window answered the theme request."}
+_THEME_UNANSWERED = {"success": False, "error": "No ARGUS Desktop window answered the theme request."}
 _TOUR_TIMEOUT_S = 45
 _TOUR_PROBE_TIMEOUT_S = 10
 _TOUR_BRIDGE_UNAVAILABLE = json.dumps({
     "success": False,
-    "error": ("No Hermes Desktop window answered the tour request. The tour is driven by the desktop app's "
+    "error": ("No ARGUS Desktop window answered the tour request. The tour is driven by the desktop app's "
               "renderer, which updates separately from this backend, so an app build older than the tour tool "
-              "has nothing listening. Update the Hermes Desktop app and start a new session. Do not retry tour "
+              "has nothing listening. Update the ARGUS Desktop app and start a new session. Do not retry tour "
               "in this session.")})
 
 _lock = threading.Lock()
@@ -87,7 +87,7 @@ def _emit(sid, event, payload) -> None:
         publish = next((_turns[key] for key in keys if key and key in _turns), None)
     if publish is None:
         # Raised outside a local-viewer turn (a messaging route, a background thread): no window.
-        raise RuntimeError("no Hermes desktop window is attached to this turn")
+        raise RuntimeError("no ARGUS desktop window is attached to this turn")
     publish(event, dict(payload or {}))
 
 
@@ -106,7 +106,7 @@ def _publish_process(session, event_type, payload) -> None:
     with _lock:
         route = _process_routes.get(key) if key else None
     if route is None:
-        raise RuntimeError("no Hermes desktop window owns this process")
+        raise RuntimeError("no ARGUS desktop window owns this process")
     authority, session_id = route
     live = authority.sessions.get(session_id)
     if live is None:

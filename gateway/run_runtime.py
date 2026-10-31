@@ -639,13 +639,13 @@ async def _recover_profile_bot_mailbox(runner, authority):
             # settle, but the profile leaves the served set, so later boot never starts it.
             _withdraw_profile_home(runner, home)
             park_profile(runner, name, f'startup recovery failed; ownership retained (a control-socket rescan, '
-                                       f'`hermes -p {name} gateway run`, serves it once its writer stops): {exc}')
+                                       f'`argus -p {name} gateway run`, serves it once its writer stops): {exc}')
             return
         registry.remove(home)
         _publish_served_set(runner)
         release_profile_home(runner, home)
         park_profile(runner, name, f'startup recovery failed (a control-socket rescan, '
-                                   f'`hermes -p {name} gateway run`, serves it again): {exc}')
+                                   f'`argus -p {name} gateway run`, serves it again): {exc}')
 
 
 async def recover_gateway_native_sessions(runner):

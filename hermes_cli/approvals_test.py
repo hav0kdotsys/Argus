@@ -136,7 +136,7 @@ def approvals_test_command(args) -> int:
     if words and words[0] == "--":
         words = words[1:]
     if not words:
-        print("usage: hermes approvals test [--env-type TYPE] [--json] -- <command...>")
+        print("usage: argus approvals test [--env-type TYPE] [--json] -- <command...>")
         return EXIT_USAGE
 
     verdict = evaluate_command(" ".join(words), env_type=getattr(args, "env_type", None) or "local")

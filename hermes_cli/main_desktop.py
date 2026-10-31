@@ -166,7 +166,7 @@ def _desktop_packaged_executable_in(release_dir: Path) -> Optional[Path]:
         ]
     else:
         candidates = [
-            release_dir / d / n for d in ("linux-unpacked", "linux-arm64-unpacked") for n in ("hermes", "Hermes")
+            release_dir / d / n for d in ("linux-unpacked", "linux-arm64-unpacked") for n in ("hermes", "Hermes", "argus", "ARGUS")  # rebrand: keep
         ]
 
     existing = [p for p in candidates if p.exists()]
@@ -890,7 +890,7 @@ def _desktop_macos_relaunchable_fixup(
                     f"  ✗ macOS signing identity {configured!r} did not produce a verified "
                     f"signature, and the installed app is publisher-signed (Team ID "
                     f"{target_sig['team']}); keeping it (no ad-hoc fallback). Fix the identity "
-                    "(e.g. `hermes desktop --setup-tcc-identity` or edit "
+                    "(e.g. `argus desktop --setup-tcc-identity` or edit "
                     "desktop.macos_signing_identity in config.yaml) and update again."
                 )
                 return False
@@ -1019,7 +1019,7 @@ def _refresh_installed_desktop_apps(desktop_dir: Path) -> None:
     for app in installed:
         if app in missing:
             print(f"  ✓ Reinstalled the Desktop app at {app}: it had been removed, so Finder, "
-                  "the Dock and Spotlight could not find Hermes")
+                  "the Dock and Spotlight could not find ARGUS")
         else:
             print(f"  ✓ Installed the rebuilt Desktop app at {app}")
     for problem in problems:
@@ -1103,7 +1103,7 @@ def _installed_desktop_launch_target(desktop_dir: Path, packaged_executable: Pat
     rebuilt_hash = _app_asar_hash(packaged_executable.parents[2])
     for app in _installed_desktop_apps():
         if rebuilt_hash is not None and _app_asar_hash(app) == rebuilt_hash:
-            return app / "Contents" / "MacOS" / "Hermes"
+            return app / "Contents" / "MacOS" / "ARGUS"
     return packaged_executable
 
 
@@ -1131,8 +1131,8 @@ def _install_rebuilt_macos_bundles(
             continue
         if app.resolve() in running:
             problems.append(
-                f"{app} is running and was not refreshed; quit Hermes Desktop and run "
-                "`hermes update` again (or update from inside the app)")
+                f"{app} is running and was not refreshed; quit ARGUS Desktop and run "
+                "`argus update` again (or update from inside the app)")
             continue
         if codesign:
             installed_sig = _macos_signature_summary(codesign, app)
@@ -1233,7 +1233,7 @@ def _desktop_linux_sandbox_fixup(packaged_executable: Path) -> bool:
 
     sandbox, st = _sandbox_helper_lstat(packaged_executable)
     if not sandbox.exists():
-        print(f"✗ Hermes Desktop is missing Electron's Linux sandbox helper: {sandbox}")
+        print(f"✗ ARGUS Desktop is missing Electron's Linux sandbox helper: {sandbox}")
         return False
     # Reject symlinks — chown/chmod must not follow an attacker-controlled link.
     if st is None:
@@ -1255,7 +1255,7 @@ def _desktop_linux_sandbox_fixup(packaged_executable: Path) -> bool:
 
     sudo = shutil.which("sudo")
     if not sudo:
-        print("✗ Hermes Desktop requires sudo to configure Electron's Linux sandbox helper.")
+        print("✗ ARGUS Desktop requires sudo to configure Electron's Linux sandbox helper.")
         return False
 
     print("→ Configuring Electron Linux sandbox helper (sudo required)...")
@@ -1479,7 +1479,7 @@ def build_prepared_desktop(desktop_dir: Path, *, source_mode: bool, npm: str, en
         # stamp stays stale, so `hermes desktop` run outside the app rebuilds it
         # (_desktop_build_needed), and the in-app update completes with desktop=True.
         print(f"  ⚠ Skipped rebuilding the desktop app: this update is running inside it (pid {ancestor}),")
-        print("    and Windows locks a running app's files. Quit Hermes Desktop and run `hermes desktop`")
+        print("    and Windows locks a running app's files. Quit ARGUS Desktop and run `argus desktop`")
         print("    from a terminal, or use Update now in Settings → About, to rebuild and reopen it.")
         return None
     build_label = "source build" if source_mode else "packaged app"
@@ -1669,7 +1669,7 @@ def _launch_installed_macos_desktop_app() -> bool:
     from hermes_cli.bundled_app import launch_detached
 
     pid = launch_detached([str(executable)], cwd=executable.parent)
-    print(f"→ Launched the installed Hermes Desktop app: {executable} (pid {pid})")
+    print(f"→ Launched the installed ARGUS Desktop app: {executable} (pid {pid})")
     return True
 
 
@@ -1678,7 +1678,7 @@ def _run_desktop_one_shot(args: argparse.Namespace, desktop_dir: Path, *, bundle
     # macOS: a self-signed code-signing identity so TCC grants survive rebuilds.
     if getattr(args, "setup_tcc_identity", False):
         from hermes_cli.main_desktop_tcc import _desktop_macos_setup_tcc_identity
-        identity = getattr(args, "identity", None) or "Hermes Local Signing"
+        identity = getattr(args, "identity", None) or "ARGUS Local Signing"
         sys.exit(0 if _desktop_macos_setup_tcc_identity(identity) else 1)
     # Linux: the per-binary AppArmor profile for Chromium's namespace sandbox (#130177).
     if getattr(args, "install_apparmor_profile", False):
@@ -1690,7 +1690,7 @@ def _run_desktop_one_shot(args: argparse.Namespace, desktop_dir: Path, *, bundle
             with contextlib.suppress(NotBundledApp):
                 exe = resolve_bundle_layout(PROJECT_ROOT).launcher
         if exe is None:
-            print(f"✗ No packaged Hermes Desktop found under {desktop_dir / 'release'}; run `hermes desktop` first.")
+            print(f"✗ No packaged ARGUS Desktop found under {desktop_dir / 'release'}; run `argus desktop` first.")
         sys.exit(0 if exe is not None and install_profile(exe) else 1)
 
 
@@ -1717,10 +1717,10 @@ def cmd_gui(args: argparse.Namespace):
         print(f"Desktop GUI source not found at: {desktop_dir}")
         if install_kind == "homebrew":
             print(
-                "  This Hermes came from Homebrew, which does not ship the desktop app's\n"
+                "  This ARGUS came from Homebrew, which does not ship the desktop app's\n"
                 "  source tree, so it cannot be built from this install.\n"
                 "  Install the desktop app from https://hermes-agent.nousresearch.com,\n"
-                "  or run `hermes desktop` from a source checkout."
+                "  or run `argus desktop` from a source checkout."
             )
         sys.exit(1)
 
@@ -1758,7 +1758,7 @@ def cmd_gui(args: argparse.Namespace):
             print("  Refusing to run npm without serialization; check the checkout permissions and retry.")
             sys.exit(1)
         if not acquired:
-            print("✗ A Hermes update or another desktop dependency install or build is already running.")
+            print("✗ An ARGUS update or another desktop dependency install or build is already running.")
             print("  Wait for it to finish, then retry.")
             sys.exit(2)
 
@@ -1821,7 +1821,7 @@ def cmd_gui(args: argparse.Namespace):
         return
 
     if source_mode:
-        print("→ Launching Hermes Desktop from source build...")
+        print("→ Launching ARGUS Desktop from source build...")
         # Launch only the prepared runtime. npm exec can provision a missing
         # Electron package, including when --skip-build was requested.
         electron = _electron_dir(PROJECT_ROOT)
@@ -1852,7 +1852,7 @@ def cmd_gui(args: argparse.Namespace):
         launch_command.append("--close-preview")
     launch_command.extend(_explicit_profile_args())
     if not source_mode:
-        desktop_launch_notice(f"→ Launching packaged Hermes Desktop: {' '.join(launch_command)}")
+        desktop_launch_notice(f"→ Launching packaged ARGUS Desktop: {' '.join(launch_command)}")
     # The launch target is ready; the fixups above finished mutating the
     # packaged tree. Electron is the long-lived handoff, so release the build
     # lock now — an open Desktop window must never block a future rebuild.
@@ -1902,7 +1902,7 @@ def cmd_gui(args: argparse.Namespace):
             )
         if deferred_entry is not None:
             deferred_entry.finish()
-        desktop_launch_notice("✓ Hermes Desktop launched in a detached window; you can close this shell.")
+        desktop_launch_notice("✓ ARGUS Desktop launched in a detached window; you can close this shell.")
         sys.exit(0)
     with desktop_console_output(source_mode=source_mode) as streams:
         try:
@@ -1914,7 +1914,7 @@ def cmd_gui(args: argparse.Namespace):
             # closing the Desktop, not a launcher crash. Exit cleanly instead
             # of dumping a KeyboardInterrupt traceback from subprocess.run
             # (#59848).
-            print("\n✓ Hermes Desktop closed.")
+            print("\n✓ ARGUS Desktop closed.")
             sys.exit(0)
     if deferred_entry is not None:
         deferred_entry.finish()
@@ -1960,7 +1960,7 @@ def _launch_bundled_desktop(
         if getattr(args, name, False)
     ]
     if refused:
-        print(f"✗ {', '.join(refused)} cannot apply to a bundled Hermes install.")
+        print(f"✗ {', '.join(refused)} cannot apply to a bundled ARGUS install.")
         print("  This app ships prebuilt and has no desktop source tree to build.")
         sys.exit(2)
 
@@ -1970,20 +1970,20 @@ def _launch_bundled_desktop(
         # The stamp says bundled, so a tree that is not one is a damaged or
         # mispackaged install. Report it — degrading to the build ladder
         # would run npm inside the app's own resources.
-        print(f"✗ This Hermes is stamped as a bundled desktop install, but {exc}.")
-        print("  The install is damaged — reinstall Hermes from the website.")
+        print(f"✗ This ARGUS is stamped as a bundled desktop install, but {exc}.")
+        print("  The install is damaged — reinstall ARGUS from the website.")
         sys.exit(1)
 
     if layout.launcher is None:
-        print(f"✗ Found no Hermes Desktop launcher in {layout.app_root}.")
-        print("  The install is damaged — reinstall Hermes from the website.")
+        print(f"✗ Found no ARGUS Desktop launcher in {layout.app_root}.")
+        print("  The install is damaged — reinstall ARGUS from the website.")
         sys.exit(1)
 
     launch_command = _packaged_desktop_launch_command(layout.launcher)
     launch_command.extend(electron_flags)
     launch_command.extend(_explicit_profile_args())
     pid = launch_detached(launch_command, env=env, cwd=layout.app_root)
-    print(f"→ Launched Hermes Desktop: {' '.join(launch_command)} (pid {pid})")
+    print(f"→ Launched ARGUS Desktop: {' '.join(launch_command)} (pid {pid})")
     sys.exit(0)
 
 

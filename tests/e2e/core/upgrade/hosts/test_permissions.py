@@ -111,13 +111,13 @@ def test_update_on_a_read_only_tree_refuses_with_a_reason_and_recovers(world, pr
     assert world["install"].returncode == 0, "install.sh failed:\n" + I.describe(world["install"])
     up = world["ro_update"]
     out = up.stdout + up.stderr
-    assert up.returncode != 0, "hermes update reported success on an install tree it cannot write:\n" + I.describe(up)
-    assert I.TRACEBACK not in out, "hermes update crashed on a read-only install tree:\n" + I.describe(up)
-    assert ACTIONABLE.search(out), "hermes update failed on a read-only tree without saying why:\n" + I.describe(up)
+    assert up.returncode != 0, "argus update reported success on an install tree it cannot write:\n" + I.describe(up)
+    assert I.TRACEBACK not in out, "argus update crashed on a read-only install tree:\n" + I.describe(up)
+    assert ACTIONABLE.search(out), "argus update failed on a read-only tree without saying why:\n" + I.describe(up)
     assert world["ro_head"] == world["before"], "a refused update still moved the checkout"
     again = world["rw_update"]
     assert again.returncode == 0 and I.TRACEBACK not in again.stdout + again.stderr, (
-        "after the tree became writable again, hermes update still failed:\n" + I.describe(again))
+        "after the tree became writable again, argus update still failed:\n" + I.describe(again))
     assert I.git("rev-parse", "HEAD", cwd=world["sb"].checkout) == world["target"], (
         "update exited 0 but HEAD is not the new release")
     X.turn(world["sb"], provider, "turn after the recovered update")

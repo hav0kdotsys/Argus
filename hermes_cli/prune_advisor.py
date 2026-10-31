@@ -302,7 +302,7 @@ def advice_lines(advice: Advice, *, command_prefix: str = "/") -> list[str]:
         # Automatic compaction runs only past a free-page threshold most prunes never reach, so the
         # disk gets the space back reliably only from an explicit VACUUM.
         lines.append("Deleted history frees space inside state.db; to give it back to the disk, run "
-                     "`hermes sessions optimize` with other Hermes windows closed.")
+                     "`argus sessions optimize` with other ARGUS windows closed.")
     p = command_prefix
     lines.append(f"{p}autoprune on to enable, {p}autoprune off to keep everything (never asked again), "
                  f"{p}autoprune later to be reminded in a week.")
@@ -379,7 +379,7 @@ def run_command(args: str, home: Optional[Path] = None) -> str:
         return ("Auto-prune is on: ended sessions inactive past retention_days are deleted once a day."
                 if decide(True, home) else _SAVE_FAILED)
     if arg in {"off", "disable", "no"}:
-        return ("Auto-prune is off and you will not be asked again. `hermes sessions prune` still works any time."
+        return ("Auto-prune is off and you will not be asked again. `argus sessions prune` still works any time."
                 if decide(False, home) else _SAVE_FAILED)
     if arg in {"later", "snooze"}:
         snooze(home)

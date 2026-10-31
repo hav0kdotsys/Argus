@@ -237,7 +237,7 @@ _DISCORD_NONCONVERSATIONAL_HISTORY_MESSAGE_PATTERNS = (
         re.IGNORECASE,
     ),
     re.compile(
-        r"^\s*(?:✅|❌)\s+Hermes update\s+"
+        r"^\s*(?:✅|❌)\s+ARGUS update\s+"
         r"(?:finished|failed|timed out)[\s\S]*$",
         re.IGNORECASE,
     ),
@@ -418,7 +418,7 @@ def _format_privileged_intents_guidance(*, needs_members: bool) -> str:
     lines = [
         "Discord rejected the connection because privileged Gateway Intents "
         "are not enabled for this bot in the Developer Portal.",
-        "Hermes is requesting:",
+        "ARGUS is requesting:",
         "  - Message Content Intent (required to read message text)",
     ]
     if needs_members:
@@ -5552,7 +5552,7 @@ class DiscordAdapter(DiscordAuthorizationMixin, DiscordMediaMixin, DiscordThread
         )
         try:
             with attempt:
-                await edit(name=cleaned, reason="Hermes semantic session title")
+                await edit(name=cleaned, reason="ARGUS semantic session title")
             logger.info(
                 "[%s] Renamed Discord thread %s from %r to %r",
                 self.name, thread_id, current_name, cleaned,
@@ -5588,7 +5588,7 @@ class DiscordAdapter(DiscordAuthorizationMixin, DiscordMediaMixin, DiscordThread
             )
             return None
         thread_name = (name or "handoff").strip()[:80] or "handoff"
-        reason = "Hermes session handoff"
+        reason = "ARGUS session handoff"
         try:
             create = getattr(parent, "create_thread", None)
             if create is not None:
@@ -7328,7 +7328,7 @@ def register(ctx) -> None:
         ensure_deps_fn=check_discord_requirements,
         is_connected=_is_connected,
         required_env=["DISCORD_BOT_TOKEN"],
-        install_hint="Run `hermes setup` to install Discord support.",
+        install_hint="Run `argus setup` to install Discord support.",
         setup_fn=interactive_setup,
         # YAML→env config bridge — owns the translation of ``config.yaml`` ``discord:`` keys
         # (require_mention, free_response_channels, auto_thread, free_response_auto_thread,

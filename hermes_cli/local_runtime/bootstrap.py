@@ -171,7 +171,7 @@ def _stop_state_server() -> None:
     state = read_state()
     if is_modern(state):
         if not _owner_is_dead(state):
-            logger.info("llama-server pid=%s belongs to a live Hermes process; leaving it", state.get("pid"))
+            logger.info("llama-server pid=%s belongs to a live ARGUS process; leaving it", state.get("pid"))
             return
         proc = recorded_process(state)
     else:

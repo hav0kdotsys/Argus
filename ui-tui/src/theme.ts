@@ -256,15 +256,15 @@ export function themeToneHex(tone: string): string {
 // ── Defaults ─────────────────────────────────────────────────────────
 
 const BRAND: ThemeBrand = {
-  name: 'Hermes Agent',
-  icon: '☤',
+  name: 'ARGUS',
+  icon: '◉',
   prompt: '❯',
-  welcome: 'Type your message or /help for commands.',
-  goodbye: 'Goodbye! ☤',
+  welcome: 'ARGUS online. Type a message or /help.',
+  goodbye: 'ARGUS closing its eyes. ◉',
   tool: '┊',
-  helpHeader: '(^_^)? Commands',
-  tagline: '',
-  byline: 'Nous Research'
+  helpHeader: '(◉) Available Commands',
+  tagline: 'Agent Runtime for General-purpose Utility Services',
+  byline: 'HvkSys'
 }
 
 const cleanPromptSymbol = (s: string | undefined, fallback: string) => {
@@ -376,51 +376,43 @@ export function buildPalette(seeds: ThemeSeeds, isLight: boolean): ThemeColors {
 }
 
 export const DARK_SEEDS: ThemeSeeds = {
-  accent: '#FFBF00',
-  // The classic Hermes navy surfaces are IDENTITY, not derivation drift —
-  // keep them as explicit fill seeds (the ladder derives them for skins
-  // that don't care).
-  activeRow: '#333355',
-  bg: '#101014',
-  border: '#CD7F32',
-  error: '#ef5350',
-  ok: '#4caf50',
-  primary: '#FFD700',
-  prompt: '#FFF8DC',
-  selection: '#3a3a55',
-  shellDollar: '#4dabf7',
-  statusBad: '#FF8C00',
-  statusCritical: '#FF6B6B',
-  statusGood: '#8FBC8F',
-  statusWarn: '#FFD700',
-  surface: '#1a1a2e',
-  text: '#FFF8DC',
-  warn: '#ffa726'
+  // ARGUS orchid on violet-black - the values of argus/skins/argus.yaml, so a cold start (no skin pushed
+  // yet, no boot cache) already IS ARGUS. Surfaces are explicit identity seeds, not derived.
+  accent: '#C77DFF',
+  activeRow: '#3A1F5C',
+  bg: '#0E0818',
+  border: '#9D6BFF',
+  error: '#FF5A6A',
+  ok: '#3EE6A8',
+  primary: '#F0C4FF',
+  prompt: '#F7EBFF',
+  selection: '#4A2A70',
+  shellDollar: '#FF5BD8',
+  statusBad: '#FF5A6A',
+  statusCritical: '#FF3B5C',
+  statusGood: '#3EE6A8',
+  statusWarn: '#FFB24D',
+  surface: '#140A22',
+  text: '#F7EBFF',
+  warn: '#FFB24D'
 }
 
-// Light-terminal seeds: darker golds/ambers that stay legible on white.
-// The classic light-mode Hermes look was never hand-authored: for years the
-// TUI emitted the DARK golds and hosts with xterm's minimumContrastRatio
-// (Cursor defaults to 4.5) lifted them against white — hue and saturation
-// kept, luminance clamped. These seeds are those exact lifts
-// (liftForContrast(dark, '#ffffff', 4.5)), so hosts WITHOUT a contrast pass
-// render the same thing Cursor always showed. Text/prompt stay ink — body
-// copy historically rendered in the terminal's default near-black fg.
+// Light-terminal seeds: ARGUS's light_colors (dark violet ink on white / pale lilac), legible at 4.5:1.
 export const LIGHT_SEEDS: ThemeSeeds = {
-  accent: '#956E00',
+  accent: '#9B3FE0',
   bg: '#ffffff',
-  border: '#A56628',
-  error: '#C14240',
-  ok: '#367E39',
-  primary: '#867000',
-  prompt: '#2B2014',
-  shellDollar: '#377BB3',
-  statusBad: '#A65A00',
-  statusCritical: '#B94D4D',
-  statusGood: '#5C7A5C',
-  statusWarn: '#867000',
-  text: '#3D2F13',
-  warn: '#956115'
+  border: '#7B3FD6',
+  error: '#C0283A',
+  ok: '#1F7A55',
+  primary: '#5A1FA8',
+  prompt: '#2A1A3D',
+  shellDollar: '#C2189B',
+  statusBad: '#B0302F',
+  statusCritical: '#B3203F',
+  statusGood: '#2E7A5C',
+  statusWarn: '#8A5A00',
+  text: '#2A1A3D',
+  warn: '#9A5A00'
 }
 
 export const DARK_THEME: Theme = {

@@ -82,6 +82,6 @@ def read_env_setting(key: str) -> Optional[str]:
     if value is None:
         value = read_raw_config_readonly().get(key)
         if value is not None:
-            print(f"  (note: {key} is a stale top-level config.yaml copy; `hermes config set {key} <value>` "
-                  f"moves it to .env, `hermes config unset {key}` removes it)", file=sys.stderr)
+            print(f"  (note: {key} is a stale top-level config.yaml copy; `argus config set {key} <value>` "
+                  f"moves it to .env, `argus config unset {key}` removes it)", file=sys.stderr)
     return value

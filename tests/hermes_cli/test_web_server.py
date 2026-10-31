@@ -709,7 +709,7 @@ CONFIG_SCHEMA = ProviderConfigSchema(
         data = resp.json()
         pip_rows = [row for row in data["results"] if row["kind"] == "pip"]
         assert pip_rows and pip_rows[0]["status"] == "installed"
-        assert pip_rows[0]["command"] == "hermes pm install"
+        assert pip_rows[0]["command"] == "argus pm install"
         assert prepared == ["flatprov"]
 
 
@@ -1155,7 +1155,7 @@ CONFIG_SCHEMA = ProviderConfigSchema(
         def fail_spawn(*_args, **_kwargs):
             nonlocal spawned
             spawned = True
-            raise AssertionError("docker update guard should not spawn hermes update")
+            raise AssertionError("docker update guard should not spawn argus update")
 
         # Bypass the managed-externally gate so we reach the docker install check.
         monkeypatch.setattr(_web_server_files, "_dashboard_local_update_managed_externally", lambda: False)
@@ -1193,7 +1193,7 @@ CONFIG_SCHEMA = ProviderConfigSchema(
         def fail_spawn(*_args, **_kwargs):
             nonlocal spawned
             spawned = True
-            raise AssertionError("APT-managed update guard should not spawn hermes update")
+            raise AssertionError("APT-managed update guard should not spawn argus update")
 
         monkeypatch.setattr(_web_server_files, "_dashboard_local_update_managed_externally", lambda: False)
         # The shared admission gate (#91277 Phase 3) resolves the install

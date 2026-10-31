@@ -66,7 +66,7 @@ _REPAIR_BACKUP_MIN_FREE_BYTES = 256 * 1024 * 1024  # 256 MiB absolute floor
 _REPAIR_BACKUP_FREE_FRACTION = 0.02  # plus 2% of the volume
 _FTS_TABLES = ("messages_fts", "messages_fts_trigram", "messages_fts_cjk")
 _MANUAL_RECOVER_HINT = ("Free disk space, then retry (or recover manually with "
-                        "`hermes sessions recover --source {db_path} --inspect-only` first).")
+                        "`argus sessions recover --source {db_path} --inspect-only` first).")
 
 
 def _sidecars(db_path: Path):
@@ -398,8 +398,8 @@ def _persistent_repair_exhausted_error(db_path: Path) -> str:
     profile_arg = profile_cli_selector()
     return (f"automatic repair has already failed {_MAX_PERSISTENT_REPAIR_ATTEMPTS} times on this exact file — the "
             f"corruption is beyond the schema/FTS repair strategies (likely b-tree page damage). Manual recovery "
-            f"required: restore a backup, or salvage with `hermes {profile_arg}sessions recover --source {db_path} "
-            f"--inspect-only`, then (if it reports recoverable) `hermes {profile_arg}sessions recover --source {db_path} "
+            f"required: restore a backup, or salvage with `argus {profile_arg}sessions recover --source {db_path} "
+            f"--inspect-only`, then (if it reports recoverable) `argus {profile_arg}sessions recover --source {db_path} "
             f"--output recovered-state.db` (recovery snapshots the damaged file first, then runs the page-level "
             f"`.recover` lane on the copy; do NOT point a raw `sqlite3` shell at the live database). "
             f"Delete {_repair_ledger_path(db_path).name} to force another automatic attempt.")
@@ -581,7 +581,7 @@ def preflight_db_writability(db_path: Path, *, db_label: str = "state.db", direc
         wal_note = (" Do NOT delete the -wal file — it contains committed data that "
                     "will be merged into the database once it is writable." if p.name.endswith("-wal") else "")
         raise sqlite3.OperationalError(
-            f"{db_label} is not writable: {'directory' if is_dir else 'file'} {p} is read-only for this user. Hermes "
+            f"{db_label} is not writable: {'directory' if is_dir else 'file'} {p} is read-only for this user. ARGUS "
             f"needs read-write access to open the database. Fix with: chmod u+rw{x} '{p}' (files owned by another "
             f"user may need sudo/chown).{wal_note}")
 
@@ -918,7 +918,7 @@ def repair_state_db_schema(db_path: Path, *, backup: bool = True) -> dict[str, A
         # exclusive guard in the locked routine excludes writers through promotion and sees DELETE-mode readers too.
         elif _live_writer_holds_db(db_path):
             _repair_skip(report, "skipped", "a live writer still holds state.db; skipped schema surgery to avoid tearing "
-                         "b-tree pages under a concurrent writer. Stop the gateway (hermes gateway stop) and retry.")
+                         "b-tree pages under a concurrent writer. Stop the gateway (argus gateway stop) and retry.")
         else:
             # Probe journal mode BEFORE surgery: a rebuilt file comes back in the default (delete) mode and nothing
             # else records the flip. Unprobeable (damaged file) -> database.journal_mode is the restore target.

@@ -366,7 +366,7 @@ def test_desktop_dependency_failure_still_builds_the_tui_and_web_ui(source_produ
     assert not (root / "node_modules/apps-desktop").exists()
     out = capsys.readouterr().out
     assert "Desktop app build owed: desktop dependencies failed" in out
-    assert "hermes uninstall --gui" in out
+    assert "argus uninstall --gui" in out
 
 
 @pytest.mark.platforms("linux")
@@ -493,9 +493,9 @@ def test_a_failed_webapp_rebuild_in_update_marks_the_served_bundle_out_of_date(t
         build_update_products(root, desktop=False)
 
     reason = bundle_missing_reason(dist)
-    assert reason is not None and reason.startswith(NOT_BUILT) and "hermes webapp" in reason
+    assert reason is not None and reason.startswith(NOT_BUILT) and "argus webapp" in reason
     if built:
         assert (dist / "index.html").read_text(encoding="utf-8") == "<!doctype html>"
-        assert "hermes webapp" in capsys.readouterr().out
+        assert "argus webapp" in capsys.readouterr().out
     else:
         assert sorted(root.rglob("*")) == before

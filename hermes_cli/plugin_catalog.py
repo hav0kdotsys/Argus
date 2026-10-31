@@ -525,7 +525,7 @@ def entry_capability_summary(entry: PluginCatalogEntry) -> str:
     if entry.platforms:
         bits.append(f"Platforms: {', '.join(entry.platforms)}.")
     if entry.requires_hermes:
-        bits.append(f"Requires Hermes {entry.requires_hermes}.")
+        bits.append(f"Requires ARGUS {entry.requires_hermes}.")
     if entry.known_issues:
         # #124058: informational — the catalog documents traps (unsupported
         # install-method/mode combinations); surface them at install prompts
