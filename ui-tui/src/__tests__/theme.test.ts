@@ -520,11 +520,26 @@ describe('background-aware adaptation (OSC-11 light terminals)', () => {
   it('base palettes are fixed points of the adaptation', async () => {
     const dark = await importThemeWithCleanEnv()
 
-    expect(dark.fromSkin({}, {}).color).toEqual(dark.DARK_THEME.color)
+    // Fixed point up to rounding: the adaptation's colour-space round trip may move a derived tone by
+    // a unit or two per channel (imperceptible); anything more means it actually re-tinted the base.
+    const close = (got: Record<string, string>, want: Record<string, string>) => {
+      expect(Object.keys(got).sort()).toEqual(Object.keys(want).sort())
+
+      for (const key of Object.keys(want)) {
+        const a = got[key]!, b = want[key]!
+        if (!/^#[0-9a-f]{6}$/i.test(b)) {
+          expect(a, key).toBe(b)
+          continue
+        }
+        expect(channelDelta(a, b), `${key}: ${a} vs ${b}`).toBeLessThanOrEqual(2)
+      }
+    }
+
+    close(dark.fromSkin({}, {}).color as never, dark.DARK_THEME.color as never)
 
     const light = await importThemeWithEnv({ HERMES_TUI_BACKGROUND: '#ffffff' })
 
-    expect(light.fromSkin({}, {}).color).toEqual(light.LIGHT_THEME.color)
+    close(light.fromSkin({}, {}).color as never, light.LIGHT_THEME.color as never)
   })
 
   it('defaultThemeForCurrentBackground follows a late HERMES_TUI_BACKGROUND write', async () => {

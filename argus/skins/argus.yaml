@@ -100,14 +100,14 @@ banner_logo: |-
   [#FF5BD8]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝[/]
 
 banner_hero: |-
-  [#6B4A9E]        ▄▄▄██████████▄▄▄        [/]
-  [#9D6BFF]    ▄▄██▀▀            ▀▀██▄▄    [/]
-  [#B97CFF]  ▄█▀       ▄▄████▄▄       ▀█▄  [/]
-  [#C77DFF] ██       ██▀ [/][#FF5BD8]▄██▄[/][#C77DFF] ▀██       ██ [/]
-  [#B97CFF]  ▀█▄       ▀▀████▀▀       ▄█▀  [/]
-  [#9D6BFF]    ▀▀██▄▄            ▄▄██▀▀    [/]
-  [#6B4A9E]        ▀▀▀██████████▀▀▀        [/]
-  [dim #7A6A90]       a hundred eyes, open      [/]
+  [#6B4A9E]      ▄▄▄██████████▄▄▄      [/]
+  [#9D6BFF]  ▄▄██▀▀            ▀▀██▄▄  [/]
+  [#B97CFF] ▄█▀      ▄▄████▄▄      ▀█▄ [/]
+  [#C77DFF]██      ██▀ [/][#FF5BD8]▄██▄[/][#C77DFF] ▀██      ██[/]
+  [#B97CFF] ▀█▄      ▀▀████▀▀      ▄█▀ [/]
+  [#9D6BFF]  ▀▀██▄▄            ▄▄██▀▀  [/]
+  [#6B4A9E]      ▀▀▀██████████▀▀▀      [/]
+  [dim #7A6A90]    a hundred eyes, open    [/]
 
 # The Desktop app reads this too (Settings -> Appearance). MIRA's glass and glow, kept subtle.
 customCSS: |
