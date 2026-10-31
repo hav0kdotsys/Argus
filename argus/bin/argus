@@ -19,6 +19,19 @@ export ARGUS_REPO="$repo"
 # Idempotent and fast when nothing changed; never touches what the user edited.
 "$argus_dir/install.sh" --quiet
 
+# Hermes' environment library (scripts/_activation.sh). run-in-hermes-env only skips setup when it INHERITS an
+# environment it can verify, and a fresh `argus` inherits nothing - so every start ran the whole setup pass. Compose
+# the recorded environment first (one python call); hermes_ensure_env then finds it current and syncs only when a
+# dependency input really changed (a pull that touched uv.lock, a new tool pin).
+set +u
+# shellcheck source=/dev/null
+. "$repo/scripts/_activation.sh"
+if script="$(hermes_compose_env "$repo" sh 2>/dev/null)"; then
+    hermes_apply_env "$script"
+fi
+hermes_ensure_env "$repo" || { echo "argus: environment setup failed" >&2; exit 1; }
+set -u
+
 # The checkout's `hermes` script by path, under the PM environment's Python. Not the `hermes` shell function that
 # `activate` defines: that one cd's into the checkout, and an agent harness must work in the caller's directory.
-exec "$repo/scripts/run-in-hermes-env" python "$repo/hermes" "$@"
+exec python "$repo/hermes" "$@"
