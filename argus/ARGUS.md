@@ -76,9 +76,9 @@ ARGUS uses Hermes' provider registry and fallback chain (`fallback_providers`); 
 
 | Provider | Hermes id | Status |
 |---|---|---|
-| Z.ai (GLM) | `zai` (`GLM_API_KEY`) | key from HavoK; goes in `$ARGUS_HOME/.env` |
-| NVIDIA NIM | `nvidia` (`NVIDIA_API_KEY`) | key from HavoK; goes in `.env` |
-| Cloudflare Workers AI | `custom` (OpenAI-compatible, `https://api.cloudflare.com/client/v4/accounts/<id>/ai/v1`) or a small `cloudflare` provider plugin | needs Account ID + Workers AI token |
+| NVIDIA NIM | `nvidia` (`NVIDIA_API_KEY`) | **live, primary**: `minimaxai/minimax-m3.1-flash` (~4 s) and `mistralai/mistral-large-4-1t-a52b` (~14 s) call tools. Free-tier queues time some models out (DeepSeek v4.1 Flash, GLM-5.3 Flash at 60 s); Kimi K2.6, Nemotron Ultra and Mistral Large 2 are not enabled for the account. |
+| Cloudflare Workers AI | named provider `cloudflare` (`providers:` map, `key_env: CLOUDFLARE_API_TOKEN`) | **live** on the Workers Free plan: gpt-oss-120b (0.7 s), nemotron-3-120b, llama-3.3-70b, qwen3-30b, qwen3.8-27b, glm-4.7-flash, gemma-4-26b, mistral-small-3.1 all call tools. GLM-5.3, Kimi K2.6/K2.7, DeepSeek V4 need a paid plan (403). Free plan has a daily allowance - a fallback, not the workhorse. |
+| Z.ai (GLM) | `zai` (`GLM_API_KEY`) | key valid (lists glm-4.5 ... glm-5.3), but chat answers **"Insufficient balance or no resource package"** on both the standard and coding endpoints. Top of the chain once funded. |
 | Gemini | `gemini` | MIRA's AI Studio key could be shared |
 | Groq | (via `custom`/openrouter-style profile) | MIRA has a key; free tier is small |
 | Ollama Cloud | `ollama-cloud` (`OLLAMA_API_KEY`) | gpt-oss:120b is in the free usage |
@@ -112,11 +112,16 @@ In the TUI these become panels and slash commands (`/estate`, `/containers`, `/d
 
 ## Roadmap
 
-1. **Foundation (now):** fork + `argus` command + `~/.argus` + skin + seed config (MIRA MCP, skills dir).
-2. **Providers:** keys into `.env`, live model ids, fallback chain (Z.ai -> NIM -> Cloudflare -> Ollama Cloud
-   -> Gemini -> local), claude-code sidecar as a delegation backend; `argus doctor` green.
-3. **Server-first:** `argus serve` as a user service on laphvk (systemd) and winhvk (scheduled task); TUI and
-   Desktop attach to it; sessions shared across both.
+1. **Foundation - done (2026-10-31):** fork, `argus` command (sub-second start), `~/.argus`, skin, seed
+   config. MIRA's MCP live through the relay (150 tools), MIRA's 15 skills synced (`sync-mira-skills.sh`).
+2. **Providers - mostly done (2026-10-31):** NIM primary + Cloudflare/NIM fallback chain live-tested; a real
+   turn (`argus chat --oneshot`) answered from MIRA's tools. Still to do: Z.ai once funded, Gemini / Ollama Cloud
+   keys, the claude-code sidecar as a delegation backend, `argus doctor` green.
+3. **Server-first:** `argus serve` as a user service (`argus/install-service.sh` on laphvk; a scheduled task on
+   winhvk). Then the first real core feature: **`argus --attach`** - today the Ink TUI always spawns its own
+   tui_gateway over stdio while Desktop reaches `argus serve` over WebSocket; teach the TUI the same WebSocket
+   client (`apps/shared` JsonRpcGatewayClient) so TUI and Desktop share one server and its sessions. A
+   generic upstream-shaped change (a new transport), so it can go upstream too.
 4. **Cockpit plugin pack:** HvkDeck and MIRA Desktop functions as tools + TUI panels + Desktop pages.
 5. **Desktop rebrand + builds:** ARGUS name/icon (CORE-PATCHES), Windows installer and Linux AppImage/deb.
 6. **Polish to beat Claude Code / opencode:** the things HavoK uses daily, measured by HavoK.

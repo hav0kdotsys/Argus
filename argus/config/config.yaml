@@ -4,20 +4,30 @@
 
 model:
   # Picked from whatever credentials $ARGUS_HOME/.env holds until you choose one with `argus model`.
-  # Z.ai (GLM_API_KEY) and NVIDIA NIM (NVIDIA_API_KEY) are first-class Hermes providers.
+  # HavoK's laphvk config (2026-10-31, every model below live-tested for tool calling):
+  #   provider: "nvidia"
+  #   default: "minimaxai/minimax-m3.1-flash"        # NIM free tier, ~4 s, strong agentic model
   provider: "auto"
 
-# Fallback chain - filled in once the keys are in .env and the model ids are confirmed live (`argus model`).
-# Same entry format as the docs: website/docs/user-guide/features/fallback-providers.md
-# fallback_providers:
-#   - provider: zai
-#     model: "<a GLM model id from `argus model`>"
-#   - provider: nvidia
-#     model: "<a NIM model id>"
-#   - provider: custom              # Cloudflare Workers AI (OpenAI-compatible)
-#     model: "<@cf/... model id>"
-#     base_url: "https://api.cloudflare.com/client/v4/accounts/<ACCOUNT_ID>/ai/v1"
+# Cloudflare Workers AI as a named OpenAI-compatible provider. The account id is an identifier, not a secret,
+# but it is per-account, so it is written here in YOUR config rather than in the repo.
+# providers:
+#   cloudflare:
+#     base_url: "https://api.cloudflare.com/client/v4/accounts/<CLOUDFLARE_ACCOUNT_ID>/ai/v1"
 #     key_env: CLOUDFLARE_API_TOKEN
+
+# The fallback chain HavoK runs (format: website/docs/user-guide/features/fallback-providers.md). Free-plan
+# availability as tested 2026-10-31 - Cloudflare's paid-only models (GLM-5.3, Kimi K2.7, DeepSeek V4) answer 403,
+# Z.ai answers "Insufficient balance" until the account has credit (then glm-5.3 belongs at the top).
+# fallback_providers:
+#   - provider: cloudflare
+#     model: "@cf/openai/gpt-oss-120b"                # 0.7 s
+#   - provider: nvidia
+#     model: "mistralai/mistral-large-4-1t-a52b"      # 1T params, ~14 s - the heavyweight
+#   - provider: cloudflare
+#     model: "@cf/nvidia/nemotron-3-120b-a12b"        # 0.8 s
+#   - provider: cloudflare
+#     model: "@cf/qwen/qwen3.8-27b"                   # 1.4 s
 
 mcp_servers:
   # MIRA's own MCP (mira-mcp on debhvk): every tool MIRA has - phone, PCs, TV, music, calendar, vault, estate.
