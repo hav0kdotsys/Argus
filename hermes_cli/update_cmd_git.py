@@ -341,17 +341,17 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     ``--yes`` means "don't block", not "mutate my remotes", so a non-interactive skip is NOT persisted."""
     from hermes_cli.update_cmd import _add_upstream_remote, _mark_skip_upstream_prompt
     print(
-        "\nℹ Your fork is not tracking the official ARGUS repository.\n"
-        "  This means you may miss updates from NousResearch/hermes-agent.\n"
+        "\nℹ This checkout has no 'upstream' remote for Hermes (NousResearch/hermes-agent),\n"
+        "  so ARGUS_UPDATE_FROM_UPSTREAM has nothing to take changes from.\n"
     )
     if assume_yes or (input_fn is None and not (sys.stdin.isatty() and sys.stdout.isatty())):
         print(f"  Skipping upstream setup (non-interactive run).\n  Add it later with: {_UPSTREAM_ADD_CMD}")
         return False
     if input_fn is not None:
-        response = input_fn("Add official repo as 'upstream' remote? [y/N]", "n").strip().lower()
+        response = input_fn("Add Hermes as the 'upstream' remote? [y/N]", "n").strip().lower()
     else:
         try:
-            response = input("Add official repo as 'upstream' remote? [Y/n]: ").strip().lower()
+            response = input("Add Hermes as the 'upstream' remote? [Y/n]: ").strip().lower()
         except (EOFError, KeyboardInterrupt, UnicodeDecodeError):
             print()
             response = "n"
@@ -392,6 +392,11 @@ def _sync_with_upstream_if_needed(git_cmd: list[str], cwd: Path, *, assume_yes: 
     from hermes_cli.update_cmd import _count_commits_between, _has_upstream_remote, _no_prompt_git_kwargs, _should_skip_upstream_prompt
     from hermes_cli.update_cmd_check import tracking_refspec
     from hermes_cli.update_custody import run_git
+    # ARGUS is its own app: `argus update` updates from ARGUS's repository (origin), which is the whole
+    # truth, so the origin compare above is a complete check. Taking from Hermes upstream is a deliberate
+    # act (argus/CORE-PATCHES.md, "Taking from upstream"), or opt in here with ARGUS_UPDATE_FROM_UPSTREAM=1.
+    if os.environ.get("ARGUS_UPDATE_FROM_UPSTREAM", "").strip().lower() not in ("1", "true", "yes"):
+        return True
     if not _has_upstream_remote(git_cmd, cwd) and (
         _should_skip_upstream_prompt() or not _offer_upstream_remote(git_cmd, cwd, assume_yes=assume_yes, input_fn=input_fn)
     ):

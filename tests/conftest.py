@@ -283,6 +283,9 @@ def _hermetic_environment(tmp_path, tmp_path_factory, monkeypatch):
     # defaultHost and silently select the wrong nested config block. Tests of
     # custom host resolution override/delete this explicitly.
     monkeypatch.setenv("HERMES_HONCHO_HOST", "hermes")
+    # ARGUS updates from its own repo only; the inherited upstream-sync tests exercise that logic, so it
+    # is switched on for them here (tests/hermes_cli/test_argus_update_origin_only.py covers the default).
+    monkeypatch.setenv("ARGUS_UPDATE_FROM_UPSTREAM", "1")
 
     # 3. Isolate both inputs to profile/root resolution. HERMES_HOME alone
     #    is insufficient: get_default_hermes_root() resolves the native root
