@@ -1,0 +1,11 @@
+name: argus-cockpit
+version: 0.1.0
+description: "ARGUS cockpit: read the MIRA estate (debhvk host, containers, logs, health, jobs, stacks) from HvkDeck's API - tools for the agent, /estate in a session, `argus estate` in a shell."
+author: "HvkSys"
+provides_tools:
+  - estate_overview
+  - estate_containers
+  - estate_logs
+  - estate_health
+  - estate_jobs
+  - estate_stacks

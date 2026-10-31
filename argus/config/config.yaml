@@ -61,3 +61,9 @@ telemetry:
     enabled: false
     send: false
     offer_version: 2
+
+# ARGUS's own plugins (argus/plugins/, linked into ~/.argus/plugins by install.sh). Hermes plugins are opt-in.
+#   argus-cockpit: the estate from HvkDeck - estate_* tools, /estate, `argus estate`.
+plugins:
+  enabled:
+    - argus-cockpit
