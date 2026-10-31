@@ -28,7 +28,7 @@ mcp_servers:
   mira:
     url: "https://jarvis-mcp-relay.moonauth.dpdns.org/mcp"
     headers:
-      Authorization: "Bearer ${JARVIS_MCP_TOKEN}"
+      Authorization: "Bearer ${MIRA_MCP_TOKEN}"
     timeout: 120
     connect_timeout: 20
 
