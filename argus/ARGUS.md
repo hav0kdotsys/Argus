@@ -1,21 +1,23 @@
 # ARGUS - Agent Runtime for General-purpose Utility Services
 
-HavoK's agent harness and the cockpit for the whole MIRA estate: one application that does what MIRA Desktop,
-MiraAgent, Claude Code / Hermes Agent and HvkDeck each do, from a terminal or a window, on Windows and Linux.
+HavoK's own application: the housing unit for MIRA and every device HavoK owns. One program that does what MIRA
+Desktop, MiraAgent, Claude Code and HvkDeck each do, from a terminal or a window, on Windows and Linux. More than
+an agent harness - the harness is the engine; the estate is the job.
 
 ## What ARGUS is, in one paragraph
 
-A **soft fork of [Hermes Agent](https://github.com/NousResearch/hermes-agent)** (MIT, Nous Research). Hermes
-already is a multi-provider agent harness with MCP, agentskills.io skills, subagents, cron, memory, a terminal UI,
-a desktop app and a plugin system. ARGUS keeps that core, merges upstream continuously, and adds - entirely under
-`argus/` - its own identity, MIRA's providers, tools and skills, and the cockpit functions that today live in
-four separate apps. MIRA's own apps keep their per-device jobs; ARGUS is the one place that can do all of it.
+ARGUS started from **[Hermes Agent](https://github.com/NousResearch/hermes-agent)** (MIT, Nous Research): a
+multi-provider agent harness with MCP, skills, subagents, cron, memory, a terminal UI, a desktop app and a plugin
+system. **It is HavoK's app now, not a skin over Hermes** (decision of 2026-10-31, see below): the repository, every
+change and every release are HavoK's, the product says ARGUS everywhere a person looks, and upstream is a source
+to take fixes and features from when they are worth it - not a base ARGUS must stay mergeable with. MIRA's own
+apps keep their per-device jobs; ARGUS is the one place that can do all of it.
 
 ## Decisions (HavoK, 2026-10-31)
 
 | Question | Decision |
 |---|---|
-| Fork style | **Soft fork.** Upstream keeps merging; ARGUS lives under `argus/` and in plugins. |
+| Ownership | **HavoK's own app** (2026-10-31, replacing the first day's "soft fork"): "this is MY app now, something new, more than an agent harness - a housing unit for Mira and every device I own." The whole repo is ARGUS's to change; upstream is taken from selectively. |
 | Surfaces | **TUI + core server + Desktop**, with most of the effort on the TUI and the server side. The aim is a harness HavoK prefers to Claude Code and opencode. |
 | Process model | `TUI process  <->  core server process  <->  Desktop process` (one core, two clients). |
 | MIRA's services | **Front them, replicate their functions, never replace MIRA's apps.** mira-api, mira-mcp, hvkdeckd and MiraAgent keep running; MIRA Desktop / Mobile / laphvk VI keep their device roles. |
@@ -40,23 +42,23 @@ over WebSocket; each client gets a short-lived ticket from the owner's private c
 a separate headless web backend (dashboard / remote Desktop). ARGUS makes the long-lived owner the default shape
 (`argus gateway install`) rather than one that the first TUI starts and that exits when idle.
 
-## How ARGUS stays a soft fork
+## Owning the codebase
 
-1. **Everything ARGUS-specific is under `argus/`** (launchers, installers, skins, plugins, config, docs) or in
-   `$ARGUS_HOME` - never sprinkled through Hermes' tree. Upstream merges then never conflict with ARGUS.
-2. **Identity through Hermes' own seams:**
-   - the home: `$ARGUS_HOME` (`~/.argus`, `%LOCALAPPDATA%\argus`), passed to the core as `HERMES_HOME`
-     (7,000+ references; renaming it would be a hard fork);
-   - the look and name: the `argus` skin (banner, palette, spinner, `ARGUS` branding) through the skin engine,
-     which every surface - CLI, TUI, Desktop - reads;
-   - the command: `argus` (`argus/bin/argus`, `argus.ps1`, `argus.cmd`), which runs this checkout's `hermes`
-     entry in its managed environment and keeps the caller's working directory.
-3. **New capability = a plugin** (Hermes' contract: plugins never touch core). Where Hermes lacks a seam, widen
-   the generic plugin surface the way upstream would accept, and send it upstream.
-4. **Core edits are the exception** and each one is listed in `argus/CORE-PATCHES.md` with why, so a merge
-   conflict is always explicable. (Expected first ones: the Desktop app's product name, window title and icon.)
-5. **Upstream sync:** `git fetch upstream && git merge upstream/main` on the `argus` branch, weekly or when a
-   fix is wanted; run `scripts/check` and ARGUS's own smoke test before pushing.
+1. **ARGUS is the product name everywhere a person reads.** `argus/tools/rebrand.py` rewrote every user-facing
+   string (messages, hints, prompts, labels, the CLI's program name) from Hermes to ARGUS, and it is re-run on
+   anything taken from upstream. What a program reads keeps its name: module names (`hermes_cli`), env vars
+   (`HERMES_HOME` - `$ARGUS_HOME` is passed as it), package / toolset ids, file names, Nous' Hermes *model*
+   names, the "Hey Hermes" hotword (a trained model; it changes when an ARGUS hotword exists), the Docker image's
+   `hermes` user. A line that must keep a Hermes string ends in `# rebrand: keep`.
+2. **ARGUS is the built-in look**, not a skin applied late: the TUI's default brand, palette and art, and the
+   Python skin engine's `default`, are ARGUS (`argus/skins/argus.yaml` is the one source; gold Hermes stays
+   selectable as `hermes-classic`). A cold start - no boot cache, no skin pushed yet - already draws ARGUS.
+3. **Change the core whenever that is the right fix.** Plugins stay the right shape for optional capability
+   (the cockpit, providers, delegation backends); identity, behaviour and polish change in place.
+4. **Taking from upstream** (when a fix or feature is worth it): `git fetch upstream`, merge or cherry-pick,
+   then `python3 argus/tools/rebrand.py <changed paths>`, rebuild the TUI and run the tests (see
+   `argus/CORE-PATCHES.md` for the conflict notes).
+5. **Release and versioning are ARGUS's** (still to set up: an ARGUS version line, tags, the Desktop installer).
 
 ## Layout (`argus/`)
 

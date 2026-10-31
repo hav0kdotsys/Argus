@@ -15,6 +15,8 @@ model:
 #   cloudflare:
 #     base_url: "https://api.cloudflare.com/client/v4/accounts/<CLOUDFLARE_ACCOUNT_ID>/ai/v1"
 #     key_env: CLOUDFLARE_API_TOKEN
+#     extra_body:          # Workers AI uses a small output cap when a request names none (replies cut off)
+#       max_tokens: 8192
 
 # The fallback chain HavoK runs (format: website/docs/user-guide/features/fallback-providers.md). Free-plan
 # availability as tested 2026-10-31 - Cloudflare's paid-only models (GLM-5.3, Kimi K2.7, DeepSeek V4) answer 403,
