@@ -67,8 +67,9 @@ argus/
   install.sh / .ps1     overlay -> $ARGUS_HOME (idempotent; links skins/plugins, seeds config once)
   config/config.yaml    the seed config (MIRA's MCP via the relay, MIRA's skills dir, argus skin)
   skins/argus.yaml      the ARGUS skin
-  plugins/              (phase 2) model-providers/*, mira cockpit tools, delegation backends
-  CORE-PATCHES.md       (when the first one exists) every edit outside argus/
+  plugins/argus-cockpit the estate from HvkDeck: estate_* tools, /estate, `argus estate` (read-only)
+  plugins/              (later) model-providers/*, more cockpit tools, delegation backends
+  CORE-PATCHES.md       every edit outside argus/
 ```
 
 ## Providers
@@ -125,7 +126,24 @@ In the TUI these become panels and slash commands (`/estate`, `/containers`, `/d
    got the same instance. ARGUS's part: make the TUI the default interface (`display.interface: tui`) and run
    the owner as a service instead of letting it idle-exit - `argus gateway install` (Hermes' own systemd /
    launchd / Windows-task installer; the unit pins HERMES_HOME=~/.argus and refuses to touch another install's).
-4. **Cockpit plugin pack:** HvkDeck and MIRA Desktop functions as tools + TUI panels + Desktop pages.
+4. **Cockpit plugin pack - first slice done (2026-10-31):** `argus-cockpit` reads debhvk through hvkdeckd with the
+   HvkDeck apps' own credentials (`~/.config/hvkdeck/credentials.json`; LAN first, the Cloudflare Access URL as
+   fallback). Six tools in the `estate` toolset (overview, containers, logs, health, jobs, stacks), the same views
+   as `/estate ...` in a session and `argus estate ...` in a shell. Read-only on purpose: changing the estate
+   (restart, deploy) stays with MIRA's guarded MCP tools so approvals and the audit trail live in one place.
+   Verified on laphvk: `argus estate` / `estate health` / `estate containers mira` against the live API, and a
+   oneshot turn that found the tools through tool search and answered from `estate_overview` +
+   `estate_containers` (the NIM rate limit mid-turn also proved the Cloudflare fallback live).
+   Next: TUI panels (a live estate pane, not just slash output), phone / widgets / autonomy views, `/deploy` as
+   a guarded write.
+
+   Notes from the slice:
+   - Plugin tools always sit behind the tool-search bridge (there is no per-tool "keep eager" switch); the
+     listing fits in full today (162 deferred, 4k budget), so the model finds them by name.
+   - **Enabling a plugin needs a fresh core server**: the gateway owner loads plugins once at start. With no
+     service it idle-exits after 10 min; otherwise `argus gateway restart`.
+   - Seen once: a TUI whose terminal window was closed kept running at ~90% CPU on the deleted pty
+     (`python .../hermes`, parent init). Upstream bug to chase in phase 6 (should exit on SIGHUP / EIO).
 5. **Desktop rebrand + builds:** ARGUS name/icon (CORE-PATCHES), Windows installer and Linux AppImage/deb.
 6. **Polish to beat Claude Code / opencode:** the things HavoK uses daily, measured by HavoK.
 
