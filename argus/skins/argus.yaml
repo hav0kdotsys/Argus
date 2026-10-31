@@ -91,6 +91,16 @@ branding:
 
 tool_prefix: "┊"
 
+# Icons for ARGUS's own tools. The skin is loaded by every client, including ones that never import the
+# plugins (a one-shot CLI rendering the core server's rows), so this is where the cockpit's icons live.
+tool_emojis:
+  estate_overview: "◉"
+  estate_containers: "▦"
+  estate_logs: "≣"
+  estate_health: "♥"
+  estate_jobs: "⚙"
+  estate_stacks: "⧉"
+
 banner_logo: |-
   [bold #9D6BFF] █████╗ ██████╗  ██████╗ ██╗   ██╗███████╗[/]
   [bold #AA74FF]██╔══██╗██╔══██╗██╔════╝ ██║   ██║██╔════╝[/]

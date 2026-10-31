@@ -1117,7 +1117,14 @@ def _cute_fallback_row(tool_name: str, args: dict) -> _CuteRow:
     its preview. One source for both layouts, so their icons can't drift."""
     detail = _cute_trunc(build_tool_preview(tool_name, args) or "")
     emoji = get_tool_emoji(tool_name)
-    return _CuteRow(f"┊ {emoji} {tool_name[:9]:9} {detail}", emoji, tool_name, detail)
+    # The modern row shows the verb: a tool without a curated one reads as its title ("Estate Overview"),
+    # the same text the tool-search bridge labels use - never the raw snake_case name.
+    try:
+        from tools.tool_labels import app_title
+        title = app_title(tool_name)
+    except Exception:
+        title = tool_name
+    return _CuteRow(f"┊ {emoji} {tool_name[:9]:9} {detail}", emoji, title, detail)
 
 
 def get_tool_row_parts(tool_name: str, args: dict | None, result: str | None = None, *, is_error: bool = False):
