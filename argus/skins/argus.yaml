@@ -85,6 +85,9 @@ branding:
   response_label: " ◉ ARGUS "
   prompt_symbol: "❯"
   help_header: "(◉) Available Commands"
+  icon: "◉"
+  tagline: "Agent Runtime for General-purpose Utility Services"
+  byline: "HvkSys"
 
 tool_prefix: "┊"
 
@@ -95,13 +98,12 @@ banner_logo: |-
   [#C77DFF]██╔══██║██╔══██╗██║   ██║██║   ██║╚════██║[/]
   [#E06BE8]██║  ██║██║  ██║╚██████╔╝╚██████╔╝███████║[/]
   [#FF5BD8]╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝[/]
-  [dim #7A6A90]Agent Runtime for General-purpose Utility Services[/]
 
 banner_hero: |-
   [#6B4A9E]        ▄▄▄██████████▄▄▄        [/]
   [#9D6BFF]    ▄▄██▀▀            ▀▀██▄▄    [/]
   [#B97CFF]  ▄█▀       ▄▄████▄▄       ▀█▄  [/]
-  [#C77DFF] ██       ██▀ [#FF5BD8]▄██▄[/][#C77DFF] ▀██       ██ [/]
+  [#C77DFF] ██       ██▀ [/][#FF5BD8]▄██▄[/][#C77DFF] ▀██       ██ [/]
   [#B97CFF]  ▀█▄       ▀▀████▀▀       ▄█▀  [/]
   [#9D6BFF]    ▀▀██▄▄            ▄▄██▀▀    [/]
   [#6B4A9E]        ▀▀▀██████████▀▀▀        [/]

@@ -52,3 +52,12 @@ display:
   # The Ink TUI by default (Hermes defaults to its classic prompt_toolkit CLI); `argus --cli` still opens that.
   # The TUI attaches to the profile's one long-lived core server (`argus gateway`), the same one Desktop uses.
   interface: tui
+
+# ARGUS sees HavoK's whole estate: no usage metrics go to Nous, and the first-run question is answered here
+# ("decided" needs enabled/send recorded at the current offer_version - hermes_cli/observability/
+# shared_metrics_consent.py; if upstream bumps OFFER_VERSION it asks once more).
+telemetry:
+  shared_metrics:
+    enabled: false
+    send: false
+    offer_version: 2

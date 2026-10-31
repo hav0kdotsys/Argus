@@ -58,6 +58,10 @@ export interface ThemeBrand {
   goodbye: string
   tool: string
   helpHeader: string
+  /** Skin `branding.tagline`; empty means the translated catalog tagline. */
+  tagline?: string
+  /** Skin `branding.byline` - the "· <byline>" after the model name and the tiny-banner tag. */
+  byline?: string
 }
 
 export interface Theme {
@@ -258,7 +262,9 @@ const BRAND: ThemeBrand = {
   welcome: 'Type your message or /help for commands.',
   goodbye: 'Goodbye! ☤',
   tool: '┊',
-  helpHeader: '(^_^)? Commands'
+  helpHeader: '(^_^)? Commands',
+  tagline: '',
+  byline: 'Nous Research'
 }
 
 const cleanPromptSymbol = (s: string | undefined, fallback: string) => {
@@ -954,12 +960,14 @@ export function fromSkin(
 
       brand: {
         name: branding.agent_name ?? d.brand.name,
-        icon: d.brand.icon,
+        icon: branding.icon || d.brand.icon,
         prompt: cleanPromptSymbol(branding.prompt_symbol, d.brand.prompt),
         welcome: branding.welcome ?? d.brand.welcome,
         goodbye: branding.goodbye ?? d.brand.goodbye,
         tool: toolPrefix || d.brand.tool,
-        helpHeader: branding.help_header ?? (helpHeader || d.brand.helpHeader)
+        helpHeader: branding.help_header ?? (helpHeader || d.brand.helpHeader),
+        tagline: branding.tagline ?? d.brand.tagline,
+        byline: branding.byline ?? d.brand.byline
       },
 
       bannerLogo,

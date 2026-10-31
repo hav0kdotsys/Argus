@@ -80,7 +80,12 @@ export const SKIN_BRANDING_TOKENS = [
   'goodbye',
   'response_label',
   'prompt_symbol',
-  'help_header'
+  'help_header',
+  // The banner's glyph, tagline and the "· <byline>" after the model name. Optional: a skin without them
+  // keeps the stock ☤, the catalog tagline and "Nous Research".
+  'icon',
+  'tagline',
+  'byline'
 ] as const
 
 export type SkinBrandingToken = (typeof SKIN_BRANDING_TOKENS)[number]

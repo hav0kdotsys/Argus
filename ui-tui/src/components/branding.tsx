@@ -96,7 +96,7 @@ function CompactBanner({ cols, t }: { cols: number; t: Theme }) {
   return (
     <Box flexDirection="column" height={3} marginBottom={1} width={w}>
       <Text color={t.color.primary}>{ruleIn(t.brand.name, w)}</Text>
-      <Text color={t.color.muted}>{centerIn(T.tagFull, w)}</Text>
+      <Text color={t.color.muted}>{centerIn(t.brand.tagline || T.tagFull, w)}</Text>
       <Text color={t.color.primary}>{'─'.repeat(w)}</Text>
     </Box>
   )
@@ -133,7 +133,7 @@ export function Banner({ maxWidth, t }: { maxWidth?: number; t: Theme }) {
             {
               children: (
                 <Text color={t.color.muted} wrap="truncate-end">
-                  {t.brand.icon} {T.tagFull}
+                  {t.brand.icon} {t.brand.tagline || T.tagFull}
                 </Text>
               ),
               id: 'banner-tagline'
@@ -159,7 +159,9 @@ export function Banner({ maxWidth, t }: { maxWidth?: number; t: Theme }) {
   }
 
   const name = cols >= 52 ? t.brand.name : (t.brand.name.split(' ')[0] ?? t.brand.name)
-  const tag = cols >= 64 ? T.tagFull : cols >= 46 ? T.tagMid : TAG_TINY
+  // A skin tagline replaces both catalog tiers; the tiny tier is the skin's byline (stock: Nous Research).
+  const tiny = t.brand.byline || TAG_TINY
+  const tag = t.brand.tagline ? (cols >= 46 ? t.brand.tagline : tiny) : cols >= 64 ? T.tagFull : cols >= 46 ? T.tagMid : tiny
 
   return (
     <Box flexDirection="column" marginBottom={1}>
@@ -371,7 +373,7 @@ export function SessionPanel({ info, maxWidth, sid, t }: SessionPanelProps) {
 
       <Text color={t.color.accent}>
         {(info.model ?? '').split('/').pop()}
-        <Text color={t.color.muted}> · Nous Research</Text>
+        <Text color={t.color.muted}>{t.brand.byline ? ` · ${t.brand.byline}` : ''}</Text>
       </Text>
 
       <Text color={t.color.muted} wrap="truncate-end">
@@ -403,7 +405,7 @@ export function SessionPanel({ info, maxWidth, sid, t }: SessionPanelProps) {
         <Box flexDirection="column" marginBottom={1}>
           <Text color={t.color.accent} wrap="truncate-end">
             {(info.model ?? '').split('/').pop()}
-            <Text color={t.color.muted}> · Nous Research</Text>
+            <Text color={t.color.muted}>{t.brand.byline ? ` · ${t.brand.byline}` : ''}</Text>
           </Text>
           <Text color={t.color.muted} wrap="truncate-end">
             {info.cwd || process.cwd()}
