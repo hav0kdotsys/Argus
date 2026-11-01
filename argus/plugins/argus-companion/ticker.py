@@ -1,4 +1,4 @@
-"""The check-in ticker on laphvk: real signals in, ``presence.Scheduler`` decides, the pet says it.
+"""The check-in ticker on laphvk: real signals in, ``presence.Scheduler`` opens a moment, Mira decides (``mind``).
 
 Signals, all local and read-only:
 - idle: ``~/.argus/companion/state.json`` ``{"idle_since": <unix s> | null}``, written by the pet's Wayland
@@ -88,13 +88,27 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True) -> None:
         log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
 
 
+def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0) -> str | None:
+    """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
+    from . import mind
+    line = mind.ask(kind, present_for, folder, idle)
+    if line:
+        say(folder, line, kind)
+    else:
+        with open(folder / "checkins.log", "a", encoding="utf-8") as log:
+            log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind} (passed)\n")
+    return line
+
+
 def run(folder: Path | None = None, tick: float = TICK) -> None:
     """Tick until interrupted. ``bored`` stays off until the ticker can see that Hannah talked to Mira."""
     folder = folder or companion_dir()
+    folder.mkdir(parents=True, exist_ok=True)
     settings = presence.Settings(enabled=frozenset(presence.KINDS) - {"bored"})
-    sched = presence.Scheduler(settings, presence.CheckInLines(folder / "check-ins.md"))
+    sched = presence.Scheduler(settings)
     while True:
-        hit = sched.tick(moment(folder))
-        if hit:
-            say(folder, hit.line, hit.kind)
+        m = moment(folder)
+        opening = sched.tick(m)
+        if opening:
+            moment_now(folder, opening.kind, opening.present_for, m.idle)
         time.sleep(tick)

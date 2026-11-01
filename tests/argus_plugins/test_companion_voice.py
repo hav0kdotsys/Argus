@@ -75,7 +75,8 @@ def test_the_hook_remembers_openers_per_session_and_passes_untouched_replies_thr
     plugin = _plugin()
     hooks = {}
     plugin.register(type("Ctx", (), {"register_hook": lambda self, name, fn: hooks.setdefault(name, fn),
-                                     "register_cli_command": lambda self, **_: None})())
+                                     "register_cli_command": lambda self, **_: None,
+                                     "register_auxiliary_task": lambda self, *_, **__: None})())
     on_reply = hooks["transform_llm_output"]
     assert on_reply(response_text="Honestly, the run is clean.", session_id="a") is None
     assert on_reply(response_text="Honestly, JJ needs new mains.", session_id="a") == "JJ needs new mains."

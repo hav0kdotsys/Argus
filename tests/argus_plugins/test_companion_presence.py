@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import importlib.util
 import itertools
-import os
 import random
 import sys
 from datetime import datetime, timedelta
@@ -79,23 +78,16 @@ def test_bored_needs_her_there_and_mira_ignored():
     assert _run(talking, T0, 60, talked=True) == []
 
 
-def test_lines_come_from_the_file_she_edits_and_an_empty_heading_silences_a_kind(tmp_path):
-    lines_file = tmp_path / "check-ins.md"
-    lines = presence.CheckInLines(lines_file, random.Random(1))
-    assert lines.pick("water")  # the defaults were written
-    lines_file.write_text("## water\n- Drink, Hannah.\n- Hydrate or die-drate.\n\n## stretch\n", encoding="utf-8")
-    os.utime(lines_file, (1, 1))  # a new mtime, as an edit would give
-    picks = {lines.pick("water") for _ in range(6)}
-    assert picks == {"Drink, Hannah.", "Hydrate or die-drate."}
-    assert lines.pick("stretch") == ""
-    sched = presence.Scheduler(presence.Settings(enabled=frozenset({"stretch"}), minutes={**presence.DEFAULT_MINUTES,
-                                                                                          "stretch": 5}), lines)
-    assert _run(sched, T0, 10) == []
+def test_a_popin_comes_up_now_and_then_with_no_reason_inside_its_window():
+    sched = presence.Scheduler(presence.Settings(enabled=frozenset({"popin"})), rng=random.Random(5))
+    said = _run(sched, T0, 200)
+    assert said and all(kind == "popin" for _, kind in said)
+    assert 40 <= said[0][0] <= 90
 
 
-def test_never_the_same_line_twice_in_a_row(tmp_path):
-    lines_file = tmp_path / "check-ins.md"
-    lines_file.write_text("## water\n- One.\n- Two.\n", encoding="utf-8")
-    lines = presence.CheckInLines(lines_file, random.Random(3))
-    said = [lines.pick("water") for _ in range(10)]
-    assert all(a != b for a, b in itertools.pairwise(said))
+def test_an_opening_carries_how_long_she_has_been_here():
+    sched = _only("session", session=30)
+    for minute in range(31):
+        hit = sched.tick(presence.Moment(now=T0 + timedelta(minutes=minute)))
+    assert hit.kind == "session" and hit.present_for == timedelta(minutes=30)
+
