@@ -375,7 +375,7 @@ def install_node_sidecar(
 
     # Tool availability does not authorize mutation of the sidecar itself.
     if not explicit and not lazy_installs_allowed():
-        return "lazy installs are disabled — run `hermes plugins install` and approve Node dependencies"
+        return "lazy installs are disabled — run `argus plugins install` and approve Node dependencies"
 
     # a lockfile means reproducible `npm ci`; plain `npm install` otherwise
     install_cmd = ["ci"] if (plugin_dir / "package-lock.json").is_file() else ["install"]

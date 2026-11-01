@@ -161,7 +161,7 @@ class TestFindStaleDashboardPids:
                 returncode=0,
                 stdout="\n".join([
                     _ps_line(os.getpid(), "python3 -m hermes_cli.main dashboard"),
-                    _ps_line(12345, "argus dashboard --port 9119"),
+                    _ps_line(12345, "hermes dashboard --port 9119"),
                 ]) + "\n",
                 stderr="",
             )
@@ -821,7 +821,7 @@ class TestCmdlineCapture:
 
         def fake_run(args, *a, **kw):
             assert args == ["ps", "-p", "888", "-o", "command="]
-            return MagicMock(returncode=0, stdout="argus serve --port 8300\n", stderr="")
+            return MagicMock(returncode=0, stdout="hermes serve --port 8300\n", stderr="")
 
         with patch.object(live.os.path, "exists", return_value=False), \
              patch("subprocess.run", side_effect=fake_run):

@@ -320,8 +320,7 @@ def _is_our_wrapper(path: Path) -> bool:
     """True when *path* reads as a Hermes-generated wrapper (``hermes -p`` in its head)."""
     try:
         with open(path, encoding="utf-8-sig") as f:
-            head = f.read(_WRAPPER_READ_LIMIT)
-            return "hermes -p" in head or "argus -p" in head  # rebrand: keep
+            return _WRAPPER_FLAG.search(f.read(_WRAPPER_READ_LIMIT)) is not None
     except Exception:
         return False
 
@@ -521,7 +520,7 @@ def check_alias_collision(name: str) -> Optional[str]:
     if canon in _RESERVED_NAMES:
         return f"'{canon}' is a reserved name"
     if canon in _HERMES_SUBCOMMANDS:
-        return f"'{canon}' conflicts with a argus subcommand"
+        return f"'{canon}' conflicts with an argus subcommand"
     try:
         result = subprocess.run(
             ["where" if sys.platform == "win32" else "which", canon],
@@ -599,6 +598,7 @@ def find_alias_for_profile(profile_name: str) -> Optional[str]:
 # dir commonly also holds large binaries (ffmpeg, node, …) whose whole-file reads, N times,
 # dominated ``list_profiles`` (~4.5s).
 _WRAPPER_READ_LIMIT = 8192
+_WRAPPER_FLAG = re.compile(r"(?:hermes|argus) -p ")  # rebrand: keep (older wrappers exec `hermes -p`)
 
 
 def build_alias_map() -> dict[str, str]:
@@ -612,7 +612,6 @@ def build_alias_map() -> dict[str, str]:
     if not wrapper_dir.is_dir():
         return result
     is_windows = sys.platform == "win32"
-    prefixes = ("hermes -p ", "argus -p ")  # rebrand: keep
     for entry in sorted(wrapper_dir.iterdir()):
         if not entry.is_file():
             continue
@@ -624,11 +623,10 @@ def build_alias_map() -> dict[str, str]:
                 content = f.read(_WRAPPER_READ_LIMIT)
         except (OSError, UnicodeDecodeError):
             continue  # UnicodeDecodeError = a binary on PATH, not a wrapper
-        hit = next(((content.find(p), p) for p in prefixes if content.find(p) != -1), None)
-        if hit is None:
+        flag = _WRAPPER_FLAG.search(content)
+        if flag is None:
             continue
-        idx, prefix = hit
-        rest = content[idx + len(prefix):]
+        rest = content[flag.end():]
         # Profile id is the first whitespace-delimited token after the flag.
         canon = rest.split(None, 1)[0].strip() if rest.strip() else ""
         if not canon:

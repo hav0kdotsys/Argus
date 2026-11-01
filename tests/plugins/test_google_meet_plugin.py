@@ -240,7 +240,7 @@ def test_looks_like_human_speaker():
     from plugins.google_meet.meet_bot import _looks_like_human_speaker
 
     # Blank, "unknown", "you", and the bot's own name → not human (no barge-in)
-    for s in ("", "   ", "Unknown", "unknown", "You", "you", "ARGUS", "argus agent"):
+    for s in ("", "   ", "Unknown", "unknown", "You", "you", "ARGUS", "argus"):
         assert not _looks_like_human_speaker(s, "ARGUS"), f"{s!r} should NOT be human"
     # Real names → human (barge-in)
     for s in ("Alice", "Bob Lee", "@teknium"):

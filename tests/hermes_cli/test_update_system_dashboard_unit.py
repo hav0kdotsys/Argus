@@ -91,7 +91,7 @@ def test_systemd_owned_ledger_dashboard_is_classified_systemd(monkeypatch):
     calls: list = []
     _systemd_owned_dashboard(monkeypatch, calls)
     entry = {"pid": DASH_PID, "create_time": 1000.0, "purpose": "dashboard", "profile": "",
-             "argv": "argus dashboard --host 0.0.0.0 --port 9119 --no-open", "host": "0.0.0.0", "port": 9119}
+             "argv": "hermes dashboard --host 0.0.0.0 --port 9119 --no-open", "host": "0.0.0.0", "port": 9119}  # rebrand: keep (program-read data)
     fake_pi = SimpleNamespace(ledger_entries=lambda **k: [entry], spawner_is_dead=lambda e: None)
     monkeypatch.setitem(sys.modules, "hermes_cli.process_identity", fake_pi)
     plan = UpdatePlan()
@@ -108,7 +108,7 @@ def test_hand_started_dashboard_in_a_foreign_cgroup_stays_manual(monkeypatch):
     monkeypatch.setattr(main_dashboard, "_pid_unified_cgroup_entries", lambda pid: iter(["/system.slice/cron.service"]))
     monkeypatch.setattr(main_dashboard, "_run_probe",
                         lambda cmd, *, timeout: SimpleNamespace(returncode=0, stdout="991\n", stderr=""))
-    entry = {"pid": 4321, "create_time": 1.0, "purpose": "dashboard", "argv": "argus dashboard"}
+    entry = {"pid": 4321, "create_time": 1.0, "purpose": "dashboard", "argv": "hermes dashboard"}  # rebrand: keep (program-read data)
     monkeypatch.setitem(sys.modules, "hermes_cli.process_identity",
                         SimpleNamespace(ledger_entries=lambda **k: [entry], spawner_is_dead=lambda e: None))
     plan = UpdatePlan()
@@ -346,7 +346,7 @@ def test_desktop_handoffs_add_the_gateway_hint_only_when_gateways_are_blamed(cap
     ps = (scripts / "windows.ps1").read_text(encoding="utf-8")
     line_pat = re.search(r'\$_ -cmatch "(Update follow-up [^"]+)"', ps).group(1)
     serve_pat = re.search(r'\$_ -cnotmatch "([^"]+)"', ps).group(1)
-    gw_pat = re.search(r'\(\$_ -cmatch "(argus gateway restart)"\)', ps).group(1)
+    gw_pat = re.search(r'\(\$_ -cmatch "(\(hermes\|argus\) gateway restart)"\)', ps).group(1)
     lines = [ln for ln in out.splitlines() if re.search(line_pat, ln)]
     serve_only = bool(lines) and not [ln for ln in lines if not re.search(serve_pat, ln) or re.search(gw_pat, ln)]
     assert (not serve_only) is hinted

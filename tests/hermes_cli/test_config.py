@@ -68,7 +68,7 @@ class TestEnsureHermesHome:
     # module) so this fixture keeps testing the OLD text regardless of any
     # future change to _LEGACY_TEMPLATE_SOULS's length or ordering.
     _PRE_REWRITE_DEFAULT_SOUL = (
-        "You are ARGUS, an intelligent AI assistant created by Nous "
+        "You are Hermes Agent, an intelligent AI assistant created by Nous "  # rebrand: keep (the text old installs wrote)
         "Research. You are helpful, knowledgeable, and direct. You assist "
         "users with a wide range of tasks including answering questions, "
         "writing and editing code, analyzing information, creative work, "

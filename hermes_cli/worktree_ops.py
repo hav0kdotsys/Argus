@@ -421,7 +421,7 @@ def _setup_worktree(repo_root: str | None = None, sync_base: bool = True,
 
     # Lock so other processes (and `git worktree remove`) see it is in use; fail-soft.
     try:
-        reason = f"argus pid={os.getpid()}" + (f" db={retain_db}" if retain_db is not None else "")
+        reason = f"hermes pid={os.getpid()}" + (f" db={retain_db}" if retain_db is not None else "")  # rebrand: keep (a lock format other launchers read)
         _git(["worktree", "lock", "--reason", reason, str(wt_path)], repo_root)
         logger.debug("Worktree locked: %s (pid=%s)", wt_path, os.getpid())
     except Exception as e:
@@ -763,7 +763,7 @@ def _worktree_branch_pushed_exact(
 # and ``hermes session=<id> db=<state.db>`` (re-lock when the TUI exits). Read raw from the admin
 # dir: plain ``list --porcelain`` C-quotes a reason holding a backslash, a quote, a control or a
 # non-ASCII byte (every Windows path), and the ``db=`` path would never parse.
-_HERMES_LOCK_RE = re.compile(r"hermes (?:pid=(\d+)|session=\S+)(?: db=(.+))?", re.DOTALL)
+_HERMES_LOCK_RE = re.compile(r"(?:hermes|argus) (?:pid=(\d+)|session=\S+)(?: db=(.+))?", re.DOTALL)
 
 
 def _retain_worktree_for_session(repo_root: str, worktree_path: str, session_id: str, db_path) -> bool:
@@ -775,7 +775,7 @@ def _retain_worktree_for_session(repo_root: str, worktree_path: str, session_id:
     """
     _git_quiet(["worktree", "unlock", worktree_path], repo_root, log="worktree unlock before retain failed")
     try:
-        result = _git(["worktree", "lock", "--reason", f"argus session={session_id} db={db_path}",
+        result = _git(["worktree", "lock", "--reason", f"hermes session={session_id} db={db_path}",  # rebrand: keep (lock format)
                        worktree_path], repo_root)
     except (OSError, subprocess.SubprocessError) as exc:
         logger.debug("worktree retain lock failed for %s: %s", worktree_path, exc)

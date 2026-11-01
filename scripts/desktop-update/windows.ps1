@@ -1923,7 +1923,7 @@ try {
         # command in the log. The hint drops only when EVERY gateway_restart line is serve-only; any other
         # reason, including a raw restart-phase error, keeps it (#141071).
         $gwReasons = @((($res.Output -join "`n") -split "`r?`n") | Where-Object { $_ -cmatch "Update follow-up 'gateway_restart' did not finish: " })
-        $serveOnly = ($gwReasons.Count -gt 0) -and -not @($gwReasons | Where-Object { ($_ -cnotmatch "did not finish: serve/dashboard ") -or ($_ -cmatch "hermes gateway restart") }).Count
+        $serveOnly = ($gwReasons.Count -gt 0) -and -not @($gwReasons | Where-Object { ($_ -cnotmatch "did not finish: serve/dashboard ") -or ($_ -cmatch "(hermes|argus) gateway restart") }).Count
         $owedHint = if (($owedSteps -contains 'gateway_restart') -and -not $serveOnly) { " Run 'hermes gateway restart' to move the messaging gateway onto the new code now." } else { '' }
         Add-Followup ("followup: owed by the committed update: " + ($owedSteps -join ', ')) ("some follow-up steps did not finish (" + ($owedSteps -join ', ') + "). The next launch or 'hermes update' retries them; the update log has the details." + $owedHint) -Manual
     }

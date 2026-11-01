@@ -62,5 +62,5 @@ def test_pause_help_and_docs_say_interactive_turns_are_held_too():
     for needle in ('CLI', 'TUI', 'Desktop', 'argus resume'):
         assert needle in text, text
     doc = (Path(__file__).resolve().parents[2] / 'website/docs/reference/cli-commands.md').read_text()
-    row = next(line for line in doc.splitlines() if line.startswith('| `argus pause`'))
+    row = next(line for line in doc.splitlines() if line.startswith('| `hermes pause`'))  # rebrand: keep (program-read data)
     assert 'CLI, TUI and Desktop' in row and 'finish' in row, row

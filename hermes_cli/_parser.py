@@ -330,7 +330,7 @@ def _build_chat_parser(subparsers) -> argparse.ArgumentParser:
 def _plugin_command_install_hint(prog: str, value: str):
     """Install command when *value* names a catalog memory plugin that resolves nowhere: its
     ``hermes <name>`` command exists only once the plugin is installed. Top level only; never raises."""
-    if prog != "hermes" or not re.fullmatch(r"[a-z0-9_-]{1,64}", value):
+    if prog != "argus" or not re.fullmatch(r"[a-z0-9_-]{1,64}", value):
         return None
     try:
         from plugins.memory import find_provider_dir
@@ -359,7 +359,7 @@ class HermesArgumentParser(argparse.ArgumentParser):
 
     def _check_value(self, action, value):
         if isinstance(action, argparse._SubParsersAction) and value not in action.choices:
-            # ``self.prog`` is "hermes" at the top level and "hermes gateway" for a nested group
+            # ``self.prog`` is "argus" at the top level and "argus gateway" for a nested group
             # (argparse hands add_parser() the parent's class), so the copy stays correct for both.
             lines = [f"{self.prog}: '{value}' is not a `{self.prog}` command."]
             close = difflib.get_close_matches(str(value), list(action.choices), n=3, cutoff=0.6)

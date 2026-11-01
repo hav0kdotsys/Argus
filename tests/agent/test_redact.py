@@ -1231,6 +1231,7 @@ class TestTerminalOutputRedaction:
         ("command", "output", "secret"),
         [
             ("cat ~/.argus/config.yaml", "api_key: hermesConfigSecret123", "hermesConfigSecret123"),
+            ("cat ~/.hermes/config.yaml", "api_key: legacyHomeSecret789", "legacyHomeSecret789"),  # rebrand: keep
             (
                 "head ~/.argus/profiles/work/config.yaml",
                 "provider.token=profileConfigSecret456",

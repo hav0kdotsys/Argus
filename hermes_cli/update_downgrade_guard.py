@@ -136,7 +136,7 @@ def downgrade_refusal(git_cmd, root: Path, target_ref: str, home: Path | None = 
              "each store's copy from before the upgrade:"]
     for name, h in ledgered:
         snapshot = _pre_runtime_snapshot(h)
-        hermes = f"argus -p {name}" if name else "hermes"
+        hermes = f"argus -p {name}" if name else "argus"
         lines.append(f"    {h}: run `{hermes}` and enter `/snapshot restore {snapshot}`." if snapshot else
                      f"    {h}: no pre-update snapshot predates the upgrade; restore a full backup taken before "
                      f"it with `{hermes} import <backup.zip>`.")

@@ -9,6 +9,10 @@ package / toolset ids (hermes-cli, @hermes/ink), file names, URLs, Nous' Hermes 
 It edits only string literals:
   - Python: tokenize-exact (STRING tokens and f-string bodies with {expressions} masked); docstrings skipped.
   - TypeScript/TSX: a literal scanner ('..', "..", `..` with ${..} masked); comments and imports skipped.
+  - YAML (the i18n catalogues in locales/): values only - keys and comments are left alone.
+
+Blind spots (check by hand after a run): a literal nested INSIDE an f-string's {expression}
+(f"{t('k', agent_name='Hermes')}"), and a command built from a list (" ".join(["hermes", ...])).
 
 Usage:  python3 argus/tools/rebrand.py [--check] PATH...     (dirs are walked; --check only reports)
 Re-run it after taking anything from upstream - it is idempotent.
@@ -68,7 +72,7 @@ def _masked(body: str, opener: str, closer: str, escape_double: bool) -> str:
                     depth -= 1
                 j += 1
             held.append(body[i:j])
-            buf.append("{\x00%d\x00}" % (len(held) - 1)); i = j; continue
+            buf.append(f"{{\x00{len(held) - 1}\x00}}"); i = j; continue
         buf.append(body[i]); i += 1
     text = rebrand_text("".join(buf))
     return re.sub(r"\{\x00(\d+)\x00\}", lambda m: held[int(m.group(1))], text)
@@ -155,6 +159,24 @@ def rebrand_python(src: str) -> str:
     return "".join(out)
 
 
+# ------------------------------------------------------------------------------------------------------ yaml
+
+# `key:` (optionally a list item or a quoted key), then the value. Anything else that is not a comment is the
+# continuation of a block scalar or a multi-line quoted value, so it is all value.
+_YAML_KEY = re.compile(r"^(\s*(?:- )?(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|[^\s#'\"-][^:#]*?):)(?=\s|$)(.*)$", re.DOTALL)
+
+
+def rebrand_yaml(src: str) -> str:
+    out = []
+    for line in src.splitlines(keepends=True):
+        if not line.strip() or line.lstrip().startswith("#") or "rebrand: keep" in line:
+            out.append(line)
+            continue
+        m = _YAML_KEY.match(line)
+        out.append(m.group(1) + rebrand_text(m.group(2)) if m else rebrand_text(line))
+    return "".join(out)
+
+
 # ------------------------------------------------------------------------------------------------- typescript
 
 def rebrand_ts(src: str) -> str:
@@ -202,7 +224,57 @@ def rebrand_ts(src: str) -> str:
 
 _SKIP_DIRS = {"node_modules", "dist", ".git", "__pycache__", ".venv", "venv", "build"}
 # Files rebranded by hand (they define the classic Hermes look on purpose).
-_SKIP_FILES = {"hermes_cli/skin_engine.py", "hermes_cli/default_soul.py"}
+_SKIP_FILES = {
+    "hermes_cli/skin_engine.py", "hermes_cli/default_soul.py",
+    # argv fixtures: a real process line always says `hermes` (the launcher execs `python <repo>/hermes`)
+    "tests/gateway/test_gateway_command_line_matcher.py", "tests/gateway/test_status.py",
+    # fixtures a program reads (argv, bot names and mention text, worktree lock reasons, service units, the
+    # docker user, HTTP User-Agents), or upstream tooling ARGUS doesn't ship yet (installer, desktop updater, docs)
+    "tests/gateway/test_bluebubbles_plugin.py",
+    "tests/gateway/test_buzz_mention_resolution.py",
+    "tests/gateway/test_dingtalk.py",
+    "tests/gateway/test_feishu_bot_admission.py",
+    "tests/gateway/test_feishu.py",
+    "tests/gateway/test_matrix_mention.py",
+    "tests/gateway/test_multiplex_api_server_routing.py",
+    "tests/gateway/test_multiplex_lifecycle.py",
+    "tests/gateway/test_multiplex_secondary_port_binding_env.py",
+    "tests/gateway/test_slack_pasted_tables.py",
+    "tests/hermes_cli/test_gateway_migrate_compensator_resume.py",
+    "tests/hermes_cli/test_gateway_migrate_converged_host.py",
+    "tests/hermes_cli/test_gateway_multiplex_mode.py",
+    "tests/hermes_cli/test_gui_command.py",
+    "tests/hermes_cli/test_orphan_desktop_serve_reap.py",
+    "tests/hermes_cli/test_parser_help_home.py",
+    "tests/hermes_cli/test_pooled_served_profile_backend_unscoped.py",
+    "tests/hermes_cli/test_process_identity_canonical_matchers.py",
+    "tests/hermes_cli/test_projects_db.py",
+    "tests/hermes_cli/test_served_profile_mirror_platforms.py",
+    "tests/hermes_cli/test_serve_runtime_inventory.py",
+    "tests/hermes_cli/test_service_manager.py",
+    "tests/hermes_cli/test_update_stale_dashboard.py",
+    "tests/hermes_cli/test_web_server_messaging_posture.py",
+    "tests/hermes_cli/test_worktree_gc.py",
+    "tests/hermes_cli/test_worktree.py",
+    "tests/hermes_cli/test_worktree_snapshot_prune.py",
+    "tests/plugins/image_gen/test_xai_provider.py",
+    "tests/plugins/platforms/photon/test_auth.py",
+    "tests/plugins/platforms/photon/test_mention_gating.py",
+    "tests/scripts/desktop_update/test_desktop_update_gateway_flag.py",
+    "tests/scripts/desktop_update/test_desktop_update_posix_marker.py",
+    "tests/scripts/desktop_update/test_handoff_delegate_publication.py",
+    "tests/scripts/install/test_install_sh_existing_destination.py",
+    "tests/scripts/install/test_install_sh_shell_path.py",
+    "tests/scripts/test_code_health_rules.py",
+    "tests/scripts/test_release_entrypoint.py",
+    "tests/skills/test_google_workspace_setup_deps.py",
+    "tests/test_display_hermes_home.py",
+    "tests/tools/test_skill_linter.py",
+    "tests/tools/test_stage2_hook_symlink_chown.py",
+    "tests/website/test_extract_plugins.py",
+    "tests/website/test_extract_skills.py",
+    "tests/hermes_cli/test_gateway_migrate_multiplex.py",
+}
 
 
 def _files(paths: list[str]):
@@ -211,7 +283,9 @@ def _files(paths: list[str]):
             yield p
             continue
         for f in p.rglob("*"):
-            if (f.is_file() and f.suffix in (".py", ".ts", ".tsx") and not (_SKIP_DIRS & set(f.parts))
+            # YAML only in locales/ (the i18n catalogues): other YAML (plugin manifests, configs) holds identifiers.
+            yaml_ok = f.suffix == ".yaml" and "locales" in f.parts
+            if (f.is_file() and (f.suffix in (".py", ".ts", ".tsx") or yaml_ok) and not (_SKIP_DIRS & set(f.parts))
                     and not any(f.as_posix().endswith(x) for x in _SKIP_FILES)):
                 yield f
 
@@ -225,7 +299,7 @@ def main(argv: list[str]) -> int:
             src = f.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
             continue
-        new = rebrand_python(src) if f.suffix == ".py" else rebrand_ts(src)
+        new = {".py": rebrand_python, ".yaml": rebrand_yaml}.get(f.suffix, rebrand_ts)(src)
         if new != src:
             changed += 1
             if check:

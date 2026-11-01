@@ -202,8 +202,8 @@ def test_render_run_script_uses_replace_to_take_over_stale_holder() -> None:
     """
     default_text = S6ServiceManager._render_run_script("default", {})
     # Root profile: bare `hermes gateway run --replace` (no -p flag).
-    assert "argus gateway run --replace" in default_text
-    assert "argus -p default" not in default_text
+    assert "hermes gateway run --replace" in default_text
+    assert "hermes -p default" not in default_text
     # Every exec line that launches the gateway must carry --replace, so
     # neither the non-root nor the privilege-drop branch can spin.
     gateway_execs = [
@@ -453,15 +453,15 @@ def test_s6_log_run_creates_leaf_as_hermes_without_chown(
         "restartable log/run must not invoke chown on hermes-writable paths; "
         f"saw: {log_text!r}"
     )
-    assert 's6-setuidgid argus mkdir -p "$log_dir"' in log_text
-    assert 's6-setuidgid argus rm -f "$log_dir/lock"' in log_text
+    assert 's6-setuidgid hermes mkdir -p "$log_dir"' in log_text
+    assert 's6-setuidgid hermes rm -f "$log_dir/lock"' in log_text
     assert 'else\n  mkdir -p "$log_dir"\n  rm -f "$log_dir/lock"\nfi\n' in log_text
     # Lock cleanup must not remain a bare root-context pathname op after fi.
     after_fi = log_text.split("fi\n", 1)[-1]
     assert 'rm -f "$log_dir/lock"' not in after_fi
 
-    mkdir_as_hermes_idx = log_text.index('s6-setuidgid argus mkdir -p "$log_dir"')
-    rm_as_hermes_idx = log_text.index('s6-setuidgid argus rm -f "$log_dir/lock"')
+    mkdir_as_hermes_idx = log_text.index('s6-setuidgid hermes mkdir -p "$log_dir"')
+    rm_as_hermes_idx = log_text.index('s6-setuidgid hermes rm -f "$log_dir/lock"')
     exec_idx = log_text.index("s6-log 1 ")
     assert mkdir_as_hermes_idx < rm_as_hermes_idx < exec_idx
 

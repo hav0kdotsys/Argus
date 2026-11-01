@@ -616,7 +616,7 @@ def _memory_provider_generic(name: str) -> None:
         from plugins.memory import find_provider_dir
         from hermes_cli.memory_provider_migration import catalog_install_hint
         hint = catalog_install_hint(name, category="memory") if find_provider_dir(name) is None else None
-        check_warn(f"{name} plugin not found", f"run: {hint or 'hermes memory setup'}")
+        check_warn(f"{name} plugin not found", f"run: {hint or 'argus memory setup'}")
 
 
 @doctor_check()

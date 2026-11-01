@@ -431,7 +431,7 @@ class TestRequiresHermes:
             mgr = PluginManager()
             mgr.discover_and_load()
             assert not hasattr(sys, "_rh_future")
-            assert "requires hermes >=99.0" in (mgr._plugins["future"].error or "")
+            assert "requires argus >=99.0" in (mgr._plugins["future"].error or "")
             assert getattr(sys, "_rh_current", False) is True
         finally:
             for attr in ("_rh_future", "_rh_current"):

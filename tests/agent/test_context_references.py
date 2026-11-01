@@ -516,7 +516,7 @@ def test_ssh_backend_staged_binary_attachment_points_at_the_synced_remote_path(t
 
     assert result.expanded
     assert "binary file, not inlined" in result.message
-    assert "~/.argus/attachments/archive.zip" in result.message
+    assert "~/.hermes/attachments/archive.zip" in result.message  # rebrand: keep (the remote sync root)
 
 
 def test_ref_outside_workspace_and_staging_dirs_is_still_refused(tmp_path: Path, monkeypatch):
@@ -557,7 +557,7 @@ def test_local_backend_staged_attachment_keeps_the_host_path(tmp_path: Path, mon
 
     assert result.expanded
     assert "binary file, not inlined" in result.message
-    assert "~/.argus/attachments/" not in result.message
+    assert "~/.hermes/attachments/" not in result.message  # rebrand: keep (the remote sync root)
 
 
 

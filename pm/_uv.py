@@ -33,7 +33,7 @@ def _toolchain(*, realize: bool = True, explicit: bool = False) -> tuple[Path, P
         if location is None:
             if not realize:
                 return None
-            raise InstallError(name, "pinned tool is unavailable", "run `hermes pm install`")
+            raise InstallError(name, "pinned tool is unavailable", "run `argus pm install`")
         if name == "python" and target.startswith("win32") and sealed():
             location = writable_copy(name, realize=realize, explicit=explicit,
                                      why="a writable Python is required for bundled builds")
@@ -44,7 +44,7 @@ def _toolchain(*, realize: bool = True, explicit: bool = False) -> tuple[Path, P
         if binary is None or not binary.is_file():
             if not realize:
                 return None
-            raise InstallError(name, "installed binary is missing", "run `hermes pm install`")
+            raise InstallError(name, "installed binary is missing", "run `argus pm install`")
         binaries[name] = binary
     # Callers execute and compare these outside PM's own file calls: the ordinary spelling, not the store's.
     return Path(native(binaries["uv"])), Path(native(binaries["python"]))

@@ -18,7 +18,7 @@ class InstallError(RuntimeError):
     def __init__(self, package: str, cause: str, remedy: str = ""):
         self.package = package
         self.cause = cause
-        self.remedy = remedy or "retry, or run `hermes pm doctor`"
+        self.remedy = remedy or "retry, or run `argus pm doctor`"
         super().__init__(f"{package}: {cause} — {self.remedy}")
 
 

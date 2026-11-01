@@ -21,12 +21,12 @@ CMDLINES = [
     ("/venv/bin/hermes serve --isolated --host=127.0.0.1 --port=0 --ssh-owner-nonce abc", "serve", True, False),
     (r"C:\hermes\.venv\Scripts\hermes.exe serve --host 100.106.105.2 --port 9119", "serve", False, False),
     ("hermes.exe dashboard", "dashboard", False, False),
-    ("argus --profile ops serve " + LOOPBACK, "serve", True, False),
-    ("argus -m serve kanban --preserve-cache " + LOOPBACK, "kanban", False, False),
+    ("hermes --profile ops serve " + LOOPBACK, "serve", True, False),
+    ("hermes -m serve kanban --preserve-cache " + LOOPBACK, "kanban", False, False),
     ("python -m hermes_cli.main kanban --preserve-cache " + LOOPBACK, "kanban", False, False),
-    ("argus --reasoning high dashboard " + LOOPBACK, "dashboard", False, False),
-    ("argus gateway run --replace", "gateway", False, False),
-    ("argus chat --model serve", "chat", False, False),
+    ("hermes --reasoning high dashboard " + LOOPBACK, "dashboard", False, False),
+    ("hermes gateway run --replace", "gateway", False, False),
+    ("hermes chat --model serve", "chat", False, False),
     ("python observer.py serve " + LOOPBACK, None, False, False),
 ]
 
@@ -42,9 +42,9 @@ def test_kill_and_relaunch_predicates_agree_with_the_canonical_holder_matcher(
 
 
 def test_desktop_local_serve_spares_fixed_port_and_remote_hosts():
-    assert not _is_desktop_local_serve_cmdline("argus serve --host 100.106.105.2 --port 9119 --skip-build")
-    assert not _is_desktop_local_serve_cmdline("argus serve --host 127.0.0.1 --port 9119")
-    assert _is_desktop_local_serve_cmdline("argus serve --host localhost --port 0")
+    assert not _is_desktop_local_serve_cmdline("hermes serve --host 100.106.105.2 --port 9119 --skip-build")
+    assert not _is_desktop_local_serve_cmdline("hermes serve --host 127.0.0.1 --port 9119")
+    assert _is_desktop_local_serve_cmdline("hermes serve --host localhost --port 0")
 
 
 def test_profile_liveness_is_the_shared_ladder(tmp_path, monkeypatch):
@@ -71,7 +71,7 @@ def test_profile_liveness_is_the_shared_ladder(tmp_path, monkeypatch):
 
 # ``hermes serve`` is a substring of ``hermes server``: a terminal multiplexer started as
 # ``herdr --session hermes server`` was SIGTERMed by ``hermes update`` and its unit restarted (#121156).
-DECOY = "tool --name argus server 30"
+DECOY = "tool --name hermes server 30"
 BACKENDS = [
     "/opt/hermes/venv/bin/python -m hermes_cli.main serve --port 0",
     "/usr/bin/python3 /opt/hermes/hermes_cli/main.py dashboard --no-open",

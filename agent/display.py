@@ -1119,11 +1119,8 @@ def _cute_fallback_row(tool_name: str, args: dict) -> _CuteRow:
     emoji = get_tool_emoji(tool_name)
     # The modern row shows the verb: a tool without a curated one reads as its title ("Estate Overview"),
     # the same text the tool-search bridge labels use - never the raw snake_case name.
-    try:
-        from tools.tool_labels import app_title
-        title = app_title(tool_name)
-    except Exception:
-        title = tool_name
+    from tools.tool_labels import app_title
+    title = app_title(tool_name)
     return _CuteRow(f"┊ {emoji} {tool_name[:9]:9} {detail}", emoji, title, detail)
 
 

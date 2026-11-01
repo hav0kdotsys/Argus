@@ -350,7 +350,7 @@ def test_hydrate_bot_identity_populates_self_ids_from_bot_v3_info(monkeypatch):
     assert captured["uri"] == "/open-apis/bot/v3/info"
     assert str(captured["http_method"]).endswith("GET")
     assert adapter._bot_open_id == "ou_hydrated"
-    assert adapter._bot_name == "ARGUS"
+    assert adapter._bot_name == "Hermes"
     # /bot/v3/info doesn't surface user_id, so _bot_user_id stays empty.
     assert adapter._bot_user_id == ""
 
@@ -518,7 +518,7 @@ def test_admit_accepts_realistic_bot_at_bot_group_event():
     mention = SimpleNamespace(
         key="@_user_1",
         id=SimpleNamespace(union_id="on_mentionUnion", user_id="", open_id="ou_self"),
-        name="ARGUS",
+        name="Hermes",
         mentioned_type="bot",
         tenant_key="tenant_ab",
     )

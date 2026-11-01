@@ -131,7 +131,7 @@ def test_sweep_archives_idle_work_and_never_touches_live_kanban_or_young_trees(r
     unpushed = _tree(repo, "hermes-unpushed", unpushed=True)
     live_cwd = _tree(repo, "lane-live-cwd", dirty=True)
     live_lock = _tree(repo, "hermes-live-lock", dirty=True)
-    _git(["worktree", "lock", "--reason", f"argus pid={os.getpid()}", str(live_lock)], repo)
+    _git(["worktree", "lock", "--reason", f"hermes pid={os.getpid()}", str(live_lock)], repo)
     kanban = _tree(repo, "t_0abc12", dirty=True)
     young = _tree(repo, "lane-young", dirty=True)
     unarchivable = _tree(repo, "lane-embedded", dirty=True)

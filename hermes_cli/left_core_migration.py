@@ -678,7 +678,7 @@ def moved_command_hint(prog: str, value: str, action: str = "") -> str:
                 f"`argus {moved.command}`.{get}")
     if prog == "argus auth":
         feature = next((f for f in LEFT_CORE if f.cli and f.cli == value), None)
-    elif prog == "hermes":
+    elif prog == "argus":
         feature = next((f for f in LEFT_CORE if value and value in (f.cli, f.command, *f.old_cli)), None)
     else:
         feature = None
@@ -688,7 +688,7 @@ def moved_command_hint(prog: str, value: str, action: str = "") -> str:
     if not plugin_present(feature.plugin, home):
         get = f" Install it with: `{install}`."
     else:
-        get = f" Enable it with: `{install.replace(' install ', ' enable ')}`." if prog == "hermes" else ""
+        get = f" Enable it with: `{install.replace(' install ', ' enable ')}`." if prog == "argus" else ""
     if prog == "argus auth":
         old = " ".join(p for p in ("argus auth", action, value) if p)
         return (f"{feature.label} moved out of core into the '{feature.plugin}' plugin: `{old}` is now "

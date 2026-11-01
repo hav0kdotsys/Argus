@@ -91,7 +91,7 @@ def test_valid_entry_is_extracted_with_install_command(mod, tmp_path):
     assert e["capabilities"]["providesTools"] == ["do_thing"]
     assert e["capabilities"]["providesHooks"] == ["on_start"]
     assert e["capabilities"]["requiresEnv"] == ["EXAMPLE_TOKEN"]
-    assert e["installCommand"] == "argus plugins install example-plugin"
+    assert e["installCommand"] == "hermes plugins install example-plugin"
 
 
 def test_entries_missing_required_fields_are_skipped(mod, tmp_path, capsys):

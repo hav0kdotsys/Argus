@@ -32,7 +32,7 @@ def test_oauth_stops_at_pm_restart_boundary(command, monkeypatch, tmp_path, caps
         path.write_text(json.dumps({"state": "pending-state", "code_verifier": "verifier"}))
         monkeypatch.setattr(module, name, path)
     before = {path: path.read_bytes() for path in tmp_path.glob("*.json")}
-    ensure = Mock(side_effect=pm.InstallError("venv", "google installed; restart ARGUS to activate"))
+    ensure = Mock(side_effect=pm.InstallError("venv", "google installed; restart Hermes to activate"))
     monkeypatch.setattr(pm, "ensure_import", ensure)
     monkeypatch.setattr("subprocess.check_call", Mock(side_effect=AssertionError("ambient install")))
     monkeypatch.setattr(sys, "argv", [str(SETUP_PATH), command] + (["code"] if command == "--auth-code" else []))
@@ -42,7 +42,7 @@ def test_oauth_stops_at_pm_restart_boundary(command, monkeypatch, tmp_path, caps
 
     assert failure.value.code == 1
     ensure.assert_called_once_with("google")
-    assert "restart ARGUS" in capsys.readouterr().out
+    assert "restart Hermes" in capsys.readouterr().out
     assert {path: path.read_bytes() for path in tmp_path.glob("*.json")} == before
 
 
@@ -60,7 +60,7 @@ def test_standalone_without_hermes_reports_setup_not_ambient_installs(command, t
         check=False,
     )
     assert result.returncode == 1
-    assert "ARGUS environment" in result.stdout
-    assert "argus setup" in result.stdout
+    assert "Hermes environment" in result.stdout
+    assert "hermes setup" in result.stdout
     assert "pip" not in result.stdout + result.stderr
     assert "Traceback" not in result.stderr

@@ -87,7 +87,7 @@ class PythonDeclaration:
             return None
         if SpecifierSet(self.requires_python).contains(version, prereleases=True):
             return None
-        return f"requires Python {self.requires_python}, but Hermes runs on Python {version}"
+        return f"requires Python {self.requires_python}, but ARGUS runs on Python {version}"
 
     def __post_init__(self) -> None:
         if not self.external:

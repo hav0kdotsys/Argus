@@ -136,7 +136,7 @@ def test_anonymous_claim_does_not_classify_other_providers_as_nous():
 def test_named_account_on_welcome_host_gets_reconnect_copy_without_signin_card():
     """The gateway's mirror 400 keeps its reconnect copy for a signed-in user; the sign-in card would
     ask for a sign-in that already happened."""
-    message = "This endpoint serves anonymous ARGUS accounts only. Use https://inference-api.nousresearch.com with your API key or signed-in account."
+    message = "This endpoint serves anonymous Hermes Agent accounts only. Use https://inference-api.nousresearch.com with your API key or signed-in account."  # rebrand: keep (Nous Portal's text)
     error = Exception(message)
     error.status_code, error.body = 400, {"status": 400, "message": message}
     agent = agent_for(make_jwt(account_tier="free", client_id="hermes-cli"), WELCOME)

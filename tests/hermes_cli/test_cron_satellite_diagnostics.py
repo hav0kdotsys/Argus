@@ -29,7 +29,7 @@ def served_root(tmp_path, monkeypatch):
         "gateway.status.is_gateway_runtime_lock_active",
         lambda lock_path=None: lock_path == root / "gateway.lock",
     )
-    monkeypatch.setattr("gateway.status._read_process_cmdline", lambda pid: "argus gateway run")
+    monkeypatch.setattr("gateway.status._read_process_cmdline", lambda pid: "hermes gateway run")  # rebrand: keep (process argv)
     root.joinpath("gateway.pid").write_text(json.dumps({"pid": os.getpid()}))
     root.joinpath("config.yaml").write_text("gateway:\n  multiplex_profiles: true\n")
     return root

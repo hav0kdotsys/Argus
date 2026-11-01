@@ -502,7 +502,6 @@ def _exit_when_terminal_closes() -> None:
             return
     except (OSError, ValueError):
         return
-    import threading
     import time
 
     def watch() -> None:
@@ -511,7 +510,7 @@ def _exit_when_terminal_closes() -> None:
             if not _terminal_gone():
                 continue
             import signal
-            for sig in (signal.SIGTERM, signal.SIGKILL):
+            for sig in (signal.SIGTERM, getattr(signal, "SIGKILL", signal.SIGTERM)):
                 kids = _child_pids()
                 for pid in kids:
                     with contextlib.suppress(OSError):
@@ -521,7 +520,8 @@ def _exit_when_terminal_closes() -> None:
                 time.sleep(3)
             os._exit(129)  # 128 + SIGHUP: the terminal hung up
 
-    threading.Thread(target=watch, name="tui-terminal-watch", daemon=True).start()
+    from agent.memory_provider import spawn_context_thread
+    spawn_context_thread(watch, name="tui-terminal-watch").start()
 
 
 def _launch_tui(

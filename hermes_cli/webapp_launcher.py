@@ -154,14 +154,14 @@ def _profile_choice(home: Path, target: Path) -> dict:
 
 
 def _rerun_command(*flags: str) -> str:
-    """``hermes webapp *flags*`` for the profile this run used: ``-p`` re-homed only this process, so a
+    """``argus webapp *flags*`` for the profile this run used: ``-p`` re-homed only this process, so a
     bare rerun gets the sticky profile, and the command keeps ``-p <name>`` when that names another one."""
     import shlex
     from hermes_cli.main import explicit_cli_profile
     from hermes_cli.profiles import get_active_profile
     name = explicit_cli_profile()
     profile = ["-p", shlex.quote(name)] if name and name != get_active_profile() else []
-    return " ".join(["hermes", *profile, "webapp", *flags])
+    return " ".join(["argus", *profile, "webapp", *flags])
 
 
 def older_gateway(response: dict) -> bool:

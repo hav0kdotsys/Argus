@@ -341,17 +341,17 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     ``--yes`` means "don't block", not "mutate my remotes", so a non-interactive skip is NOT persisted."""
     from hermes_cli.update_cmd import _add_upstream_remote, _mark_skip_upstream_prompt
     print(
-        "\nℹ This checkout has no 'upstream' remote for Hermes (NousResearch/hermes-agent),\n"
+        "\nℹ This checkout has no 'upstream' remote for Hermes (NousResearch/hermes-agent),\n"  # rebrand: keep (the upstream project)
         "  so ARGUS_UPDATE_FROM_UPSTREAM has nothing to take changes from.\n"
     )
     if assume_yes or (input_fn is None and not (sys.stdin.isatty() and sys.stdout.isatty())):
         print(f"  Skipping upstream setup (non-interactive run).\n  Add it later with: {_UPSTREAM_ADD_CMD}")
         return False
     if input_fn is not None:
-        response = input_fn("Add Hermes as the 'upstream' remote? [y/N]", "n").strip().lower()
+        response = input_fn("Add Hermes as the 'upstream' remote? [y/N]", "n").strip().lower()  # rebrand: keep
     else:
         try:
-            response = input("Add Hermes as the 'upstream' remote? [Y/n]: ").strip().lower()
+            response = input("Add Hermes as the 'upstream' remote? [Y/n]: ").strip().lower()  # rebrand: keep
         except (EOFError, KeyboardInterrupt, UnicodeDecodeError):
             print()
             response = "n"

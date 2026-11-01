@@ -1063,6 +1063,9 @@ _HERMES_HOME_PREFIXES = ("$HERMES_HOME/", "${HERMES_HOME}/")
 # ``$HOME/.hermes/config.yaml`` keeps the ``.hermes`` segment, so stripping the prefix is
 # enough to gate it; ``~/`` already survives the ``$``-bearing-path bail-out.
 _HOME_PREFIXES = ("$HOME/", "${HOME}/")
+# The home directory names a ``config.yaml`` is recognised under without resolving: the ARGUS launcher's
+# default home (``~/.argus``) and the inherited ``~/.hermes``.
+_HOME_DIR_NAMES = frozenset({".argus", ".hermes"})
 
 
 def _command_segments(command: str) -> list[str]:
@@ -1122,7 +1125,7 @@ def _is_under_hermes_home(path: str) -> bool:
 
 def _is_secret_file_arg(arg: str) -> bool:
     """``.env``-style or shell rc basename anywhere; ``config.yaml`` only under a
-    ``.hermes`` directory, ``$HERMES_HOME``, or the resolved Hermes home (never arbitrary
+    ``.argus`` / ``.hermes`` directory, ``$HERMES_HOME``, or the resolved Hermes home (never arbitrary
     YAML). The resolved-home arm is what covers native Windows, where the home directory
     is ``%LOCALAPPDATA%\\hermes`` and carries no ``.hermes`` segment."""
     path = arg.strip("\"'").replace("\\", "/")
@@ -1147,7 +1150,7 @@ def _is_secret_file_arg(arg: str) -> bool:
     # writes under ``backups/config/`` — same contents, same secrets.
     if parts[-1] != "config.yaml" and not parts[-1].startswith(("config.yaml.good.", "config.yaml.corrupt.")):
         return False
-    return hermes_home or ".hermes" in parts[:-1] or _is_under_hermes_home(path)
+    return hermes_home or not _HOME_DIR_NAMES.isdisjoint(parts[:-1]) or _is_under_hermes_home(path)
 
 
 def _command_reads_secret_file(command: str | None) -> bool:

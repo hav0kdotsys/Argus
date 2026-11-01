@@ -538,7 +538,7 @@ class TestToAgentVisiblePathPerBackend:
         staged = self._staged(tmp_path, monkeypatch)
         monkeypatch.setenv("TERMINAL_ENV", "ssh")
         from tools.credential_files import to_agent_visible_cache_path
-        assert to_agent_visible_cache_path(staged) == "~/.argus/attachments/drop.zip"
+        assert to_agent_visible_cache_path(staged) == "~/.hermes/attachments/drop.zip"  # rebrand: keep (program-read data)
 
     @pytest.mark.parametrize("backend", ["local", ""])
     def test_untranslated_backends_keep_host_path(self, tmp_path, monkeypatch, backend):

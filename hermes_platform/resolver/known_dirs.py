@@ -30,7 +30,7 @@ def node_tool_dirs() -> tuple[str, ...]:
 
 
 def hermes_vendored_dirs() -> tuple[str, ...]:
-    return ("~/.argus/bin",) if _POSIX else ("%USERPROFILE%/.hermes/bin",)
+    return ("~/.argus/bin", "~/.hermes/bin") if _POSIX else ("%USERPROFILE%/.hermes/bin",)  # rebrand: keep
 
 
 def machine_marker_files() -> tuple[str, ...]:

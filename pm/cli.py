@@ -305,7 +305,7 @@ def _install_defaults(names: list[str], *, verify: bool) -> None:
     for name in names:
         if _install_names([name], verify=verify):
             print(f"⚠ optional {name} was not installed; its tools stay unavailable until "
-                  f"`hermes pm install {name}` succeeds", flush=True)
+                  f"`argus pm install {name}` succeeds", flush=True)
 
 
 def _install_python_environments(extras: list[str], *, sync: bool, test_environment) -> int:
@@ -449,7 +449,7 @@ def cmd_doctor(args) -> int:
         ):
             # Legacy fact: pre-dates digest-bound identity; installed()
             # treats it as not installed and forces one reinstall.
-            print(f"{'?' if soft else '✗'} {name}: legacy fact: no recorded identity, run `hermes pm install`")
+            print(f"{'?' if soft else '✗'} {name}: legacy fact: no recorded identity, run `argus pm install`")
             bad += 0 if soft else 1
             continue
         if not facts.installed(name, lockfile.version(name), store.root, identity):
@@ -675,7 +675,7 @@ def _refresh_npm_lock() -> int:
     npm = installed_package("npm")
     node = installed_package("node")
     if npm is None or npm.binary is None or node is None or node.binary is None:
-        print("✗ npm or Node: not installed; run `hermes pm install`")
+        print("✗ npm or Node: not installed; run `argus pm install`")
         return 1
     env = npm_env(writable_store_root() / ".npm-cache", env_for("npm"))
     code, tail = _run_live([str(npm.binary), "update"], cwd=str(repo_root()), env=env)
@@ -816,7 +816,7 @@ def cmd_repair(args) -> int:
 
     if not recover_if_needed(repo_root(), explicit=True):
         return 1
-    print("Restart Hermes to use the repaired dependency environment.")
+    print("Restart ARGUS to use the repaired dependency environment.")
     return 0
 
 
@@ -864,7 +864,7 @@ def cmd_environment(args) -> int:
     import pm
 
     if bool(args.extra) == bool(args.requirement):
-        print("hermes pm environment: pass --extra or --requirement (not both)", file=sys.stderr)
+        print("argus pm environment: pass --extra or --requirement (not both)", file=sys.stderr)
         return 2
     # stdout carries only the interpreter path, for PY=$(hermes pm environment ...);
     # progress from PM and its uv children goes to stderr at both levels.
@@ -876,7 +876,7 @@ def cmd_environment(args) -> int:
             requirements = _extra_requirements(repo_root(), args.extra) if args.extra else args.requirement
             python = pm.ensure_environment(args.name, requirements, explicit=True)
     except (InstallError, ValueError) as exc:
-        print(f"hermes pm environment: {exc}", file=sys.stderr)
+        print(f"argus pm environment: {exc}", file=sys.stderr)
         return 1
     finally:
         sys.stdout.flush()
@@ -902,7 +902,7 @@ def main(argv=None) -> int:
             stream.reconfigure(errors="replace", line_buffering=True)
         except (AttributeError, OSError):
             pass
-    parser = argparse.ArgumentParser(prog="hermes pm")
+    parser = argparse.ArgumentParser(prog="argus pm")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     lock_parser = p = sub.add_parser(
@@ -921,7 +921,7 @@ def main(argv=None) -> int:
                    help="enable a declared dependency extra in the venv (repeatable)")
     p.add_argument("--without", action="append", default=[], metavar="NAME",
                    help="leave an optional default package (chromium, cua-driver) out of this and every later "
-                        "default install and update; `hermes pm install NAME` opts back in (repeatable)")
+                        "default install and update; `argus pm install NAME` opts back in (repeatable)")
     p.add_argument("--tools-only", action="store_true",
                    help="install the tool closure, put it on PATH, and stop before the venv sync")
     p.add_argument("--trust-recorded", action="store_true",
@@ -950,7 +950,7 @@ def main(argv=None) -> int:
     p = sub.add_parser(
         "environment", help="make a named side environment current and print its python",
         description="Build or reuse HERMES_HOME/environments/NAME, an isolated venv that never "
-                    "touches Hermes's own: --extra installs the pins of a declared extra, "
+                    "touches ARGUS's own: --extra installs the pins of a declared extra, "
                     "--requirement an ad hoc bounded requirement (both repeatable). "
                     "Prints only the interpreter path on stdout.")
     p.add_argument("name")

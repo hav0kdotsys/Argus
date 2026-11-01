@@ -18,13 +18,14 @@ logger = logging.getLogger("tools.approval")
 # home is folded into these forms at detection time by _normalize_command_for_detection(), so no
 # import-time path snapshot (stale once HERMES_HOME is set after import) lives in the patterns.
 _SSH_SENSITIVE_PATH = r'(?:~|\$home|\$\{home\})/\.ssh(?:/|$)'
+# ``.argus`` is the ARGUS launcher's default home (``$ARGUS_HOME``), so both spellings are the policy files.
 _HERMES_ENV_PATH = (
-    r'(?:~\/\.hermes/|(?:\$home|\$\{home\})/\.hermes/|(?:\$hermes_home|\$\{hermes_home\})/)' r'\.env\b'
+    r'(?:~\/\.(?:hermes|argus)/|(?:\$home|\$\{home\})/\.(?:hermes|argus)/|(?:\$hermes_home|\$\{hermes_home\}|\$argus_home|\$\{argus_home\})/)' r'\.env\b'
 )
 # ~/.hermes/config.yaml IS the security policy (approvals.mode, yolo, allowlist) and the config cache is mtime-keyed,
 # so a write takes effect mid-session. Terminal-side coverage (sed -i, tee, >, cp) pairs the file_tools deny.
 _HERMES_CONFIG_PATH = (
-    r'(?:~\/\.hermes/|(?:\$home|\$\{home\})/\.hermes/|(?:\$hermes_home|\$\{hermes_home\})/)' r'config\.yaml\b'
+    r'(?:~\/\.(?:hermes|argus)/|(?:\$home|\$\{home\})/\.(?:hermes|argus)/|(?:\$hermes_home|\$\{hermes_home\}|\$argus_home|\$\{argus_home\})/)' r'config\.yaml\b'
 )
 _PROJECT_ENV_PATH = r'(?:(?:/|\.{1,2}/)?(?:[^\s/"\'`]+/)*\.env(?:\.[^/\s"\'`]+)*)'
 _PROJECT_CONFIG_PATH = r'(?:(?:/|\.{1,2}/)?(?:[^\s/"\'`]+/)*config\.yaml)'
@@ -371,8 +372,8 @@ DANGEROUS_PATTERNS = [
      "dynamic shell word may expand to arbitrary program execution flag"),
     # Gateway lifecycle: stopping/restarting the gateway kills all running agents. Global flags
     # between `hermes` and `gateway` (`hermes -p ade gateway restart`) are allowed so a profile flag can't slip past.
-    (r'\bhermes\s+' + _GLOBAL_FLAGS + r'gateway\s+(stop|restart)\b', "stop/restart argus gateway (kills running agents)"),
-    (r'\bhermes\s+update\b', "argus update (restarts gateway, kills running agents)"),
+    (r'\b(?:hermes|argus)\s+' + _GLOBAL_FLAGS + r'gateway\s+(stop|restart)\b', "stop/restart argus gateway (kills running agents)"),
+    (r'\b(?:hermes|argus)\s+update\b', "argus update (restarts gateway, kills running agents)"),
     # Docker/Podman daemon redirect — global flags or env that point the CLI at a DIFFERENT (often remote) daemon:
     # `docker -H ssh://prod stop app` looks local but operates on remote infra, so any redirect requires approval
     # regardless of subcommand. The flag must be in global position (before the subcommand) and -H/--host/--context
@@ -393,7 +394,7 @@ DANGEROUS_PATTERNS = [
     (r'gateway\s+run\b.*(&\s*$|&\s*;|\bdisown\b|\bsetsid\b)', "start gateway outside systemd (use 'systemctl --user restart hermes-gateway')"),
     (r'\bnohup\b.*gateway\s+run\b', "start gateway outside systemd (use 'systemctl --user restart hermes-gateway')"),
     # Self-termination protection: prevent agent from killing its own process
-    (r'\b(pkill|killall)\b.*\b(hermes|gateway|cli\.py)\b', "kill hermes/gateway process (self-termination)"),
+    (r'\b(pkill|killall)\b.*\b(hermes|argus|gateway|cli\.py)\b', "kill hermes/gateway process (self-termination)"),
     # Self-termination via kill + $(pgrep/pidof): the substitution is opaque to the name-based
     # pattern above, so catch the structural form.
     (r'\bkill\b.*\$\(\s*(pgrep|pidof)\b', "kill process via pgrep/pidof expansion (self-termination)"),
@@ -599,7 +600,7 @@ def _rewrite_resolved_hermes_home(command: str) -> str:
         paths = [str(home), str(home.resolve(strict=False))]
     except Exception:
         return command
-    return _fold_home_prefixes(command, paths, "~/.argus")
+    return _fold_home_prefixes(command, paths, "~/.hermes")  # rebrand: keep (the canonical form the patterns match)
 
 
 _PARAM_REPLACEMENT_RE = re.compile(r"\$\{[^}/\s]+/[^}/]*/(?P<replacement>[^}]*)\}")

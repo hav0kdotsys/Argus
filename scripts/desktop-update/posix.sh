@@ -1313,7 +1313,7 @@ if [ "$CODE" -eq 0 ]; then FINAL_CODE=0 FINAL_MSG="Update complete." UPDATE_COMM
     case " $OWED_STEPS " in *" gateway_restart "*) OWED_HINT=" Run hermes gateway restart to move the messaging gateway onto the new code now." ;; *) OWED_HINT="" ;; esac
     GW_REASONS="$(printf '%s\n' "$OUT" | grep "Update follow-up 'gateway_restart' did not finish: ")"
     if [ -n "$GW_REASONS" ] && ! printf '%s\n' "$GW_REASONS" | grep -vq "did not finish: serve/dashboard " \
-      && ! printf '%s\n' "$GW_REASONS" | grep -q "hermes gateway restart"; then
+      && ! printf '%s\n' "$GW_REASONS" | grep -Eq "(hermes|argus) gateway restart"; then
       OWED_HINT=""
     fi
     if [ -n "$DONE_NOTE" ]; then DONE_NOTE="$DONE_NOTE Follow-up steps still owed: $OWED_STEPS.$OWED_HINT"

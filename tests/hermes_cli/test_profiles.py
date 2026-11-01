@@ -1659,7 +1659,7 @@ class TestEdgeCases:
         # runs the gateway with no profile flag).
         with patch("gateway.status.get_running_pid", return_value=None), patch(
             "gateway.status._read_process_cmdline",
-            return_value="argus gateway run --replace",
+            return_value="hermes gateway run --replace",  # rebrand: keep (program-read data)
         ):
             assert _check_gateway_running(default_home) is True
 

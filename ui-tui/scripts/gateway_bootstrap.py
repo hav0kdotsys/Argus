@@ -23,7 +23,7 @@ sys.path.insert(0, str(python_root()))
 
 # The terminal verdict's next step: the client stops retrying on it, so the user needs one. A
 # verdict line like the rest, so the TUI echoes it inline (userMessages.ts STDERR_PROBLEM_RE).
-BOOTSTRAP_REMEDY = "gateway unavailable: run `hermes pm repair`, then restart the TUI"
+BOOTSTRAP_REMEDY = "gateway unavailable: run `argus pm repair`, then restart the TUI"
 
 
 def failure_message(receipt) -> str:
