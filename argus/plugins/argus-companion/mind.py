@@ -11,6 +11,7 @@ become a joke about the show that's paused, or nothing at all.
 from __future__ import annotations
 
 import json
+import logging
 import re
 import sqlite3
 import subprocess
@@ -20,6 +21,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import voice
+
+logger = logging.getLogger(__name__)
 
 TASK = "companion"
 RECENT_HOURS = 6
@@ -189,9 +192,14 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0) -> s
                                           recent_talk(now), own_lines(folder))},
     ]
     try:
-        response = call_llm(TASK, messages=messages, max_tokens=300, temperature=0.9, timeout=90)
+        # Room for a reasoning model to think first: her line is short, the thinking may not be.
+        response = call_llm(TASK, messages=messages, max_tokens=2000, temperature=0.9, timeout=90)
     except Exception as exc:  # the provider chain failed: she simply doesn't speak this time
-        import logging
-        logging.getLogger(__name__).warning("companion: Mira couldn't be asked (%s)", exc, exc_info=True)
+        logger.warning("companion: Mira couldn't be asked (%s)", exc, exc_info=True)
         return None
-    return decide(_answer_text(response))
+    raw = _answer_text(response)
+    line = decide(raw)
+    finish = getattr((getattr(response, "choices", None) or [None])[0], "finish_reason", None)
+    logger.info("companion: %s moment -> %s (finish=%s, %d chars raw)", kind,
+                repr(line) if line else "passed", finish, len(raw))
+    return line
