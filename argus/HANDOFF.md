@@ -83,46 +83,57 @@ to carry on.
     - Also exposed as `/estate` and `argus estate`. Enabled via `plugins.enabled: [argus-cockpit]`.
     - Verified live.
 
-## 4. Verification status of `argus-own`
+## 4. Verification status of `argus-own` (second session, 2026-11-01 evening)
 
-- TUI: `tsc --noEmit` passes; **vitest 1906 passed / 0 failed** (in `~/argus-wt`).
-- Python: the run of the **597 test files the rebrand touched** was still going (~42%, with ~190 F marks so far) when
-  the session restarted. **The F marks are not yet triaged**; many may be pre-existing or environment-caused.
-  - Runner: `~/.cache/argus-runtests.sh <tree> <list> <out>`. List: `~/.cache/argus-tests.list`.
-    Outputs: `~/.cache/argus-tests-new.out` (argus-own) and then `~/.cache/argus-tests-base.out` (main), chained
-    in one nohup job (`nice -n 15`, `-n 3`). The process may have died in the restart:
-    `pgrep -af "pytest -q"` to check.
-  - The commits after `6b6d6ccd` changed `tests/conftest.py`, `agent/display.py` and `update_cmd_git.py`; the
-    worktree was moved to newer heads during the run, so **re-run on a clean checkout of the final head**.
-  - **Faster plan:** when the new run ends, take its failing test IDs (`grep -E "^FAILED"`), kill the base pass, and
-    run only those IDs in `~/argus-base`. A failure that occurs in both trees is pre-existing; one that only
-    appears on `argus-own` is a regression to fix. The likely kind: a test asserting a string that the code side
-    generates differently, or a Python-generated message that a test or another component matches.
+The first session's ~190 F marks were mostly runner artifacts (xdist crashes, and setting `HERMES_HOME` trips the
+suite's real-home tripwire). Re-run per file, with a temp `HOME` and no `HERMES_HOME`, like `scripts/run_tests.sh`.
+
+- **Runner:** `one2.sh <tree> <outdir> <file-or-nodeid>` in the session scratchpad. Its rules, keep them: temp `HOME`
+  and `TMPDIR` under `~/.cache/argus-test-tmp` (NOT the system temp dir: on laphvk it is an 8 GB RAM tmpfs, and pytest's
+  `pytest-of-havok` there filled it to 0 MB, which killed the Claude session and got lan-mouse OOM-killed), `--basetemp`
+  inside it, deleted per file; `-P 3` at most (HavoK's live session shares the 4 cores).
+- **Triage method:** run the failing files on `~/argus-base` (main) too (give it `node_modules ->
+  ~/argus/node_modules` for the run, or JS tests skip there and look fixed); new = fails on argus-own only. Then swap
+  in main's version of each failing test file: if main's test passes against the new code, decide by what the
+  asserted string IS - text a person reads (rebrand the code) or data a program reads (revert the test).
+- **Result on the 552 rebrand-touched files:** 185 new failures -> 0 (the two left, `test_update_finish` real-build
+  tests, fail on main too with node_modules present).
+- **Real regressions found and fixed** (all would have shipped silently - the rewritten tests agreed with the bugs):
+  1. Cron lifecycle guard and terminal approval did not know the `argus` command word: `argus gateway restart`,
+     `argus -p X gateway stop`, `pkill ... argus ... gateway`, `argus update` ran without approval/guard.
+  2. Approval's home fold rewrote the resolved home to `~/.argus` while the policy-file patterns matched `~/.hermes`:
+     `sed -i` on ARGUS's own config.yaml (the approval policy) was no longer flagged.
+  3. Skill/plugin threat scanners missed `~/.argus/.env`, `config.yaml`, `SOUL.md` exfiltration.
+  4. `agent/redact.py`: `config.yaml` under `.argus` now counts as secret-bearing.
+  5. Worktree locks written `argus pid=` but parsed `hermes pid=`: a live `-w` worktree could be reaped.
+  6. Desktop update scripts (posix.sh, windows.ps1) matched "hermes gateway restart" in a Python-produced reason.
+  7. SSH/Daytona artifact paths rendered `~/.argus/...` but files sync to `~/.hermes` on the remote.
+  8. Nous Portal's "serves anonymous Hermes Agent accounts only" matcher was rewritten (external text).
+  9. Missed rewrites: `pm/` (never run), `locales/*.yaml` (the tool had no YAML mode), list-built commands
+     (`" ".join(["hermes", ...])`), literals inside f-string `{expressions}`, bare `"hermes"` defaults, `prog ==
+     "hermes"` comparisons (parser prog is `argus`), `ui-tui/scripts/gateway_bootstrap.py`.
+- `argus/tools/rebrand.py`: YAML mode (values only), a `_SKIP_FILES` list of pure-fixture tests (argv, bot names,
+  worktree lock reasons, service units, User-Agents, upstream tooling), documented blind spots. `CORE-PATCHES.md`
+  rows 8-9 and "What the tool must not rewrite".
+- **Wider run** of the 740 test files that import any module touched by these fixes: in progress at handoff time
+  (results in the scratchpad `r4.summary`; compare against `b4` = main).
+- `python scripts/check`: footguns, no-tmp, ruff fixed; health had 2 blocking (display.py blind except - removed, the
+  call can't fail; profiles.py +2 lines - wrapper detection folded into `_WRAPPER_FLAG`, back at its 2414 cap) and the
+  advisory HX012 (terminal watcher now uses `spawn_context_thread`). Re-run health before committing.
 
 ## 5. Next steps, in order
 
-1. Finish the test triage in §4 and fix the regressions. Re-run `python3 argus/tools/rebrand.py --check <paths>`
-   after any edit; it must report 0.
-2. **Deploy `argus-own`.**
-   - Fast-forward: `git checkout main && git merge --ff-only argus-own && git push origin main`.
-   - On laphvk: `cd ~/argus && git pull origin main`.
-   - Then rebuild the TUI. `ui-tui/dist` is a single 4 MB `entry.js` bundle, which a running node holds in memory,
-     so a rebuild is safe. Force it with `HERMES_TUI_FORCE_BUILD=1 argus`, or build in `ui-tui`.
-   - **HavoK had a live ARGUS TUI session running from `~/argus`** (pid 760059 / node 760316 at the time). Don't kill
-     it. The gateway owner (`... gateway run --idle-exit`) loads plugins and code once: restart it only when idle
-     (`argus gateway restart`, or `kill` the owner pid; the next client starts a fresh one).
-3. Verify live, then report back:
-   - in a pty: `script -q -f -c "argus" /tmp/x.raw` under `timeout`, then grep the capture: there should be no
-     Hermes logo, and the status should read "opening its eyes…";
-   - `argus --version` and `argus estate`;
-   - a one-shot turn: `argus chat --oneshot -q "..."`. The resume hint should now say `argus --resume`.
-4. Continue the roadmap (`ARGUS.md` §Roadmap):
-   - phase 4 cockpit: a live estate TUI pane, phone/widgets/autonomy views, and `/deploy` as a guarded write
-     through MIRA's tools;
-   - phase 5: Desktop rebrand (`apps/desktop` still says Hermes everywhere; run the rebrand tool there, but its
-     Electron product name and binary need care) plus Windows/Linux builds;
-   - an ARGUS version line and releases (currently it reports Hermes' `v0.22.5`);
-   - Windows: `argus/bin/argus.ps1` / `.cmd` have never been tested on winhvk.
+1. Finish the wider run (§4); fix anything new vs main. Re-run `python scripts/check` (health takes ~14 min).
+2. Commit to `argus-own` (the worktree `~/argus-wt` holds everything, uncommitted at handoff time), push.
+3. **Deploy:** `git checkout main && git merge --ff-only argus-own && git push origin main`; on laphvk
+   `cd ~/argus && git pull origin main`; rebuild the TUI (`HERMES_TUI_FORCE_BUILD=1 argus`, or build in `ui-tui`).
+   HavoK runs a live ARGUS TUI from `~/argus`: never kill it. Restart the gateway owner (`... gateway run --idle-exit`)
+   only when idle. The live `~/.argus/SOUL.md` is still Hermes' default text: the identity upgrade rewrites it on the
+   next start (legacy list).
+4. Verify live: a pty capture of `argus` (no Hermes logo, "opening its eyes…"), `argus --version`, `argus estate`,
+   `argus chat --oneshot -q "..."` (resume hint says `argus --resume`).
+5. The Mira companion (§7), after HavoK reviews `argus/mira/SOUL.md`.
+6. Roadmap (`ARGUS.md`): cockpit panes, Desktop rebrand (phase 5), ARGUS version line, Windows launcher on winhvk.
 
 ## 6. Known open items and gotchas
 
@@ -145,7 +156,37 @@ to carry on.
   - the mobile Safe Mode button;
   - 3 pre-existing supervisor test-executor failures;
   - merging `havok/fervent-babbage-d64j7z` to main.
-- Commit attribution: end commit messages with
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and
-  `Claude-Session: https://claude.ai/code/session_01RcQJHhH8JaGeAiVjjfohFQ`.
+- Commit attribution: end commit messages with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
   Don't open PRs unless asked.
+- **lan-mouse (fixed 2026-11-01 22:07):** laphvk's `~/.config/lan-mouse/config.toml` had been rewritten without winhvk's
+  fingerprint (restored from `JarvisInfrastructure/ops/lan-mouse/laphvk-config.toml`; the broken one kept as
+  `config.toml.bak-*-emptyfp`); winhvk's daemon was wedged since 30 Oct ("no available capacity", 242 MB log) and was
+  restarted via its scheduled task. What rewrote laphvk's config is unknown. Remote PowerShell on winhvk: send
+  `powershell -EncodedCommand <UTF-16LE base64>`, nested quoting through ssh breaks otherwise.
+
+## 7. The Mira companion (Capri Desktop's concept, rebuilt for MIRA)
+
+HavoK's decisions (2026-11-01): Mira is the entity, ARGUS her house; a close best friend and partner in crime (not
+romantic) who swears when Hannah does, banters both ways, knows her friends (JJ aka Ghost); proactive on laphvk and
+winhvk first (mobilehvk later); a sprite body on laphvk. Capri (github.com/lachydotmcg/capri-desktop) is PolyForm
+Noncommercial with a required credit: take concepts only, no code or prompt text. Its art is the exception, by
+HavoK's choice: `~/argus/MiraSprites` are Capri's 44 sheets hue-shifted; they live in `~/.argus/sprites/mira/` with
+`NOTICE.md` (the required credit) and `clips.json` (frames/fps per clip), and are git-ignored.
+
+Done (uncommitted in `~/argus-wt`):
+- `argus/mira/SOUL.md` + `SOUL.compact.md` (local 4B budget): the persona draft. **Awaiting HavoK's review.**
+- `argus/plugins/argus-companion/`: `voice.py` (code-enforced voice on `transform_llm_output`: no assistant
+  openers/sign-offs, no hollow "what's next?", no *actions*, no repeated opener per session; work output untouched)
+  and `presence.py` (check-in scheduler: water/stretch/eyes/session/meal/late/bored, away resets, busy/quiet hold,
+  15-min gap, lines from an editable `check-ins.md`). Tests: `tests/argus_plugins/` (29). **Not enabled** in the seed
+  config until the persona is approved.
+- `argus/pet/mira-pet/shell.qml`: her body as a standalone Quickshell config (`quickshell -c mira-pet`, linked at
+  `~/.config/quickshell/mira-pet`), bottom-left (laphvk's right edge is lan-mouse's capture strip), idle + blink +
+  grin on click. Running on laphvk; not autostarted yet.
+
+Next for the companion:
+- Wire `presence.Scheduler` to a gateway ticker (no generic plugin service API exists; a platform adapter has the
+  lifecycle) fed by idle time (Hyprland/MiraAgent), fullscreen/game state and the quiet flag; deliver to the pet's
+  speech bubble and voice. MIRA's laphvk voice agent (`127.0.0.1:8769`) has `say` = a typed user turn, not "speak
+  this line": a `speak` action there is MIRA-side work, HavoK's call.
+- Day-fold memory, "what she saw" log and running-jokes ledger into MIRA's vault; screen glances via mira-eyes.

@@ -61,7 +61,7 @@ async def test_resume_displays_unknown_and_queue_then_discards_with_refreshed_ge
             assert "won't re-run" in output.err.lower()
             # stdout holds the REPL banner only: no transcript or replay is rendered before
             # the operator has chosen what to do with the unknown admission.
-            assert output.out.strip().splitlines() == ["Welcome to ARGUS! Type your message or /help for commands."]
+            assert output.out.strip().splitlines() == ["ARGUS online. Mira's here - type a message or /help."]  # the ARGUS skin's welcome
             assert calls == [
                 ("runtime.describe", {}),
                 ("session.resume", {"session_id": snapshot["stored_session_id"]}),

@@ -44,7 +44,7 @@ def test_glyph_layout_scrollback_is_width_independent(monkeypatch, modern):
     start = rows.index("**Planning the change**")
     assert rows[start - 1] == "─" * 40 and rows[start + 1] == "I will read calc.py first.", rows
     assert rows[start + 2] == thought[0], rows
-    assert rows[next(i for i, r in enumerate(rows) if r.startswith("☤ ARGUS")) - 1] == "─" * 40, rows
+    assert rows[next(i for i, r in enumerate(rows) if r.startswith("◉ MIRA")) - 1] == "─" * 40, rows
     assert any("Added multiply to calc.py." in line for line in rows)
 
 
@@ -257,5 +257,5 @@ def test_every_block_is_framed_by_bars_and_blank_lines(monkeypatch):
     assert got == ["", "BAR", "❯", "BAR",          # user message
                    "", "BAR", "Plan", "∴", "BAR",  # reasoning
                    "", "📖", "💻",                  # tool rows, tight
-                   "", "BAR", "☤", "It", "BAR",    # answer
+                   "", "BAR", "◉", "It", "BAR",    # answer
                    "", "─"], got                   # footer

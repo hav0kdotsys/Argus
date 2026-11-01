@@ -332,3 +332,6 @@ native/fts5_cjk/*.so
 /pm/.lock.json.lock
 
 apps/desktop/.dist-build*
+
+# Mira's sprite sheets: recoloured Capri art (PolyForm Noncommercial) - loaded from ~/.argus/sprites, never committed.
+MiraSprites/

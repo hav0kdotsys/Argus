@@ -1,0 +1,6 @@
+name: argus-companion
+version: 0.1.0
+description: "Mira as a companion: her voice enforced in code on chat replies (work output untouched), and her check-ins (`argus companion run`) shown in her pet's bubble on laphvk."
+author: "HvkSys"
+provides_hooks:
+  - transform_llm_output

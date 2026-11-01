@@ -461,6 +461,8 @@ class CLISessionMixin:
         for line in ("", rule, "|" + t("cli.session.history_title").center(50) + "|", rule):
             _cli_visible_print(line)
 
+        from hermes_cli.cli_modern_layout import speaker_name
+        _speaker = speaker_name()
         for msg in self.conversation_history:
             role = msg.get("role", "unknown")
             if role == "tool":
@@ -481,7 +483,7 @@ class CLISessionMixin:
                 continue
 
             _cli_visible_print(
-                f"\n  {t('cli.session.history_assistant_header', agent_name='Hermes', index=visible_index)}{_ts_suffix(msg)}")
+                f"\n  {t('cli.session.history_assistant_header', agent_name=_speaker, index=visible_index)}{_ts_suffix(msg)}")
             n_calls = len(msg.get("tool_calls") or [])
             if not content_text:
                 suffix = ""

@@ -66,6 +66,7 @@ telemetry:
 
 # ARGUS's own plugins (argus/plugins/, linked into ~/.argus/plugins by install.sh). Hermes plugins are opt-in.
 #   argus-cockpit: the estate from HvkDeck - estate_* tools, /estate, `argus estate`.
+#   argus-companion: Mira's voice enforced on chat replies (add it below once argus/mira/SOUL.md is her identity).
 plugins:
   enabled:
     - argus-cockpit

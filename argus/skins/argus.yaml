@@ -80,9 +80,9 @@ spinner:
 
 branding:
   agent_name: "ARGUS"
-  welcome: "ARGUS online - Agent Runtime for General-purpose Utility Services. Type a message or /help."
-  goodbye: "ARGUS closing its eyes. ◉"
-  response_label: " ◉ ARGUS "
+  welcome: "ARGUS online. Mira's here - type a message or /help."
+  goodbye: "Mira's closing her eyes. ARGUS standing by. ◉"
+  response_label: " ◉ MIRA "     # who talks: Mira; ARGUS (agent_name) is the app she lives in
   prompt_symbol: "❯"
   help_header: "(◉) Available Commands"
   icon: "◉"

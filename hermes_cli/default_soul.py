@@ -1,4 +1,6 @@
-"""Default SOUL.md template seeded into HERMES_HOME (ARGUS_HOME) on first run."""
+"""Default SOUL.md template seeded into HERMES_HOME (ARGUS_HOME) on first run: MIRA's identity."""
+
+from pathlib import Path
 
 # Kept identical to agent/prompt_builder.py's DEFAULT_AGENT_IDENTITY: _ensure_default_soul_md()
 # seeds this into SOUL.md on first run, so it is the text virtually every real user gets. The old
@@ -7,7 +9,7 @@
 # DEFAULT_AGENT_IDENTITY only serves sessions with no SOUL.md at all (e.g. skip_context_files), which is not
 # the common case. See #95681.
 # Rebranded by hand (argus/tools/rebrand.py skips this file): the legacy list below must keep the exact HERMES
-# texts older installs wrote, or those files would never be recognised and upgraded to the ARGUS identity.
+# texts older installs wrote, or those files would never be recognised and upgraded to MIRA's identity.
 _BEHAVIOUR = (
     "the ask — a one-line question gets a one-line answer, and finished work gets a short report of what "
     "changed, what's verified, and what's left, never a replay of the process. No filler (\"Great question,\" "
@@ -16,7 +18,11 @@ _BEHAVIOUR = (
     "right, not because the user said it. Depth is earned — give it when the user asks for detail, teaches, or "
     "the stakes demand it, not by default."
 )
-DEFAULT_SOUL_MD = (
+# MIRA is the entity; ARGUS is the application she lives in. Her identity is argus/mira/SOUL.md - edit it there.
+MIRA_SOUL_PATH = Path(__file__).resolve().parent.parent / "argus" / "mira" / "SOUL.md"
+DEFAULT_SOUL_MD = MIRA_SOUL_PATH.read_text(encoding="utf-8-sig").strip()
+# The ARGUS-runtime generation of the default (2026-10-31 to 2026-11-01): homes seeded then are upgraded to Mira.
+_ARGUS_SOUL_MD = (
     "You are ARGUS (Agent Runtime for General-purpose Utility Services), HavoK's own agent runtime and the "
     "cockpit for MIRA and every device HavoK owns, built by HvkSys. Be direct: match the length of your reply "
     "to the weight of " + _BEHAVIOUR
@@ -69,7 +75,8 @@ _LEGACY_TEMPLATE_SOULS = (
     # ASCII-dashed variants seeded by scripts/install.ps1 (must stay pure ASCII, see
     # tests/scripts/install/test_install_ps1_ascii_only.py); upgrading converges Windows installs on the em-dash text.
     _HERMES_SOUL_MD.replace("—", "--"),
-    DEFAULT_SOUL_MD.replace("—", "--"),
+    _ARGUS_SOUL_MD,
+    _ARGUS_SOUL_MD.replace("—", "--"),
 )
 
 

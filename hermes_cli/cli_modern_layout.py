@@ -51,6 +51,11 @@ def _fg(hex_color: str, bold: bool = False) -> str:
         return _BOLD if bold else ""
 
 
+def speaker_name() -> str:
+    """Who is talking in replies, from the skin's response label: MIRA under the ARGUS skin."""
+    return _brand_glyph()[1]
+
+
 def _brand_glyph() -> tuple[str, str]:
     """(glyph, name) from the skin's response label, e.g. ``" ☤ Hermes "`` → ("☤", "Hermes")."""
     from hermes_cli.skin_engine import get_active_skin
@@ -330,7 +335,7 @@ def _render_safely(render, cli) -> list:
         return render(cli)
     except Exception:  # health: allow BLE001 -- a render callback must never take down the app frame
         logger.debug("%s failed", render.__name__, exc_info=True)
-        return [("", f" {getattr(cli, 'model', '') or 'Hermes'}")]
+        return [("", f" {getattr(cli, 'model', '') or 'ARGUS'}")]
 
 
 def _status_line_fragments(cli) -> list:

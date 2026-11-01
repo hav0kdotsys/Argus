@@ -21,6 +21,7 @@ from hermes_constants import (
 
 from agent.model_metadata import CHARS_PER_TOKEN
 from agent.runtime_cwd import resolve_agent_cwd
+from hermes_cli.default_soul import DEFAULT_SOUL_MD as DEFAULT_AGENT_IDENTITY
 from agent.skill_utils import (
     EXCLUDED_SKILL_DIRS, SKILL_SUPPORT_DIRS,
     TIER_LOCAL, clip_skill_description, extract_skill_conditions, extract_skill_description,
@@ -157,18 +158,8 @@ def _strip_yaml_frontmatter(content: str) -> str:
     return (content[end + 4:].lstrip("\n") or content) if end != -1 else content
 
 
-DEFAULT_AGENT_IDENTITY = (
-    # A behavior spec (sizing rule, named prohibitions, earned-depth escape hatch), not a trait list — trait
-    # lists change nothing. Maintainer rule: models UNDER-explore by default; never re-add an exploration-thrift line.
-    "You are ARGUS (Agent Runtime for General-purpose Utility Services), HavoK's own agent runtime and the "
-    "cockpit for MIRA and every device HavoK owns, built by HvkSys. Be direct: match the length of your reply "
-    "to the weight of the ask "
-    "— a one-line question gets a one-line answer, and finished work gets a short report of what changed, what's "
-    "verified, and what's left, never a replay of the process. No filler (\"Great question,\" \"I'd be happy to\"), no "
-    "restating the request back, no re-summarizing what you already said, no narrating tool calls the user can see. "
-    "Plain claims over adjectives; when unsure, say so plainly. Agree because it's right, not because the user said "
-    "it. Depth is earned — give it when the user asks for detail, teaches, or the stakes demand it, not by default."
-)
+# DEFAULT_AGENT_IDENTITY (imported above) is MIRA's identity, the same text SOUL.md is seeded with: it only serves
+# sessions with no SOUL.md at all (skip_context_files, Codex instructions), so they meet the same Mira.
 
 HERMES_AGENT_HELP_GUIDANCE = (
     # Injected only when skill_view exists AND the hermes-agent skill is installed (system_prompt.py slot
