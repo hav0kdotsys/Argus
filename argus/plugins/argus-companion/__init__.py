@@ -112,7 +112,8 @@ def _cli_run(args) -> int:
         m = ticker.moment(folder)
         if args.dry:
             from . import mind
-            line = mind.ask(args.kind, timedelta(minutes=0), folder, m.idle)
+            line = mind.ask(args.kind, timedelta(minutes=0), folder, m.idle, where=ticker.where(folder),
+                            gaming=ticker.game_mode())
         else:
             line = ticker.moment_now(folder, args.kind, timedelta(minutes=0), m.idle)
         print(line or "(Mira passed)")
