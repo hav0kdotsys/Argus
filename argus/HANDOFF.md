@@ -164,32 +164,37 @@ suite's real-home tripwire). Re-run per file, with a temp `HOME` and no `HERMES_
   restarted via its scheduled task. What rewrote laphvk's config is unknown. Remote PowerShell on winhvk: send
   `powershell -EncodedCommand <UTF-16LE base64>`, nested quoting through ssh breaks otherwise.
 
-## 7. The Mira companion (Capri Desktop's concept, rebuilt for MIRA)
+## 7. One Mira: ARGUS + the companion + MIRA
 
-HavoK's decisions (2026-11-01): Mira is the entity, ARGUS her house; a close best friend and partner in crime (not
-romantic) who swears when Hannah does, banters both ways, knows her friends (JJ aka Ghost); proactive on laphvk and
-winhvk first (mobilehvk later); a sprite body on laphvk. Capri (github.com/lachydotmcg/capri-desktop) is PolyForm
-Noncommercial with a required credit: take concepts only, no code or prompt text. Its art is the exception, by
-HavoK's choice: `~/argus/MiraSprites` are Capri's 44 sheets hue-shifted; they live in `~/.argus/sprites/mira/` with
-`NOTICE.md` (the required credit) and `clips.json` (frames/fps per clip), and are git-ignored.
+HavoK (2026-11-01): MIRA is the entity and the brain, ARGUS is her house; a close best friend and partner in crime
+(not romantic) who swears when Hannah does; **she is always autonomous - nobody writes her lines**. Capri Desktop
+(PolyForm Noncommercial) supplied concepts only; its art is the exception, by HavoK's choice (`~/.argus/sprites/mira/`
+with `NOTICE.md` and `clips.json`, git-ignored as `MiraSprites/`).
 
-Done, committed and DEPLOYED to laphvk 2026-11-01 ~23:10 (main = argus-own):
-- `argus/mira/SOUL.md` + `SOUL.compact.md` (local 4B budget): Mira's identity, **approved by HavoK**. DEFAULT_SOUL_MD
-  loads it; live `~/.argus/SOUL.md` upgraded itself on the first start. Replies are labelled MIRA; ARGUS is the app.
-- `argus/plugins/argus-companion/`: `voice.py` (code-enforced voice on `transform_llm_output`: no assistant
-  openers/sign-offs, no hollow "what's next?", no *actions*, no repeated opener per session; work output untouched)
-  and `presence.py` (check-in scheduler: water/stretch/eyes/session/meal/late/bored, away resets, busy/quiet hold,
-  15-min gap, lines from an editable `check-ins.md`), `ticker.py` (laphvk signals; delivers to the pet bubble and
-  MIRA's panel `speak`). Tests: `tests/argus_plugins/` (33). **Enabled** in live `~/.argus/config.yaml`.
-- `argus/pet/mira-pet/shell.qml`: her body as a standalone Quickshell config (`quickshell -c mira-pet`, linked at
-  `~/.config/quickshell/mira-pet`), bottom-left (laphvk's right edge is lan-mouse's capture strip), idle + blink +
-  grin on click, speech bubble, idle reporting. systemd user units `mira-pet` and `mira-companion` are linked from
-  `argus/pet/systemd` and enabled (graphical-session.target).
+Live on laphvk (main = argus-own, deployed 2026-11-01 ~23:40):
+- **Identity:** `argus/mira/SOUL.md` (+ `SOUL.compact.md`) is the one text. `DEFAULT_SOUL_MD` loads it; the live
+  `~/.argus/SOUL.md` upgraded itself. Replies are labelled MIRA; ARGUS is the app name.
+- **argus-companion plugin** (enabled):
+  - `presence.py` only opens moments (water, stretch, eyes, session, meal, late, bored, popin) with their facts;
+  - `mind.py` asks Mira herself through the provider chain (auxiliary task `companion` = the main model and its
+    fallbacks; `max_tokens` 2000 because a reasoning model thinks first) with her SOUL, the memory store, recent
+    talk (ARGUS sessions + MIRA's voice/phone/Discord feed cache), what she can see (laphvk window, playing,
+    presence, winhvk Game Mode) and her own recent lines; she answers with her line or SKIP. Every decision is
+    logged (`companion: <kind> moment -> ...` in agent.log; `checkins.log` in `~/.argus/companion/`);
+  - `ticker.py` feeds signals (pet idle, Hyprland fullscreen, MIRA panel busy/quiet/presence) and delivers to the
+    pet bubble + MIRA's panel `speak`;
+  - a `pre_llm_call` hook tells ARGUS turns what she said on her own (once per session) and marks `talked`;
+  - `voice.py` polishes chat replies (`transform_llm_output`).
+  - `argus companion run | moment [KIND] [--dry] | status`; units `mira-pet`, `mira-companion` enabled.
+- **MIRA voice agent** (laphvk, `~/.local/lib/mira-agent/panel.py`): loopback `POST /speak` and `GET /presence`
+  (JarvisInfrastructure `ops/voice-ui/patch_panel_speak.py`, `patch_panel_presence.py`; backups `.bak-*`).
+- **Lan Mouse Game Mode:** Ctrl+Alt+G on winhvk / `lan-mouse-gamemode` on laphvk (`ops/lan-mouse/README.md`).
 
-Next for the companion:
-- MIRA's laphvk voice panel gained `POST /speak` (JarvisInfrastructure `ops/voice-ui/patch_panel_speak.py`, applied
-  to `~/.local/lib/mira-agent/panel.py`, backup `.bak-speak-*`): says a line, 409 while busy or quiet.
-- Lan Mouse **Game Mode** (HavoK's ask): Ctrl+Alt+G on winhvk / `lan-mouse-gamemode` on laphvk; see
-  JarvisInfrastructure `ops/lan-mouse/README.md`. The JarvisInfrastructure changes are UNCOMMITTED there.
-- Next: winhvk-side presence (MiraAgent idle/fullscreen), the day-fold memory / running jokes, screen glances.
-- Day-fold memory, "what she saw" log and running-jokes ledger into MIRA's vault; screen glances via mira-eyes.
+Waiting on HavoK:
+- **mira-api persona** (voice/phone/Discord Mira): `ops/persona/patch_mira_soul.py` is APPLIED to debhvk's source
+  (backup `server.js.bak-mira-soul-*`, syntax-checked) but needs a mira-api rebuild/redeploy through MIRA's guarded
+  deploy before that Mira speaks with the same SOUL. Re-sync after any SOUL edit (`ops/persona/README.md`).
+- JarvisInfrastructure changes (Game Mode, panel patches, persona) are uncommitted in that repo.
+
+Next: winhvk screen glances (mira-eyes) for what she's doing there; the day-fold memory and a running-jokes ledger in
+MIRA's vault; the pet reacting while MIRA talks; mobilehvk.
