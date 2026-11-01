@@ -59,11 +59,20 @@ def _panel() -> dict:
         return {}
 
 
-def moment(folder: Path) -> presence.Moment:
+def _talked_since(folder: Path, since: float) -> bool:
+    """Hannah talked to Mira in ARGUS since *since* (the companion's turn hook touches ``talked``)."""
+    try:
+        return (folder / "talked").stat().st_mtime > since
+    except OSError:
+        return False
+
+
+def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     now = time.time()
     panel = _panel()
     return presence.Moment(now=datetime.fromtimestamp(now), idle=_idle_seconds(folder, now),
-                           busy=_fullscreen() or bool(panel.get("busy")), quiet=bool(panel.get("quiet")))
+                           busy=_fullscreen() or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
+                           talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
 
 
 def _speak(text: str) -> bool:
@@ -101,13 +110,14 @@ def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0) -> str |
 
 
 def run(folder: Path | None = None, tick: float = TICK) -> None:
-    """Tick until interrupted. ``bored`` stays off until the ticker can see that Hannah talked to Mira."""
+    """Tick until interrupted. Talking to Mira (an ARGUS turn, or MIRA's voice busy) counts for ``bored``."""
     folder = folder or companion_dir()
     folder.mkdir(parents=True, exist_ok=True)
-    settings = presence.Settings(enabled=frozenset(presence.KINDS) - {"bored"})
-    sched = presence.Scheduler(settings)
+    sched = presence.Scheduler()
+    last_tick = time.time()
     while True:
-        m = moment(folder)
+        m = moment(folder, last_tick)
+        last_tick = time.time()
         opening = sched.tick(m)
         if opening:
             moment_now(folder, opening.kind, opening.present_for, m.idle)

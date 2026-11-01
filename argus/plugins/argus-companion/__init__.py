@@ -8,6 +8,10 @@
   lines. ``argus companion run`` ticks (the mira-companion unit runs it); what she says lands in her pet's bubble
   (argus/pet/mira-pet) and out loud through MIRA's voice panel.
 
+- One Mira: every ARGUS turn tells her what she said on her own since that session last heard from her
+  (``pre_llm_call`` context on the user message, never the system prompt), and marks that Hannah talked to her (the
+  ticker's ``bored`` moment needs it).
+
 Later slices: the day-by-day memory fold, screen glances, perching on windows, winhvk and the phone.
 """
 
@@ -41,6 +45,46 @@ def _on_reply(response_text: str = "", session_id: str = "", **_: Any) -> str | 
     if word:
         seen.append(word)
     return polished if polished != response_text else None
+
+
+_SEEN_HOURS = 6          # how far back a session's first turn looks for her own words
+_heard: OrderedDict[str, str] = OrderedDict()   # session -> the newest check-in stamp it was told about
+
+
+def _companion_dir():
+    from . import ticker
+    return ticker.companion_dir()
+
+
+def own_words_since(log_lines: list[str], since: str) -> list[str]:
+    """Spoken check-ins (``YYYY-MM-DD HH:MM kind[ (aloud)]: text``) stamped after *since*; passes are not words."""
+    found = []
+    for line in log_lines:
+        stamp, _, rest = line[:16], line[16:17], line[17:]
+        if len(stamp) == 16 and stamp > since and ": " in rest and not rest.endswith("(passed)"):
+            found.append(f"- {stamp[11:]} \"{rest.split(': ', 1)[1]}\"")
+    return found
+
+
+def _on_turn(session_id: str = "", **_: Any) -> dict | None:
+    from datetime import datetime, timedelta
+    folder = _companion_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "talked").write_text(datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
+    try:
+        lines = (folder / "checkins.log").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    key = session_id or ""
+    since = _heard.pop(key, None) or (datetime.now() - timedelta(hours=_SEEN_HOURS)).strftime("%Y-%m-%d %H:%M")
+    words = own_words_since(lines, since)
+    _heard[key] = max([since] + [line[:16] for line in lines if len(line) >= 16])
+    while len(_heard) > _SESSIONS:
+        _heard.popitem(last=False)
+    if not words:
+        return None
+    return {"context": "[What you said to Hannah on your own lately (out loud and in your bubble on laphvk), "
+                       "so you know if she's answering it:\n" + "\n".join(words) + "]"}
 
 
 USAGE = """argus companion run          offer Mira moments as they come up (foreground; Ctrl-C stops)
@@ -80,6 +124,7 @@ def _cli_run(args) -> int:
 
 def register(ctx) -> None:
     ctx.register_hook("transform_llm_output", _on_reply)
+    ctx.register_hook("pre_llm_call", _on_turn)
     ctx.register_auxiliary_task("companion", display_name="Mira's own check-ins",
                                 description="Mira deciding whether and what to say when a moment comes up "
                                             "(follows the main model unless set)", defaults={"timeout": 90})
