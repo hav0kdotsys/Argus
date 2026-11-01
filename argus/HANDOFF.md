@@ -173,20 +173,23 @@ Noncommercial with a required credit: take concepts only, no code or prompt text
 HavoK's choice: `~/argus/MiraSprites` are Capri's 44 sheets hue-shifted; they live in `~/.argus/sprites/mira/` with
 `NOTICE.md` (the required credit) and `clips.json` (frames/fps per clip), and are git-ignored.
 
-Done (uncommitted in `~/argus-wt`):
-- `argus/mira/SOUL.md` + `SOUL.compact.md` (local 4B budget): the persona draft. **Awaiting HavoK's review.**
+Done, committed and DEPLOYED to laphvk 2026-11-01 ~23:10 (main = argus-own):
+- `argus/mira/SOUL.md` + `SOUL.compact.md` (local 4B budget): Mira's identity, **approved by HavoK**. DEFAULT_SOUL_MD
+  loads it; live `~/.argus/SOUL.md` upgraded itself on the first start. Replies are labelled MIRA; ARGUS is the app.
 - `argus/plugins/argus-companion/`: `voice.py` (code-enforced voice on `transform_llm_output`: no assistant
   openers/sign-offs, no hollow "what's next?", no *actions*, no repeated opener per session; work output untouched)
   and `presence.py` (check-in scheduler: water/stretch/eyes/session/meal/late/bored, away resets, busy/quiet hold,
-  15-min gap, lines from an editable `check-ins.md`). Tests: `tests/argus_plugins/` (29). **Not enabled** in the seed
-  config until the persona is approved.
+  15-min gap, lines from an editable `check-ins.md`), `ticker.py` (laphvk signals; delivers to the pet bubble and
+  MIRA's panel `speak`). Tests: `tests/argus_plugins/` (33). **Enabled** in live `~/.argus/config.yaml`.
 - `argus/pet/mira-pet/shell.qml`: her body as a standalone Quickshell config (`quickshell -c mira-pet`, linked at
   `~/.config/quickshell/mira-pet`), bottom-left (laphvk's right edge is lan-mouse's capture strip), idle + blink +
-  grin on click. Running on laphvk; not autostarted yet.
+  grin on click, speech bubble, idle reporting. systemd user units `mira-pet` and `mira-companion` are linked from
+  `argus/pet/systemd` and enabled (graphical-session.target).
 
 Next for the companion:
-- Wire `presence.Scheduler` to a gateway ticker (no generic plugin service API exists; a platform adapter has the
-  lifecycle) fed by idle time (Hyprland/MiraAgent), fullscreen/game state and the quiet flag; deliver to the pet's
-  speech bubble and voice. MIRA's laphvk voice agent (`127.0.0.1:8769`) has `say` = a typed user turn, not "speak
-  this line": a `speak` action there is MIRA-side work, HavoK's call.
+- MIRA's laphvk voice panel gained `POST /speak` (JarvisInfrastructure `ops/voice-ui/patch_panel_speak.py`, applied
+  to `~/.local/lib/mira-agent/panel.py`, backup `.bak-speak-*`): says a line, 409 while busy or quiet.
+- Lan Mouse **Game Mode** (HavoK's ask): Ctrl+Alt+G on winhvk / `lan-mouse-gamemode` on laphvk; see
+  JarvisInfrastructure `ops/lan-mouse/README.md`. The JarvisInfrastructure changes are UNCOMMITTED there.
+- Next: winhvk-side presence (MiraAgent idle/fullscreen), the day-fold memory / running jokes, screen glances.
 - Day-fold memory, "what she saw" log and running-jokes ledger into MIRA's vault; screen glances via mira-eyes.
