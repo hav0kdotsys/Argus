@@ -23,6 +23,7 @@ def mind(tmp_path, monkeypatch):
     spec.loader.exec_module(module)
     mind = importlib.import_module("argus_companion_m.mind")
     monkeypatch.setattr(mind, "_home", lambda: tmp_path)
+    monkeypatch.setattr(mind, "MIRA_FEED", tmp_path / "no-feed.json")
     return mind
 
 
@@ -74,3 +75,26 @@ def test_recent_talk_reads_both_sides_newest_last_and_skips_system_noise(mind, t
     db.commit()
     db.close()
     assert mind.recent_talk(now) == ["[22:50] Hannah: about to hop on Rivals", "[22:50] You: Objectives win games."]
+
+
+def test_talk_with_mira_elsewhere_joins_argus_talk_in_time_order(mind, tmp_path):
+    import json
+    db = sqlite3.connect(tmp_path / "state.db")
+    db.execute("create table messages (timestamp real, role text, content text, active integer)")
+    now = datetime(2026, 11, 1, 23, 0).timestamp()
+    db.execute("insert into messages values (?, 'user', 'in the terminal', 1)", (now - 300,))
+    db.commit()
+    db.close()
+    at = datetime.fromtimestamp(now - 900).astimezone().isoformat()
+    (tmp_path / "no-feed.json").write_text(json.dumps({"items": [
+        {"kind": "activity", "text": "guard noise", "at": at},
+        {"kind": "exchange", "client": "voice", "user": "can you hear me?", "reply": "Yeah, I hear you.", "at": at},
+    ]}), encoding="utf-8")
+    assert mind.recent_talk(now) == ["[22:45] Hannah (voice): can you hear me?", "[22:45] You (voice): Yeah, I hear you.",
+                                    "[22:55] Hannah: in the terminal"]
+
+
+def test_at_winhvk_she_knows_she_cant_see_the_screen(mind):
+    seen = mind.Seen(window="foot - ignored", where="winhvk", gaming=True)
+    text = mind.brief("popin", timedelta(minutes=50), seen, datetime(2026, 11, 1, 21, 0), [], [], [])
+    assert "winhvk" in text and "can't see its screen" in text and "gaming" in text and "foot - ignored" not in text

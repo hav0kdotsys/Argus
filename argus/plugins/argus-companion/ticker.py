@@ -4,7 +4,9 @@ Signals, all local and read-only:
 - idle: ``~/.argus/companion/state.json`` ``{"idle_since": <unix s> | null}``, written by the pet's Wayland
   IdleMonitor (Wayland gives no idle time to a plain process);
 - busy: the focused window is fullscreen (``hyprctl activewindow -j``), or MIRA's voice panel is mid-conversation;
-- quiet: MIRA's voice panel quiet switch (``127.0.0.1:8769/status``), so one switch quiets MIRA and the pet alike.
+- quiet: MIRA's voice panel quiet switch (``127.0.0.1:8769/status``), so one switch quiets MIRA and the pet alike;
+- where: MIRA's presence table through the panel (``/presence``: winhvk's camera detector, laphvk, the phone), so
+  Hannah at winhvk is present even while laphvk sits idle; and winhvk's Lan Mouse Game Mode (she's gaming).
 
 A missing signal reads as "not busy, not quiet, not idle": the ticker never blocks on MIRA or Hyprland being down.
 What she says goes to ``~/.argus/companion/say.json`` (the pet's bubble), out loud through MIRA's voice panel
@@ -26,6 +28,9 @@ from . import presence
 
 PANEL_STATUS = "http://127.0.0.1:8769/status"
 PANEL_SPEAK = "http://127.0.0.1:8769/speak"
+PANEL_PRESENCE = "http://127.0.0.1:8769/presence"
+GAME_MODE_EVERY = 300.0   # seconds between Game Mode checks on winhvk (an ssh round trip)
+_game_mode = {"at": 0.0, "on": False}
 TICK = 30.0
 
 
@@ -67,10 +72,49 @@ def _talked_since(folder: Path, since: float) -> bool:
         return False
 
 
+def _presence() -> dict:
+    """{host: state} from MIRA's presence table (fresh rows only); {} when the panel can't say."""
+    try:
+        with urllib.request.urlopen(PANEL_PRESENCE, timeout=5) as reply:
+            rows = json.loads(reply.read().decode("utf-8")).get("presence", [])
+    except (OSError, ValueError, AttributeError):
+        return {}
+    return {str(r.get("host")): str(r.get("state")) for r in rows if isinstance(r, dict) and not r.get("stale")}
+
+
+def game_mode() -> bool:
+    """winhvk's Lan Mouse Game Mode, checked at most every GAME_MODE_EVERY seconds (an ssh round trip)."""
+    now = time.time()
+    if now - _game_mode["at"] >= GAME_MODE_EVERY:
+        out = subprocess.run(
+            ["ssh", "-o", "ConnectTimeout=8", "-o", "BatchMode=yes", "winhvk",
+             r"powershell -NoProfile -ExecutionPolicy Bypass -File %LOCALAPPDATA%\Programs\lan-mouse\lan-mouse-gamemode.ps1 status"],
+            capture_output=True, text=True, timeout=20, check=False).stdout if _has_ssh() else ""
+        _game_mode.update(at=now, on=out.strip().endswith("on"))
+    return _game_mode["on"]
+
+
+def _has_ssh() -> bool:
+    import shutil
+    return shutil.which("ssh") is not None
+
+
+def where(folder: Path, hosts: dict | None = None) -> str:
+    """Where Hannah is: laphvk when she's using it, else winhvk when its camera sees her there, else laphvk."""
+    hosts = _presence() if hosts is None else hosts
+    if _idle_seconds(folder, time.time()) < 120 or hosts.get("winhvk") != "active":
+        return "laphvk"
+    return "winhvk"
+
+
 def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     now = time.time()
     panel = _panel()
-    return presence.Moment(now=datetime.fromtimestamp(now), idle=_idle_seconds(folder, now),
+    hosts = _presence()
+    idle = _idle_seconds(folder, now)
+    if hosts.get("winhvk") == "active":
+        idle = 0.0  # at her main PC: present, whatever laphvk's input says
+    return presence.Moment(now=datetime.fromtimestamp(now), idle=idle,
                            busy=_fullscreen() or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
                            talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
 
@@ -100,7 +144,7 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True) -> None:
 def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0) -> str | None:
     """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
     from . import mind
-    line = mind.ask(kind, present_for, folder, idle)
+    line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode())
     if line:
         say(folder, line, kind)
     else:

@@ -55,11 +55,13 @@ Output only the line (or SKIP): no quotes, no emoji, no *actions*, no explanatio
 
 @dataclass(frozen=True)
 class Seen:
-    """What Mira can observe on laphvk right now."""
+    """What Mira can observe right now."""
     window: str = ""
     fullscreen: bool = False
     playing: str = ""
     idle: float = 0.0
+    where: str = "laphvk"       # laphvk, or winhvk (her main PC: its screen isn't visible from here)
+    gaming: bool = False        # winhvk's Lan Mouse Game Mode is on
 
 
 def _home() -> Path:
@@ -92,8 +94,37 @@ def memories() -> list[str]:
     return found
 
 
+MIRA_FEED = Path.home() / ".local/state/mira-agent/history.json"
+
+
+def mira_feed(now: float, hours: float = RECENT_HOURS, path: Path | None = None) -> list[tuple[float, str]]:
+    """Exchanges with MIRA on her other surfaces (voice, phone, Discord), from the voice agent's local feed cache:
+    (unix time, line) pairs, one each for Hannah and for Mira."""
+    try:
+        items = json.loads((path or MIRA_FEED).read_text(encoding="utf-8")).get("items", [])
+    except (OSError, ValueError, AttributeError):
+        return []
+    found = []
+    for item in items:
+        if not isinstance(item, dict) or item.get("kind") != "exchange":
+            continue
+        try:
+            stamp = datetime.fromisoformat(str(item.get("at", ""))).timestamp()
+        except ValueError:
+            continue
+        if stamp < now - hours * 3600:
+            continue
+        surface = str(item.get("client") or "voice")
+        at = datetime.fromtimestamp(stamp)
+        if item.get("user"):
+            found.append((stamp, f"[{at:%H:%M}] Hannah ({surface}): {' '.join(str(item['user']).split())[:240]}"))
+        if item.get("reply"):
+            found.append((stamp + 0.001, f"[{at:%H:%M}] You ({surface}): {' '.join(str(item['reply']).split())[:240]}"))
+    return found
+
+
 def recent_talk(now: float, hours: float = RECENT_HOURS, limit: int = RECENT_LINES) -> list[str]:
-    """Their latest exchanges in ARGUS (any session), newest last, each cut short."""
+    """Their latest exchanges - in ARGUS (any session) and with MIRA by voice, phone or Discord - newest last."""
     try:
         db = sqlite3.connect(f"file:{_home() / 'state.db'}?mode=ro", uri=True, timeout=2)
         try:
@@ -104,15 +135,16 @@ def recent_talk(now: float, hours: float = RECENT_HOURS, limit: int = RECENT_LIN
         finally:
             db.close()
     except sqlite3.Error:
-        return []
+        rows = []
     lines = []
-    for stamp, role, content in reversed(rows):
+    for stamp, role, content in rows:
         text = " ".join(str(content).split())
         if text.startswith(("Operation interrupted", "[System note")):
             continue
         who = "Hannah" if role == "user" else "You"
-        lines.append(f"[{datetime.fromtimestamp(stamp):%H:%M}] {who}: {text[:240]}")
-    return lines
+        lines.append((stamp, f"[{datetime.fromtimestamp(stamp):%H:%M}] {who}: {text[:240]}"))
+    lines += mira_feed(now, hours)
+    return [line for _, line in sorted(lines)[-limit:]]
 
 
 def own_lines(folder: Path, limit: int = OWN_LINES) -> list[str]:
@@ -131,15 +163,17 @@ def _run(argv: list[str]) -> str:
         return ""
 
 
-def look(idle: float) -> Seen:
-    """The focused window (Hyprland), whether it's fullscreen, and what's playing (MPRIS via playerctl)."""
+def look(idle: float, where: str = "laphvk", gaming: bool = False) -> Seen:
+    """laphvk's focused window (Hyprland), whether it's fullscreen, what's playing (MPRIS via playerctl), and where
+    Hannah is."""
     try:
         win = json.loads(_run(["hyprctl", "activewindow", "-j"]) or "{}")
     except ValueError:
         win = {}
     window = " - ".join(p for p in (str(win.get("class") or ""), str(win.get("title") or "")) if p)
     playing = _run(["playerctl", "metadata", "--format", "{{artist}} - {{title}} [{{status}}]"])
-    return Seen(window=window[:160], fullscreen=bool(win.get("fullscreen")), playing=playing[:160], idle=idle)
+    return Seen(window=window[:160], fullscreen=bool(win.get("fullscreen")), playing=playing[:160], idle=idle,
+                where=where, gaming=gaming)
 
 
 def _span(delta: timedelta) -> str:
@@ -154,10 +188,13 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
     reason = REASONS.get(kind, REASONS["popin"]).format(present=_span(present_for), meal=meal)
     parts = [
         f"Why ARGUS flagged this moment: {reason}.",
-        f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at laphvk for {_span(present_for)} this sitting; "
-        f"last keyboard/mouse input {int(seen.idle)}s ago.",
-        f"Focused window: {seen.window or 'unknown'}{' (fullscreen)' if seen.fullscreen else ''}.",
-        f"Playing: {seen.playing or 'nothing'}.",
+        f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at her desk for {_span(present_for)} this sitting.",
+        ("She's at winhvk, her main PC (its camera sees her); you can't see its screen from here."
+         + (" Game Mode is on there: she's gaming." if seen.gaming else ""))
+        if seen.where == "winhvk" else
+        f"She's on laphvk (last input {int(seen.idle)}s ago). Focused window: {seen.window or 'unknown'}"
+        f"{' (fullscreen)' if seen.fullscreen else ''}." + (" winhvk's Game Mode is on." if seen.gaming else ""),
+        f"Playing on laphvk: {seen.playing or 'nothing'}.",
         "What you remember about her:\n" + ("\n".join(f"- {m}" for m in mem) if mem else "- (nothing saved yet)"),
         "Your recent conversations with her (newest last):\n" + ("\n".join(talk) if talk else "- (none in the last few hours)"),
         "What you've said on your own lately (don't repeat yourself):\n" + ("\n".join(said) if said else "- (nothing yet today)"),
@@ -181,14 +218,15 @@ def decide(text: str) -> str | None:
     return voice.polish(" ".join(line.split()))
 
 
-def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0) -> str | None:
+def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
+        gaming: bool = False) -> str | None:
     """Ask Mira about this moment. Her line, or None when she passes or the provider can't be reached."""
     from agent.auxiliary_client import call_llm
 
     now = time.time()
     messages = [
         {"role": "system", "content": soul() + AUTONOMY},
-        {"role": "user", "content": brief(kind, present_for, look(idle), datetime.fromtimestamp(now), memories(),
+        {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming), datetime.fromtimestamp(now), memories(),
                                           recent_talk(now), own_lines(folder))},
     ]
     try:
