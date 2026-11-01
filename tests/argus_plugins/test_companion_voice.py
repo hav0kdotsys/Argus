@@ -22,6 +22,8 @@ _spec.loader.exec_module(voice)
     ("Called it, that boss never stood a chance. So what's next?", "Called it, that boss never stood a chance."),
     ("JJ's Scorpion is flatlining again. What are we getting into today?", "JJ's Scorpion is flatlining again."),
     ("*grins* You are VERY lazy away from a keyboard, Hannah.", "You are VERY lazy away from a keyboard, Hannah."),
+    ("Objectives win games; ego loses them. If you want a soundtrack going, say the word and I'll spin something up.",
+     "Objectives win games; ego loses them."),
 ])
 def test_assistant_habits_come_off_chat(said, kept):
     assert voice.polish(said) == kept

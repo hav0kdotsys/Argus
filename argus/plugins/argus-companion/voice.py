@@ -28,7 +28,7 @@ _STOCK_OPENER = re.compile(
 # Customer-support sign-offs: the whole trailing sentence goes.
 _STOCK_CLOSER = re.compile(
     r"(?<=[.!?])\s+[^.!?]*\b(?:let me know if|is there anything else|anything else (?:i can|you need)|"
-    r"hope (?:this|that) helps|feel free to|happy to help|don'?t hesitate to)\b[^.!?]*[.!?]*\s*$",
+    r"hope (?:this|that) helps|feel free to|happy to help|don'?t hesitate to|(?:just )?say the word)\b[^.!?]*[.!?]*\s*$",
     re.IGNORECASE,
 )
 
