@@ -528,7 +528,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     coach = _coach(folder)
     _room(folder)
     from . import link
-    link.start(folder, here())
+    link.start(folder, "winhvk" if sys.platform == "win32" else "laphvk")
     if sys.platform != "win32":       # winhvk's body has its own ears (MiraPet/Ears.cs)
         from agent.memory_provider import spawn_context_thread
 

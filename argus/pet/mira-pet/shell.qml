@@ -606,6 +606,7 @@ ShellRoot {
     property var localBeat: null
     FileView {
         id: linkFile
+        printErrors: false             // absent until the link / her ears first write it
         path: root.companion + "link.json"
         onLoaded: {
             try {
@@ -619,6 +620,7 @@ ShellRoot {
     }
     FileView {
         id: beatFile
+        printErrors: false             // absent until the link / her ears first write it
         path: root.companion + "beat.json"
         onLoaded: {
             try {
