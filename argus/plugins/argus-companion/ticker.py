@@ -452,6 +452,32 @@ def _room(folder: Path):
         return None
 
 
+class VoiceCaptions:
+    """MIRA's spoken replies on this machine (her voice conversations, in the voice agent's feed) shown in her
+    body's bubble as she says them: one Mira, voice and body. Captions only - never spoken a second time."""
+
+    def __init__(self, feed: Path):
+        self.feed = feed
+        self.mtime = 0.0
+        self.since = datetime.now().timestamp()
+
+    def new_lines(self) -> list[str]:
+        try:
+            mtime = self.feed.stat().st_mtime
+        except OSError:
+            return []
+        if mtime == self.mtime:
+            return []
+        self.mtime = mtime
+        from . import mind
+        lines = []
+        for stamp, line in mind.mira_feed(datetime.now().timestamp(), hours=1, path=self.feed):
+            if stamp > self.since and "] You (voice): " in line:
+                lines.append(line.split("] You (voice): ", 1)[1])
+                self.since = stamp
+        return lines
+
+
 def _toggle_coach(folder: Path) -> None:
     from . import chess_coach
     on = not chess_coach.settings(folder)["coach"]
@@ -476,6 +502,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     _room(folder)
     reminder_read = [0.0]
     game_clock = GameClock()
+    from . import mind
+    captions = VoiceCaptions(mind.MIRA_FEED) if sys.platform != "win32" else None
     while True:
         ask_id, text = _ask(folder)
         if ask_id and ask_id != seen_ask:
@@ -494,6 +522,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
                 m = moment(folder, last_tick)
                 if not m.quiet:
                     moment_now(folder, kind, timedelta(0), m.idle)
+        for line in captions.new_lines() if captions else []:
+            say(folder, line, "voice", aloud=False, log=False)
         if time.time() - last_tick >= tick:
             m = moment(folder, last_tick)
             last_tick = time.time()

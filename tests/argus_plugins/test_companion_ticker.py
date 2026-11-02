@@ -127,3 +127,23 @@ def test_a_long_game_stretch_earns_one_break_nudge_and_a_real_break_resets_it():
     play(t0 + 150 * 60, 10, gaming=False)                               # a real break (10 min)
     again = play(t0 + 160 * 60, 130)
     assert len(again) == 1 and again[0] - (t0 + 160 * 60) >= 2 * 3600  # a fresh stretch
+
+
+def test_mira_s_spoken_replies_become_captions_once_and_only_new_ones(tmp_path):
+    import json
+    import os
+    from datetime import datetime, timedelta
+    ticker = _ticker()
+    feed = tmp_path / "history.json"
+    old = (datetime.now() - timedelta(minutes=5)).isoformat()
+    feed.write_text(json.dumps({"items": [{"kind": "exchange", "client": "voice", "user": "hi", "reply": "Old news.", "at": old}]}))
+    captions = ticker.VoiceCaptions(feed)
+    assert captions.new_lines() == []                                   # what was said before she started isn't news
+    now = datetime.now().isoformat()
+    feed.write_text(json.dumps({"items": [
+        {"kind": "exchange", "client": "voice", "user": "how are you?", "reply": "Running fine, Hannah.", "at": now},
+        {"kind": "exchange", "client": "discord", "user": "yo", "reply": "Not a voice line.", "at": now}]}))
+    os.utime(feed, (1e9, 2e9))
+    assert captions.new_lines() == ["Running fine, Hannah."]
+    os.utime(feed, (1e9, 2e9 + 5))
+    assert captions.new_lines() == []
