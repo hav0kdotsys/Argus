@@ -20,6 +20,7 @@ MIRA is quiet. What she says goes to ``~/.argus/companion/say.json`` (the pet's 
 from __future__ import annotations
 
 import json
+import logging
 import os
 import socket
 import subprocess
@@ -31,6 +32,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import presence
+
+logger = logging.getLogger(__name__)
 
 PANEL_STATUS = "http://127.0.0.1:8769/status"
 PANEL_SPEAK = "http://127.0.0.1:8769/speak"
@@ -199,14 +202,24 @@ def answer(folder: Path, text: str) -> str:
                    "--create-if-missing", "--query-file", "-"]
         try:
             run = subprocess.run(command, input=text, capture_output=True, text=True, encoding="utf-8",
-                                 timeout=CHAT_TIMEOUT, check=False, cwd=str(Path.home()))
-            reply = run.stdout.strip()
-        except (OSError, subprocess.SubprocessError):
+                                 errors="replace", timeout=CHAT_TIMEOUT, check=False, cwd=str(Path.home()))
+            reply = clean_reply(run.stdout)
+            if not reply:
+                logger.warning("companion: her turn gave no reply (exit %s): %s", run.returncode, run.stderr[-800:])
+        except (OSError, subprocess.SubprocessError) as exc:
+            logger.warning("companion: her turn couldn't run: %s", exc)
             reply = ""
         say(folder, reply or "Lost my train of thought there. Say that again?", "reply", log=False)
         return reply
     finally:
         _asking.release()
+
+
+def clean_reply(out: str) -> str:
+    """Her reply from `chat -Q` output: without the session footer and session notices."""
+    lines = [line for line in (out or "").splitlines()
+             if not line.startswith(("session_id:", "Session ")) and line.strip()]
+    return "\n".join(lines).strip()
 
 
 def _ask(folder: Path) -> tuple[str, str]:
