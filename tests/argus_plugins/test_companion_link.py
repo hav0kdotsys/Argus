@@ -162,3 +162,15 @@ def test_her_words_come_from_her_own_backend_in_her_companion_session(monkeypatc
         assert backend.call("a moment") == ("", "")                    # her backend down: she just doesn't speak
     finally:
         server.shutdown()
+
+
+def test_the_move_arrow_lands_on_the_screen_squares_and_clears(tmp_path):
+    coach = _mod("chess_coach")
+    board = coach.Board("winhvk", "Play vs Computer - Chess.com", (100, 50, 1100, 850))
+    # a screenshot at twice the window's size (physical vs logical pixels): the squares map back onto the screen
+    assert coach.on_screen(board, (2000, 1600), (200, 100, 1000, 900)) == (200, 100, 600, 500)
+    coach.arrow(tmp_path, {"box": (200, 100, 600, 500), "from": "e2", "to": "e4", "white_bottom": True})
+    first = json.loads((tmp_path / "arrow.json").read_text(encoding="utf-8"))
+    assert first["from"] == "e2" and first["to"] == "e4" and first["at"] > 0
+    coach.set_coach(tmp_path, False)                                   # coaching off: the arrow goes
+    assert json.loads((tmp_path / "arrow.json").read_text(encoding="utf-8"))["at"] == 0

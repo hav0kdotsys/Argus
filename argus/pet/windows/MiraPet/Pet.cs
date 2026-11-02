@@ -27,6 +27,7 @@ namespace MiraPet
         private readonly Sheets sheets;
         private readonly Senses senses = new Senses();
         private readonly Ears ears;
+        private readonly Arrow arrow = new Arrow();
         private MiniPlayer player;
         private bool playerUp, playerOff, clickThrough;
         private readonly Bubble bubble;
@@ -80,6 +81,57 @@ namespace MiraPet
         private readonly List<Note> notes = new List<Note>();
         private double lastNote;
         private long lastBeat = -1;
+        // Her start: forked neon veins crackle out from behind her as she glitches in, different every time.
+        private bool introDone;
+        private double introAt = -100;
+        private readonly List<Vein> veins = new List<Vein>();
+        private sealed class Vein { public List<PointF> Pts = new List<PointF>(); public Color Colour; public float Width; public double Delay; }
+
+        private void StartVeins()
+        {
+            veins.Clear();
+            Color[] colours = { Color.FromArgb(255, 42, 109), Color.FromArgb(5, 217, 232), Color.FromArgb(199, 125, 255), Color.FromArgb(255, 42, 109) };
+            void Grow(float x, float y, double ang, double len, int depth)
+            {
+                Vein v = new Vein { Colour = colours[rng.Next(colours.Length)], Width = depth > 0 ? 1.5f : 2.6f, Delay = depth * 0.12 + rng.NextDouble() * 0.1 };
+                v.Pts.Add(new PointF(x, y));
+                int steps = 5 + rng.Next(4);
+                for (int i = 1; i <= steps; i++)
+                {
+                    ang += (rng.NextDouble() - 0.5) * 0.9;
+                    x += (float)(Math.Cos(ang) * len / steps); y += (float)(Math.Sin(ang) * len / steps);
+                    v.Pts.Add(new PointF(x, y));
+                    if (depth < 2 && rng.NextDouble() < 0.28) Grow(x, y, ang + (rng.NextDouble() < 0.5 ? -0.8 : 0.8), len * 0.45, depth + 1);
+                }
+                veins.Add(v);
+            }
+            int n = 8 + rng.Next(5);
+            for (int i = 0; i < n; i++) Grow(0, 0, Math.PI * 2 * i / n + (rng.NextDouble() - 0.5) * 0.6, S * (0.4 + rng.NextDouble() * 0.45), 0);
+            introAt = Now;
+        }
+
+        private void DrawVeins(Graphics g, float cx, float cy)
+        {
+            double age = Now - introAt;
+            if (age >= 1.6 || veins.Count == 0) return;
+            double fade = age < 1.0 ? 1 : Math.Max(0, 1 - (age - 1.0) / 0.6);
+            float jx = (float)((rng.NextDouble() - 0.5) * 4), jy = (float)((rng.NextDouble() - 0.5) * 3);
+            foreach (Vein v in veins)
+            {
+                double t = Math.Max(0, Math.Min(1, (age - v.Delay) / 0.45));
+                if (t <= 0) continue;
+                int upto = Math.Max(1, (int)((v.Pts.Count - 1) * t));
+                PointF[] pts = new PointF[upto + 1];
+                for (int i = 0; i <= upto; i++) pts[i] = new PointF(cx + v.Pts[i].X + jx, cy + v.Pts[i].Y + jy);
+                foreach ((float w, double a) in new[] { (v.Width * 4, 0.22), (v.Width, 0.95) })
+                {
+                    int alpha = (int)Math.Max(0, Math.Min(255, 255 * a * fade * (0.75 + 0.25 * rng.NextDouble())));
+                    using (Pen pen = new Pen(Color.FromArgb(alpha, v.Colour), w) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round })
+                        g.DrawLines(pen, pts);
+                }
+            }
+        }
+
         private struct Note { public double Born, X, Y, Wob; public string Glyph; public Color Color; }
         private bool Seated => ledge != null && mode == "resting" && (!ledge.Floor || floorSit);
         private bool Quiet => mode == "resting" && !oneShot && !Talking;
@@ -128,10 +180,11 @@ namespace MiraPet
 
         protected override bool ShowWithoutActivation => true;
 
-        // Her keys, from anywhere, like Capri's: Ctrl+Alt+T type to her, Ctrl+Alt+H hide or show her, Ctrl+Alt+P quiet.
+        // Her keys, from anywhere, like Capri's: Ctrl+Alt+T type to her, Ctrl+Alt+H hide or show her, Ctrl+Alt+P quiet,
+        // Ctrl+Alt+C ride the cursor, Ctrl+Alt+N her next screen.
         private void Keys_(bool on)
         {
-            (int id, Keys key)[] keys = { (1, Keys.T), (2, Keys.H), (3, Keys.P), (4, Keys.C) };
+            (int id, Keys key)[] keys = { (1, Keys.T), (2, Keys.H), (3, Keys.P), (4, Keys.C), (5, Keys.N) };
             foreach ((int id, Keys key) in keys)
             {
                 if (on) Native.RegisterHotKey(Handle, id, Native.MOD_CONTROL | Native.MOD_ALT | Native.MOD_NOREPEAT, (int)key);
@@ -149,6 +202,7 @@ namespace MiraPet
                     case 2: Command(mode == "hidden" ? "show" : "hide"); break;
                     case 3: ToggleQuiet(); break;
                     case 4: Command(riding ? "hop_off" : "ride"); break;
+                    case 5: Command(Screen.AllScreens.Length > 1 ? "next_screen" : "elsewhere"); break;
                 }
                 return;
             }
@@ -294,6 +348,7 @@ namespace MiraPet
         {
             Ledge l = RandomSpot(true);
             if (l == null) return;
+            if (!introDone) { introDone = true; StartVeins(); }
             bool sit = l.Floor && rng.NextDouble() < 0.4;
             Settle(l, l.X1 + (l.X2 - l.X1) * rng.NextDouble(), sit);
             lying = false;
@@ -379,6 +434,24 @@ namespace MiraPet
                 Vanish(() => { Show(); Settle(l, x, sit); Play(l.Floor && !sit ? "arrive" : "perch_arrive"); });
                 return;
             }
+        }
+
+        // Over to another monitor's floor: the next one, or the one the pointer is on.
+        private void ToScreen(Screen screen)
+        {
+            if (screen == null || mode == "dragging" || mode == "falling") return;
+            Ledge f = spots.FirstOrDefault(l => l.Floor && screen.Bounds.Contains((int)((l.X1 + l.X2) / 2), (int)l.Y - 4));
+            if (f == null) return;
+            riding = false; sleeping = false; forcedSleep = false; hiddenUntil = Now + 5; gameHidden = false;
+            Teleport(f, false);
+        }
+
+        private Screen NextScreen()
+        {
+            Screen[] all = Screen.AllScreens.OrderBy(sc => sc.Bounds.Left).ToArray();
+            string here = Screen.FromPoint(Point.Round(Hip())).DeviceName;
+            int i = Array.FindIndex(all, sc => sc.DeviceName == here);
+            return all[(i + 1) % all.Length];
         }
 
         private void Walk()
@@ -640,6 +713,7 @@ namespace MiraPet
                             g.FillPath(b, shadow);
                     }
                 }
+                DrawVeins(g, box.X + box.Width / 2, box.Y + box.Height * 0.55f);
                 g.TranslateTransform((float)(ox + S / 2), (float)(oy + S / 2));
                 g.RotateTransform((float)tilt);
                 g.TranslateTransform((float)-(ox + S / 2), (float)-(oy + S / 2));
@@ -900,6 +974,7 @@ namespace MiraPet
                 if (!filesRead) lastBody = id;
                 else if (id.Length > 0 && id != lastBody) { lastBody = id; Command(what); }
             }
+            arrow.Take(ReadJson("arrow.json"));
             JsonElement? link = ReadJson("link.json");
             peerMusic = false; peerBpm = 0;
             if (link is JsonElement l && l.ValueKind == JsonValueKind.Object && l.TryGetProperty("at", out JsonElement la)
@@ -937,6 +1012,8 @@ namespace MiraPet
                 case "hide": if (mode != "hidden") Vanish(() => hiddenUntil = Now + 900); break;
                 case "hop": if (mode == "resting") Hop(); break;
                 case "elsewhere": Elsewhere(); break;
+                case "next_screen": ToScreen(NextScreen()); break;
+                case "this_screen": ToScreen(Screen.FromPoint(Cursor.Position)); break;
                 case "walk": if (mode == "resting") Walk(); break;
                 case "drop": if (mode == "resting") { ay -= S * 1.5; Fall(); } break;
                 case "lie": if (Seated && !lying) { int f = Rules.LieFacing(ledge, Hip().X, S); if (f != 0) LieDown(f, 180); } break;
@@ -967,6 +1044,11 @@ namespace MiraPet
             m.Items.Add("Dance", null, (_, __) => Command(danceUntil > Now ? "stop_dancing" : "dance"));
             m.Items.Add("Nap / wake up", null, (_, __) => Command(sleeping ? "wake" : "sleep"));
             m.Items.Add("Go somewhere else", null, (_, __) => Command("elsewhere"));
+            if (Screen.AllScreens.Length > 1)
+            {
+                m.Items.Add("Next screen   Ctrl+Alt+N", null, (_, __) => Command("next_screen"));
+                m.Items.Add("Come to this screen", null, (_, __) => Command("this_screen"));
+            }
             m.Items.Add("Ride my cursor / hop off   Ctrl+Alt+C", null, (_, __) => Command(riding ? "hop_off" : "ride"));
             m.Items.Add("Coach my chess (on / off)", null, (_, __) => { told.Remove("coach"); Tell("coach"); });
             m.Items.Add("Play a game with her…", null, (_, __) => { told.Remove("play"); Tell("play"); });
@@ -1040,6 +1122,7 @@ namespace MiraPet
                 clock.Dispose();
                 senses.Dispose();
                 ears.Dispose();
+                arrow.Dispose();
                 player?.Dispose();
                 tray.Dispose();
                 bubble.Dispose();

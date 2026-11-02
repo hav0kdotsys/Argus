@@ -108,7 +108,8 @@ USAGE = """argus companion run          offer Mira moments as they come up (fore
 argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, session, meal, late, bored, popin);
                              --dry prints what she'd do without showing or saying it
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
-                             stop_dancing, glitch, grin, drop, ride, hop_off, come_here, floor,
+                             stop_dancing, glitch, grin, drop, ride, hop_off, come_here, floor, elsewhere,
+                             next_screen, this_screen,
                              perch WINDOW ("perch discord"), mini_player_on/off (bind `body type` to a key);
                              --there sends it to her body on the other machine (hop_in: she comes over)
 argus companion link         how her two bodies are linked (music, quiet, coaching and settings cross over)

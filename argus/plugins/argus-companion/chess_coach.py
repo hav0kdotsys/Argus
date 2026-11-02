@@ -107,6 +107,30 @@ def _win_boards() -> list[Board]:
     return [b for _, b in sorted(found, key=lambda t: t[0])]
 
 
+def on_screen(board: Board, shot_size: tuple[int, int], box) -> tuple[int, int, int, int]:
+    """The board's squares (``box`` in the screenshot) in screen coordinates, the bodies' own: the screenshot may be
+    in physical pixels and the window's box in logical ones."""
+    left, top, right, bottom = board.box
+    sx, sy = (right - left) / max(1, shot_size[0]), (bottom - top) / max(1, shot_size[1])
+    return (round(left + box[0] * sx), round(top + box[1] * sy), round(left + box[2] * sx), round(top + box[3] * sy))
+
+
+def arrow(folder: Path, what: dict | None) -> None:
+    """The engine's move as an arrow over the board (``arrow.json`` for her body): {"box", "from", "to",
+    "white_bottom", "id", "at"}, or cleared. Unchanged files aren't rewritten."""
+    path = folder / "arrow.json"
+    data = {**what, "id": f"{what['from']}{what['to']}{what['box']}", "at": time.time()} if what else {"at": 0}
+    try:
+        old = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        old = None
+    if isinstance(old, dict) and old.get("id") == data.get("id") and (what or not old.get("at")):
+        return
+    tmp = folder / "arrow.json.tmp"
+    tmp.write_text(json.dumps(data), encoding="utf-8")
+    tmp.replace(path)
+
+
 def boards() -> list[Board]:
     """Chess boards Hannah can see right now on this machine, the one she's most likely using first."""
     return _win_boards() if sys.platform == "win32" else _hypr_boards()
@@ -140,6 +164,8 @@ def set_coach(folder: Path, on: bool, bot: bool = False) -> None:
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "chess.json").write_text(json.dumps({"coach": on, "bot": bot and on, "at": time.time()}),
                                        encoding="utf-8")
+    if not on:
+        arrow(folder, None)
 
 
 def now_state(folder: Path, fresh: float = 600.0) -> dict | None:
@@ -194,6 +220,7 @@ class Coach:
         self.offered: dict[str, float] = {}
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
+        self.screen_box: tuple[int, int, int, int] | None = None    # where the board's squares are on the screen
 
     # -- the loop --------------------------------------------------------------------------------------------
     def running(self) -> bool:
@@ -215,6 +242,7 @@ class Coach:
         while not self._stop.is_set():
             seen = boards()
             if not seen:
+                arrow(self.folder, None)
                 gone_since = gone_since or time.time()
                 if time.time() - gone_since > 120:
                     break       # the board's been closed a while: the ticker starts us again when one shows up
@@ -235,6 +263,7 @@ class Coach:
         read = self.eyes.read(shot, fallback_turn="w")
         if not read["found"]:
             return
+        self.screen_box = on_screen(board, shot.size, read["box"])
         if not read["learnt"]:
             if not self.told_unlearnt:
                 self.told_unlearnt = True
@@ -257,6 +286,7 @@ class Coach:
         live_block = board.live and not coach["bot"]
         state = {"host": board.host, "title": board.title, "fen": fen, "her": her, "live": board.live,
                  "at": time.time()}
+        arrow(self.folder, None)    # the last arrow was for the last position
         if live_block or self.engine is None or not coach["coach"]:
             self._write(state)      # no engine unless she asked for it, and never on a live game against a person
             return
@@ -292,6 +322,9 @@ class Coach:
                                           f"The punishing move is {state['best']} ({state['line']}).")
         if mine and coach["coach"]:
             self.say(f"▸ {state['best']}   {state['score']}   ({state['line']})")
+            if self.screen_box:
+                arrow(self.folder, {"box": self.screen_box, "from": best.move[:2], "to": best.move[2:4],
+                                    "white_bottom": her == "w", "host": board.host})
             if best.mate is not None and best.mate > 0 and best.mate <= 5:
                 self._react("chess_mate", f"She has mate in {best.mate}: {state['line']}.")
 

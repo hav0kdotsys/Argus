@@ -212,8 +212,38 @@ ShellRoot {
         play(sit ? "perch_glitch" : "glitch")
     }
 
+    // Her start: forked neon veins crackle out from behind her as she glitches in, different every time.
+    property real introAt: -100
+    property bool introDone: false
+    property var veins: []
+    function startVeins() {
+        const out = []
+        const n = 8 + Math.floor(Math.random() * 5)
+        const colours = ["#ff2a6d", "#05d9e8", "#c77dff", "#ff2a6d"]
+        function grow(x, y, ang, len, depth) {
+            const pts = [{ x: x, y: y }]
+            const steps = 5 + Math.floor(Math.random() * 4)
+            for (let i = 1; i <= steps; i++) {
+                ang += (Math.random() - 0.5) * 0.9
+                x += Math.cos(ang) * len / steps; y += Math.sin(ang) * len / steps
+                pts.push({ x: x, y: y })
+                if (depth < 2 && Math.random() < 0.28) grow(x, y, ang + (Math.random() < 0.5 ? -0.8 : 0.8), len * 0.45, depth + 1)
+            }
+            out.push({ pts: pts, colour: colours[Math.floor(Math.random() * colours.length)], width: depth ? 1.5 : 2.6,
+                       delay: depth * 0.12 + Math.random() * 0.1 })
+        }
+        for (let i = 0; i < n; i++) {
+            const ang = Math.PI * 2 * i / n + (Math.random() - 0.5) * 0.6
+            grow(0, 0, ang, size * (0.6 + Math.random() * 0.9), 0)
+        }
+        veins = out
+        introAt = now
+    }
+    readonly property bool introOn: now - introAt < 1.6
+
     function appear() {
         if (!loaded || spots.length === 0) return
+        if (!introDone) { introDone = true; startVeins() }
         const windows = spots.filter(l => !l.floor)
         const l = windows.length && Math.random() < 0.6 ? windows[Math.floor(Math.random() * windows.length)] : spots[0]
         const sit = l.floor && Math.random() < 0.4
@@ -488,6 +518,7 @@ ShellRoot {
         case "hide": if (mode !== "hidden") vanish(() => { hiddenUntil = now + 900 }); break
         case "hop": if (mode === "resting") hop(); break
         case "elsewhere": elsewhere(); break
+        case "next_screen": case "this_screen": teleport(spots.find(l => l.floor), false); break   // one screen here
         case "walk": if (mode === "resting") walk(); break
         case "drop": if (mode === "resting") { ay -= size * 1.5; fall() } break
         case "lie": if (seated && !lying) { const f = Pet.lieFacing(ledge, hip().x, size); if (f) lieDown(f, 180) } break
@@ -596,6 +627,22 @@ ShellRoot {
             req.send()
         }
     }
+
+    // ---- the engine's move as an arrow over the coached board (arrow.json from her chess coach)
+    property var arrow: null
+    FileView {
+        id: arrowFile
+        path: root.companion + "arrow.json"
+        printErrors: false
+        onLoaded: {
+            let a = null
+            try { a = JSON.parse(text()) } catch (e) { }
+            const ok = a && a.at && Date.now() / 1000 - a.at < 600 && a.box && a.from && a.to
+            if (!ok) { if (root.arrow !== null) root.arrow = null; return }
+            if (!root.arrow || root.arrow.id !== a.id) root.arrow = a
+        }
+    }
+    Timer { interval: 400; running: true; repeat: true; onTriggered: arrowFile.reload() }
 
     // ---- one Mira, two bodies: music on winhvk makes her dance here too (link.json, from the companion's link),
     // and she nods on the beat her ears hear (beat.json here, or the one winhvk's ears send over the link).
@@ -709,6 +756,73 @@ ShellRoot {
         // The keyboard only while the typing box is open; never otherwise.
         WlrLayershell.keyboardFocus: root.typing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         mask: Region { item: hit; Region { item: typeBox } Region { item: miniArea } }
+
+        Canvas {
+            id: veinCanvas
+            anchors.fill: parent
+            visible: root.introOn
+            property real age: root.now - root.introAt
+            onAgeChanged: if (visible) requestPaint()
+            onPaint: {
+                const g = getContext("2d")
+                g.reset()
+                if (!root.introOn) return
+                const cx = root.bx.x + root.bx.w / 2, cy = root.bx.y + root.bx.h * 0.55
+                const fade = age < 1.0 ? 1 : Math.max(0, 1 - (age - 1.0) / 0.6)
+                g.lineCap = "round"; g.lineJoin = "round"
+                for (const v of root.veins) {
+                    const t = Math.max(0, Math.min(1, (age - v.delay) / 0.45))
+                    if (t <= 0) continue
+                    const upto = Math.max(1, Math.floor((v.pts.length - 1) * t))
+                    const jx = (Math.random() - 0.5) * 4, jy = (Math.random() - 0.5) * 3      // the glitch shake
+                    for (const pass of [{ w: v.width * 4, a: 0.22 }, { w: v.width, a: 0.95 }]) {
+                        g.globalAlpha = pass.a * fade * (0.75 + 0.25 * Math.random())
+                        g.strokeStyle = v.colour; g.lineWidth = pass.w
+                        g.beginPath()
+                        g.moveTo(cx + v.pts[0].x + jx, cy + v.pts[0].y + jy)
+                        for (let i = 1; i <= upto; i++) g.lineTo(cx + v.pts[i].x + jx, cy + v.pts[i].y + jy)
+                        g.stroke()
+                    }
+                }
+            }
+        }
+
+        Canvas {
+            id: arrowCanvas
+            anchors.fill: parent
+            visible: root.arrow !== null
+            opacity: 0.78 + 0.12 * Math.sin(root.now * 3)
+            property var shown: root.arrow
+            onShownChanged: requestPaint()
+            function centre(a, sq) {
+                const f = sq.charCodeAt(0) - 97, r = sq.charCodeAt(1) - 49
+                const col = a.white_bottom ? f : 7 - f, row = a.white_bottom ? 7 - r : r
+                const w = (a.box[2] - a.box[0]) / 8, h = (a.box[3] - a.box[1]) / 8
+                return { x: a.box[0] + (col + 0.5) * w, y: a.box[1] + (row + 0.5) * h, s: Math.min(w, h) }
+            }
+            onPaint: {
+                const g = getContext("2d")
+                g.reset()
+                const a = shown
+                if (!a) return
+                const p = centre(a, a.from), q = centre(a, a.to)
+                const ang = Math.atan2(q.y - p.y, q.x - p.x), head = p.s * 0.42, wide = p.s * 0.17
+                const ex = q.x - Math.cos(ang) * head * 0.8, ey = q.y - Math.sin(ang) * head * 0.8
+                g.lineCap = "round"
+                for (const pass of [{ c: "#55ff2a6d", w: wide * 2.2 }, { c: "#ff2a6d", w: wide }]) {
+                    g.strokeStyle = pass.c; g.lineWidth = pass.w
+                    g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(ex, ey); g.stroke()
+                }
+                g.fillStyle = "#ff2a6d"
+                g.beginPath()
+                g.moveTo(q.x, q.y)
+                g.lineTo(q.x - Math.cos(ang - 0.5) * head, q.y - Math.sin(ang - 0.5) * head)
+                g.lineTo(q.x - Math.cos(ang + 0.5) * head, q.y - Math.sin(ang + 0.5) * head)
+                g.closePath(); g.fill()
+                g.strokeStyle = "#05d9e8"; g.lineWidth = Math.max(2, wide * 0.18)
+                g.beginPath(); g.arc(p.x, p.y, p.s * 0.2, 0, Math.PI * 2); g.stroke()
+            }
+        }
 
         MiniPlayer {
             id: mini
