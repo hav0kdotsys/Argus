@@ -866,6 +866,7 @@ namespace MiraPet
             m.Items.Add("Ride my cursor / hop off   Ctrl+Alt+C", null, (_, __) => Command(riding ? "hop_off" : "ride"));
             m.Items.Add("Coach my chess (on / off)", null, (_, __) => { told.Remove("coach"); Tell("coach"); });
             m.Items.Add("Play a game with her…", null, (_, __) => { told.Remove("play"); Tell("play"); });
+            m.Items.Add("Settings…", null, (_, __) => { told.Remove("settings"); Tell("settings"); });
             ToolStripMenuItem size = new ToolStripMenuItem("Size");
             for (int i = 0; i < Sizes.Length; i++)
             {

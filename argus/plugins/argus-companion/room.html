@@ -42,6 +42,13 @@
   .hands button { font-size: 44px; width: 96px; height: 96px; background: var(--plate); border: 1px solid #3a3446; cursor: pointer; color: var(--text); }
   .throws { font-size: 54px; display: flex; gap: 40px; min-height: 70px; align-items: center; }
   .hint { color: var(--dim); font-size: 12px; margin-top: 12px; text-align: center; }
+  .group { width: 100%; max-width: 520px; background: var(--plate); border: 1px solid #3a3446; padding: 10px 16px; margin: 6px 0;
+           clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
+  .group h2 { font-size: 12px; letter-spacing: .25em; color: var(--pink); margin: 4px 0 8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; gap: 12px; cursor: pointer; }
+  .row small { display: block; color: var(--dim); font-size: 11px; }
+  .row input { accent-color: var(--pink); width: 18px; height: 18px; }
+  .row select { background: var(--bg); color: var(--text); border: 1px solid #3a3446; font: inherit; padding: 3px 6px; }
 </style>
 </head>
 <body>
@@ -49,6 +56,7 @@
 <nav>
   <button data-game="chess">CHESS</button><button data-game="tictactoe">TIC-TAC-TOE</button>
   <button data-game="connect4">CONNECT FOUR</button><button data-game="rps">ROCK PAPER SCISSORS</button>
+  <button data-game="settings">SETTINGS</button>
 </nav>
 
 <section id="chess">
@@ -84,6 +92,16 @@
   <div class="hands"><button data-h="r">✊</button><button data-h="p">✋</button><button data-h="s">✌️</button></div>
   <div class="hint">R / P / S · N new match</div>
 </section>
+<section id="settings">
+  <div class="group"><h2>HER</h2>
+    <label class="row"><span>Quiet <small>no check-ins or pop-ins; she still answers you</small></span><input type="checkbox" id="setQuiet"></label>
+    <label class="row"><span>Coach my chess <small>engine moves on chess.com / lichess vs the computer</small></span><input type="checkbox" id="setCoach"></label>
+    <label class="row"><span>Mini player <small>bottom-left while music plays</small></span><input type="checkbox" id="setMini"></label>
+    <label class="row"><span>Pop-ins</span><select id="setPopin"><option value="rarely">rarely</option><option value="sometimes">sometimes</option><option value="often">often</option></select></label>
+  </div>
+  <div class="group"><h2>MOMENTS SHE GETS</h2><div id="setMoments"></div></div>
+  <div class="say" id="setSay"></div>
+</section>
 <div class="hint">Esc closes · Mira sees how it ends</div>
 
 <script>
@@ -96,7 +114,8 @@ const $ = id => document.getElementById(id);
 // ---- tabs
 let current = "";
 function show(game) {
-  if (!["chess", "tictactoe", "connect4", "rps"].includes(game)) game = "chess";
+  if (!["chess", "tictactoe", "connect4", "rps", "settings"].includes(game)) game = "chess";
+  if (game === "settings") loadSettings();
   current = game;
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === game));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.game === game));
@@ -283,6 +302,29 @@ function rpsNew() { rps.score = [0, 0]; rps.over = false; $("rpsSay").textConten
 document.querySelectorAll(".hands button").forEach(b => b.onclick = () => rpsPlay(b.dataset.h));
 $("rpsNew").onclick = rpsNew;
 
+// ---- settings: written straight to her companion, applied at once
+function applySettings(s) {
+  $("setQuiet").checked = s.quiet; $("setCoach").checked = s.coach; $("setMini").checked = s.mini_player;
+  $("setCoach").disabled = !s.engine; $("setPopin").value = s.popin;
+  const box = $("setMoments"); box.innerHTML = "";
+  for (const [k, label] of Object.entries(s.moments)) {
+    const row = document.createElement("label"); row.className = "row";
+    row.innerHTML = `<span>${label}</span><input type="checkbox" data-k="${k}" ${s.off.includes(k) ? "" : "checked"}>`;
+    row.querySelector("input").onchange = saveMoments;
+    box.appendChild(row);
+  }
+}
+function saveMoments() {
+  const off = [...document.querySelectorAll("#setMoments input")].filter(i => !i.checked).map(i => i.dataset.k);
+  change({ off });
+}
+function change(body) { api("/api/settings", body).then(s => { applySettings(s); $("setSay").textContent = "saved"; setTimeout(() => $("setSay").textContent = "", 1200); }); }
+function loadSettings() { api("/api/settings").then(applySettings).catch(() => {}); }
+$("setQuiet").onchange = e => change({ quiet: e.target.checked });
+$("setCoach").onchange = e => change({ coach: e.target.checked });
+$("setMini").onchange = e => change({ mini_player: e.target.checked });
+$("setPopin").onchange = e => change({ popin: e.target.value });
+
 // ---- keys
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") return window.close();
@@ -290,7 +332,7 @@ document.addEventListener("keydown", e => {
   if (current === "tictactoe" && /^[1-9]$/.test(k)) tttPlay(+k - 1);
   if (current === "connect4" && /^[1-7]$/.test(k)) c4Play(+k - 1);
   if (current === "rps" && "rps".includes(k) && k.length === 1) rpsPlay(k);
-  if (k === "n") ({ chess: newChess, tictactoe: tttNew, connect4: c4New, rps: rpsNew })[current]();
+  if (k === "n" && current !== "settings") ({ chess: newChess, tictactoe: tttNew, connect4: c4New, rps: rpsNew })[current]();
 });
 
 show(location.hash.slice(1));

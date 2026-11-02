@@ -113,7 +113,7 @@ argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, 
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
-argus companion play [GAME]  her games board: chess, tictactoe, connect4, rps (chess against her at any level)
+argus companion play [GAME]  her room: chess, tictactoe, connect4, rps (chess against her at any level), settings
 argus companion status       the signals the ticker sees right now"""
 
 

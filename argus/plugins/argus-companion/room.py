@@ -24,7 +24,7 @@ from . import chess_board as cb
 logger = logging.getLogger(__name__)
 
 PORT = 8771
-GAMES = ("chess", "tictactoe", "connect4", "rps")
+GAMES = ("chess", "tictactoe", "connect4", "rps", "settings")
 LEVELS = {"easy": 1320, "medium": 1700, "hard": 2200, "max": None}
 PAGE = Path(__file__).with_name("room.html")
 
@@ -92,6 +92,8 @@ class Room:
                 url = urlparse(self.path)
                 if url.path == "/":
                     return self._send(200, PAGE.read_bytes(), "text/html; charset=utf-8")
+                if url.path == "/api/settings":
+                    return self._send(200, room.settings(None))
                 if url.path == "/api/chess/new":
                     q = parse_qs(url.query)
                     return self._send(200, room.chess_new(q.get("color", ["w"])[0], q.get("level", ["medium"])[0]))
@@ -111,6 +113,8 @@ class Room:
                         return self._send(503, {"error": "no chess engine on this machine"})
                     return self._send(200, chess_turn(room.engine, str(body.get("fen", "")), str(body.get("move", "")),
                                                       str(body.get("level", "medium"))))
+                if path == "/api/settings":
+                    return self._send(200, room.settings(body))
                 if path == "/api/result":
                     room.finished(body)
                     return self._send(200, {"ok": True})
@@ -120,6 +124,31 @@ class Room:
         (self.folder / "room.json").write_text(json.dumps({"port": PORT, "token": self.token}), encoding="utf-8")
         from agent.memory_provider import spawn_context_thread
         spawn_context_thread(self.server.serve_forever, name="mira-room").start()
+
+    def settings(self, change: dict | None) -> dict:
+        """Her settings as the tab shows them, after applying ``change`` (quiet, coach, mini_player, off, popin)."""
+        from . import chess_coach, prefs, ticker
+        change = change if isinstance(change, dict) else {}
+        if isinstance(change.get("quiet"), bool):
+            quiet = self.folder / "quiet"
+            quiet.write_text("quiet", encoding="utf-8") if change["quiet"] else quiet.unlink(missing_ok=True)
+        if isinstance(change.get("coach"), bool):
+            chess_coach.set_coach(self.folder, change["coach"])
+        if isinstance(change.get("mini_player"), bool):
+            ticker.body(self.folder, "mini_player_on" if change["mini_player"] else "mini_player_off")
+        current = prefs.save(self.folder, change) if ("off" in change or "popin" in change) else prefs.load(self.folder)
+        return {**current, "moments": prefs.MOMENTS, "quiet": (self.folder / "quiet").exists(),
+                "coach": chess_coach.settings(self.folder)["coach"], "mini_player": change.get("mini_player", not self._mini_off()),
+                "engine": bool(self.engine)}
+
+    def _mini_off(self) -> bool:
+        """What her body last saved (pet-laphvk.json / pet-windows.json)."""
+        for name in ("pet-laphvk.json", "pet-windows.json"):
+            try:
+                return json.loads((self.folder / name).read_text(encoding="utf-8")).get("mini_player_off") is True
+            except (OSError, ValueError, AttributeError):
+                continue
+        return False
 
     def chess_new(self, color: str, level: str) -> dict:
         if self.engine is None:
@@ -135,7 +164,7 @@ class Room:
 
     def finished(self, body: dict) -> None:
         game = str(body.get("game", ""))
-        if game not in GAMES:
+        if game not in GAMES or game == "settings":
             return
         result = str(body.get("result", ""))[:20]
         score = str(body.get("score", ""))[:40]

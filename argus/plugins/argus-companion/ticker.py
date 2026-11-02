@@ -359,7 +359,8 @@ def _chess_tick(folder: Path, coach, m: presence.Moment) -> None:
     if coach is None:
         return
     seen = coach.notice(active=m.idle < presence.AWAY)
-    if seen and not m.quiet and not m.busy:
+    from . import prefs
+    if seen and not m.quiet and not m.busy and prefs.allowed(folder, "chess"):
         from agent.memory_provider import spawn_context_thread
         spawn_context_thread(moment_now, name="companion-chess-offer", args=(folder, "chess", timedelta(0), m.idle),
                              kwargs={"extra": seen[1]}).start()
@@ -377,7 +378,9 @@ def due_reminders(agenda: dict, told: set[str]) -> list[str]:
 
 def _reminder_tick(folder: Path, m: presence.Moment, last: list[float]) -> None:
     """A reminder of hers just went overdue and she's here: Mira says it her way (once per reminder per day)."""
-    if m.idle >= presence.AWAY or m.quiet or m.busy or time.time() - last[0] < REMINDER_EVERY:
+    from . import prefs
+    if m.idle >= presence.AWAY or m.quiet or m.busy or time.time() - last[0] < REMINDER_EVERY \
+            or not prefs.allowed(folder, "reminder"):
         return
     last[0] = time.time()
     path, today = folder / "reminded.json", datetime.now().strftime("%Y-%m-%d")
@@ -421,7 +424,8 @@ class GameClock:
 
 def _game_break_tick(folder: Path, m: presence.Moment, clock: GameClock) -> None:
     gaming = m.idle < presence.AWAY and (_fullscreen(folder) or game_mode())
-    if clock.due(m.now.timestamp(), gaming) and not m.quiet:
+    from . import prefs
+    if clock.due(m.now.timestamp(), gaming) and not m.quiet and prefs.allowed(folder, "game_break"):
         hours = (m.now.timestamp() - clock.since) / 3600
         moment_now(folder, "game_break", timedelta(0), m.idle,
                    extra=f"She's been gaming for about {hours:.1f} hours without a break (focused: {mind_window(folder)}).")
@@ -490,7 +494,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     folder = folder or companion_dir()
     folder.mkdir(parents=True, exist_ok=True)
     # No `back`: MIRA already greets Hannah on her return (winhvk's camera presence -> mira-api's spoken greeting).
-    sched = presence.Scheduler(presence.Settings(enabled=frozenset(presence.KINDS) - {"back"}))
+    from . import prefs
+    sched = presence.Scheduler(prefs.scheduler_settings(folder))
     try:
         sched.recall(json.loads((folder / "scheduler.json").read_text(encoding="utf-8")))
     except (OSError, ValueError):
@@ -515,9 +520,9 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             seen_event = event_id
             if kind == "coach":
                 _toggle_coach(folder)
-            elif kind == "play":
+            elif kind in ("play", "settings"):
                 from . import room
-                room.open_window(folder)
+                room.open_window(folder, "settings" if kind == "settings" else "")
             elif kind in EVENT_KINDS:
                 m = moment(folder, last_tick)
                 if not m.quiet:
@@ -530,6 +535,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             _chess_tick(folder, coach, m)
             _reminder_tick(folder, m, reminder_read)
             _game_break_tick(folder, m, game_clock)
+            sched.settings = prefs.scheduler_settings(folder)     # the settings tab applies at once
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)
