@@ -183,6 +183,8 @@ def _cli_chess_look(folder) -> int:
         return 1
     board = seen[0]
     shot = chess_coach.capture(board)
+    if shot is not None:
+        shot.save(folder / "chess-look.png")       # what she saw, for when a board isn't found
     read = Eyes(folder).read(shot) if shot is not None else {"found": False}
     print(f"{board.host}: {board.title}{'  [maybe a live game vs a person]' if board.live else ''}")
     if not read.get("fen"):
