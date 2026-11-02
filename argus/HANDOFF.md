@@ -269,8 +269,13 @@ Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too)
 - **Her ears / beat** (`ears.py` via parec on laphvk, `MiraPet/Ears.cs` WASAPI loopback on winhvk): tempo + beat
   phase -> `beat.json`; she nods on the beat and music notes float off her, on the playing machine's beat on both.
 - **Go somewhere else** = `body elsewhere` (always moves: other window, other screen, along the floor).
-- Still to do vs Capri: sound effects (no assets of hers yet), startup tendrils, next-screen commands, drawing on
-  screen, Discord status, watch-along with audio, a move arrow on the coached board, laphvk sizes/tray. JarvisInfrastructure ops/ patches are still uncommitted; the mira-api persona/greeting
+- **Move arrow**: the coach writes `arrow.json` (board squares in screen coords via `on_screen`, from/to, orientation);
+  laphvk's body draws it, winhvk has a click-through overlay (`MiraPet/Arrow.cs`); cleared on the next position.
+- **Screens**: `body next_screen | this_screen` (winhvk menu + Ctrl+Alt+N). **Sizes**: `body size small..giant`
+  on both (laphvk keeps it in `pet-laphvk.json`).
+- **Startup veins**: forked neon veins crackle out from behind her on her first arrival after the body starts.
+- Still to do vs Capri: sound effects (no assets of hers yet), drawing on screen, Discord status (needs a Discord
+  application id from HavoK), watch-along with audio. laphvk tray: Quickshell hosts trays, it can't be an item. JarvisInfrastructure ops/ patches are still uncommitted; the mira-api persona/greeting
   patch is applied to source (backups) and waits for HavoK's guarded mira-api deploy.
 
 Waiting on HavoK:
