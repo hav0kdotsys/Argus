@@ -194,9 +194,21 @@ def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
                            talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
 
 
-def _speak(text: str) -> bool:
-    request = urllib.request.Request(PANEL_SPEAK, data=json.dumps({"text": text}).encode("utf-8"),
-                                     headers={"Content-Type": "application/json"}, method="POST")
+AGENT_SAY = "http://127.0.0.1:32768/say"   # winhvk: MiraAgent speaks in MIRA's voice (MIRA Link)
+
+
+def _speak(text: str, folder: Path | None = None) -> bool:
+    """Out loud in MIRA's voice on this machine: laphvk's voice panel (it refuses while she's mid-conversation or
+    quiet), or winhvk's MiraAgent (bearer MIRA_AGENT_TOKEN from the user's environment; skipped while quiet)."""
+    if sys.platform == "win32":
+        token = os.environ.get("MIRA_AGENT_TOKEN", "")
+        if not token or (folder is not None and (folder / "quiet").exists()):
+            return False
+        request = urllib.request.Request(AGENT_SAY, data=json.dumps({"text": text}).encode("utf-8"), method="POST",
+                                         headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"})
+    else:
+        request = urllib.request.Request(PANEL_SPEAK, data=json.dumps({"text": text}).encode("utf-8"),
+                                         headers={"Content-Type": "application/json"}, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=3) as reply:
             return reply.status == 200
@@ -211,7 +223,7 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True, log: boo
     tmp = folder / "say.json.tmp"
     tmp.write_text(json.dumps({"id": f"{time.time_ns()}", "text": text, "kind": kind}), encoding="utf-8")
     os.replace(tmp, folder / "say.json")
-    spoken = aloud and _speak(text)
+    spoken = aloud and _speak(text, folder)
     if log:
         with open(folder / "checkins.log", "a", encoding="utf-8") as fh:
             fh.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
@@ -272,6 +284,7 @@ def _remember(folder: Path, sched: presence.Scheduler) -> None:
 
 
 EVENT_KINDS = ("pat", "tossed", "poked", "woke")
+BODY_TOGGLES = ("coach",)    # menu items on her body that flip a setting rather than ask her anything
 EVENT_POLL = 2.0
 
 
@@ -284,17 +297,51 @@ def _event(folder: Path) -> tuple[str, str]:
     return (str(data.get("id", "")), str(data.get("kind", ""))) if isinstance(data, dict) else ("", "")
 
 
-def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None) -> str | None:
+def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None, extra: str = "") -> str | None:
     """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
     from . import mind
     line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode(),
-                    away_for=away_for or timedelta(0))
+                    away_for=away_for or timedelta(0), extra=extra)
     if line:
         say(folder, line, kind)
     else:
         with open(folder / "checkins.log", "a", encoding="utf-8") as log:
             log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind} (passed)\n")
     return line
+
+
+def _coach(folder: Path):
+    """Her chess coach (Stockfish + her eyes on the board), or None when it can't run here."""
+    from . import chess_coach
+
+    def react(kind: str, facts: str) -> None:
+        m = moment(folder)
+        if not m.quiet:
+            moment_now(folder, kind, timedelta(0), m.idle, extra=facts)
+
+    try:
+        return chess_coach.Coach(folder, lambda text: say(folder, text, "chess", aloud=False, log=False), react)
+    except Exception:  # no Pillow, no display: she just doesn't do chess here
+        logger.warning("companion: chess coach unavailable", exc_info=True)
+        return None
+
+
+def _chess_tick(folder: Path, coach, m: presence.Moment) -> None:
+    """A chess board on screen: follow it, and the first time in a while let her offer to help."""
+    if coach is None:
+        return
+    seen = coach.notice(active=m.idle < presence.AWAY)
+    if seen and not m.quiet and not m.busy:
+        from agent.memory_provider import spawn_context_thread
+        spawn_context_thread(moment_now, name="companion-chess-offer", args=(folder, "chess", timedelta(0), m.idle),
+                             kwargs={"extra": seen[1]}).start()
+
+
+def _toggle_coach(folder: Path) -> None:
+    from . import chess_coach
+    on = not chess_coach.settings(folder)["coach"]
+    chess_coach.set_coach(folder, on)
+    say(folder, f"▸ chess coaching {'on' if on else 'off'}", "chess", aloud=False, log=False)
 
 
 def run(folder: Path | None = None, tick: float = TICK) -> None:
@@ -310,6 +357,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     last_tick = 0.0
     seen_event = _event(folder)[0]   # what was already there when she started isn't news
     seen_ask = _ask(folder)[0]
+    coach = _coach(folder)
     while True:
         ask_id, text = _ask(folder)
         if ask_id and ask_id != seen_ask:
@@ -319,13 +367,16 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
         event_id, kind = _event(folder)
         if event_id and event_id != seen_event:
             seen_event = event_id
-            if kind in EVENT_KINDS:
+            if kind == "coach":
+                _toggle_coach(folder)
+            elif kind in EVENT_KINDS:
                 m = moment(folder, last_tick)
                 if not m.quiet:
                     moment_now(folder, kind, timedelta(0), m.idle)
         if time.time() - last_tick >= tick:
             m = moment(folder, last_tick)
             last_tick = time.time()
+            _chess_tick(folder, coach, m)
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)

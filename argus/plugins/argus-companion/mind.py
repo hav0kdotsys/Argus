@@ -40,6 +40,12 @@ REASONS = {
     "bored": "the two of you haven't talked in a while even though she's right there",
     "popin": "no particular reason - you might just feel like reacting to what she's doing, or not",
     "back": "she's just come back to her desk after {away} away",
+    "chess": "she's just opened a chess board",
+    "chess_new": "a fresh chess game just started on her board",
+    "chess_blunder": "she just made a real mistake in her chess game",
+    "chess_gift": "her opponent just blundered and she has something big",
+    "chess_mate": "she has a forced mate on the board",
+    "chess_over": "her chess game just ended",
     "hello": "you've just come up on her machine and she's here",
     # Her body on laphvk (the pet) - Hannah touching it. Reactions, so they're quick if you say anything.
     "pat": "she's just given you head pats, rubbing her cursor back and forth over you",
@@ -220,7 +226,7 @@ def _span(delta: timedelta) -> str:
 
 
 def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: list[str], talk: list[str],
-          said: list[str], away_for: timedelta = timedelta(0), day: list[str] | None = None) -> str:
+          said: list[str], away_for: timedelta = timedelta(0), day: list[str] | None = None, extra: str = "") -> str:
     """The context she decides from: why this moment, what she can see, what she remembers, what was said."""
     meal = "lunch" if now.hour < 16 else "dinner"
     if kind == "back" and not away_for:
@@ -228,6 +234,7 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
     reason = REASONS.get(kind, REASONS["popin"]).format(present=_span(present_for), meal=meal, away=_span(away_for))
     parts = [
         f"Why ARGUS flagged this moment: {reason}.",
+        *([f"What's happening (facts, from ARGUS - put them in your own words if you use them):\n{extra}"] if extra else []),
         f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at her desk for {_span(present_for)} this sitting.",
         (f"She's at {seen.where} (last input {int(seen.idle)}s ago). Focused window: {seen.window or 'unknown'}"
          f"{' (fullscreen)' if seen.fullscreen else ''}." + (" winhvk's Game Mode is on." if seen.gaming else ""))
@@ -260,7 +267,7 @@ def decide(text: str) -> str | None:
 
 
 def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
-        gaming: bool = False, away_for: timedelta = timedelta(0)) -> str | None:
+        gaming: bool = False, away_for: timedelta = timedelta(0), extra: str = "") -> str | None:
     """Ask Mira about this moment. Her line, or None when she passes or the provider can't be reached."""
     from agent.auxiliary_client import call_llm
 
@@ -268,7 +275,7 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     messages = [
         {"role": "system", "content": soul() + AUTONOMY},
         {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now), memories(),
-                                          recent_talk(now), own_lines(folder), away_for, _agenda())},
+                                          recent_talk(now), own_lines(folder), away_for, _agenda(), extra)},
     ]
     try:
         # Room for a reasoning model to think first: her line is short, the thinking may not be.

@@ -4,6 +4,31 @@ Self-contained brief for the next agent. Read this, then `argus/ARGUS.md` (desig
 `argus/CORE-PATCHES.md` (what was changed in the inherited code and how to take upstream). Nothing else is needed
 to carry on.
 
+
+## What Mira can already do (researched 2026-11-02) - build on these, never beside them
+
+- **ARGUS turns reach 150 MIRA tools** through the `mira` MCP server (relay, `argus mcp test mira` lists them):
+  apps (`process_launch` on winhvk/laphvk/debhvk), real input and screen reading (`pc_screen`/`pc_input` winhvk,
+  `lap_pc_screen`/`lap_pc_input` laphvk, accessibility-based), `screenshot`, live 30 fps camera/screen buffers
+  (`vision_stream` + `vision_look`), music on every player (`musicbee`, `audacious`, `music_everywhere`,
+  `music_download`, lyrics), calendar + reminders (`reminder_set` alarms go to Thunderbird), Discord as HavoK
+  (`discord_client`), voice/notices on any device (`display_say` / `display_notify`, MIRA Link), phone control
+  (`mobile_*`), TVs, PC locking, vault memory, autonomy goals/proposals, monitoring, ssh/files. So typed requests to
+  her body already do Capri's "jobs" - don't rebuild app/music/input control.
+- **The glance** (debhvk `mira/supervisor/glance.js`, live in `mira-supervisor`): 1-6 random looks per 2 h at
+  whichever device HavoK is using, decides for itself (help when coding, coach chess from a screenshot, follow
+  engagements every 20-300 s); actions: say, screen_notice, phone_widget, reminder, music, ... This IS "watch my
+  screen" - the companion must not add a second watcher.
+- **winhvk MiraAgent** (`D:\Network\Projects\MiraAgent`, `127.0.0.1:32768`, bearer `MIRA_AGENT_TOKEN` from the
+  user env): `POST /say {text}` speaks in MIRA's voice (debhvk TTS), `POST /toast`, `/eyes/*` (vision-hub capture),
+  `/desktop/input`, `/lock`, `/vi/*` (forwards to laphvk's voice). Voice interface itself is laphvk's.
+- **laphvk mira-agent** (`~/.local/lib/mira-agent`): wake word, STT, TTS, follow-ups; panel `127.0.0.1:8769`
+  (`POST say|speak|quiet|mic|mode|...`, `GET /status`, `/presence`, `/mira/<allowlisted read-only routes>`).
+- **mira-api** (debhvk): `/greeting` (return greeting after camera+face presence), `/notify`, presence, cockpit
+  agenda/music/notifications, autonomy. **No chess engine anywhere** before the companion's (Stockfish 19 is
+  installed on laphvk, `/usr/bin/stockfish`).
+- Chess on laphvk: chess.com in a Firefox web-app (class `WebApp-Chess4378`); winhvk: in the browser (no app).
+
 ## 1. Who and what
 
 - **User: HavoK** (havokthedev@gmail.com). Wants autonomous work: deploy live, verify, then move on. Plain, short

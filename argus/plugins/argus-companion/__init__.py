@@ -74,17 +74,24 @@ def _on_turn(session_id: str = "", **_: Any) -> dict | None:
     try:
         lines = (folder / "checkins.log").read_text(encoding="utf-8").splitlines()
     except OSError:
-        return None
+        lines = []
     key = session_id or ""
     since = _heard.pop(key, None) or (datetime.now() - timedelta(hours=_SEEN_HOURS)).strftime("%Y-%m-%d %H:%M")
     words = own_words_since(lines, since)
     _heard[key] = max([since] + [line[:16] for line in lines if len(line) >= 16])
     while len(_heard) > _SESSIONS:
         _heard.popitem(last=False)
-    if not words:
+    from .chess_coach import turn_context
+    chess = turn_context(folder)
+    if not words and not chess:
         return None
-    return {"context": "[What you said to Hannah on your own lately (out loud and in your bubble on laphvk), "
-                       "so you know if she's answering it:\n" + "\n".join(words) + "]"}
+    parts = []
+    if words:
+        parts.append("[What you said to Hannah on your own lately (out loud and in your bubble), so you know if "
+                     "she's answering it:\n" + "\n".join(words) + "]")
+    if chess:
+        parts.append(chess)
+    return {"context": "\n".join(parts)}
 
 
 USAGE = """argus companion run          offer Mira moments as they come up (foreground; Ctrl-C stops)
@@ -93,14 +100,17 @@ argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, 
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
                              stop_dancing, glitch, grin, drop (bind `body type` to a key to talk to her)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
+argus companion chess [on|off|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
+                             a game the title can't prove is against the computer
 argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("--dry", action="store_true", help="for moment: print her decision only")
+    parser.add_argument("--bot", action="store_true", help="for chess on: Hannah says this game is against a bot")
 
 
 def _cli_run(args) -> int:
@@ -127,6 +137,8 @@ def _cli_run(args) -> int:
         (folder / "away").write_text("away", encoding="utf-8")
         print("Away. She'll wait until you're back at this machine.")
         return 0
+    if args.action == "chess":
+        return _cli_chess(folder, args)
     if args.action == "body":
         import json
         import time
@@ -137,6 +149,23 @@ def _cli_run(args) -> int:
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")
+    return 0
+
+
+def _cli_chess(folder, args) -> int:
+    from . import chess_coach
+    from .chess_engine import find_engine
+    choice = args.kind if args.kind in ("on", "off") else "status"
+    if choice != "status":
+        chess_coach.set_coach(folder, choice == "on", bot=args.bot)
+    coach = chess_coach.settings(folder)
+    state = chess_coach.now_state(folder)
+    print(f"coaching {'on' if coach['coach'] else 'off'}{' (bot game)' if coach['bot'] else ''}; "
+          f"engine {find_engine() or 'not found'}")
+    if state:
+        print(f"board on {state['host']}: {state['title']}\n  {state.get('fen', '(position not read yet)')}")
+        if state.get("best"):
+            print(f"  best {state['best']} {state['score']}  line {state.get('line', '')}")
     return 0
 
 
