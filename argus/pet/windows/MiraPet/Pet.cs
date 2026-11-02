@@ -454,6 +454,18 @@ namespace MiraPet
             return all[(i + 1) % all.Length];
         }
 
+        private ToolStripMenuItem sizeMenu;
+        private void SetSize(int pick)
+        {
+            if (pick < 0 || pick >= Sizes.Length) return;
+            double x = Hip().X;
+            sizeIndex = pick;
+            if (sizeMenu != null)
+                for (int i = 0; i < sizeMenu.DropDownItems.Count; i++) ((ToolStripMenuItem)sizeMenu.DropDownItems[i]).Checked = i == pick;
+            if (ledge != null) PlaceOn(ledge, x, Seated);
+            Save();
+        }
+
         private void Walk()
         {
             if (ledge == null) return;
@@ -1012,6 +1024,7 @@ namespace MiraPet
                 case "hide": if (mode != "hidden") Vanish(() => hiddenUntil = Now + 900); break;
                 case "hop": if (mode == "resting") Hop(); break;
                 case "elsewhere": Elsewhere(); break;
+                case "size": SetSize(Array.FindIndex(SizeNames, n => n.Equals(arg, StringComparison.OrdinalIgnoreCase))); break;
                 case "next_screen": ToScreen(NextScreen()); break;
                 case "this_screen": ToScreen(Screen.FromPoint(Cursor.Position)); break;
                 case "walk": if (mode == "resting") Walk(); break;
@@ -1058,17 +1071,11 @@ namespace MiraPet
             {
                 int pick = i;
                 ToolStripMenuItem item = new ToolStripMenuItem(SizeNames[i]) { Checked = i == sizeIndex };
-                item.Click += (_, __) =>
-                {
-                    double x = Hip().X;
-                    sizeIndex = pick;
-                    foreach (ToolStripMenuItem o in size.DropDownItems) o.Checked = o == item;
-                    if (ledge != null) PlaceOn(ledge, x, Seated);
-                    Save();
-                };
+                item.Click += (_, __) => SetSize(pick);
                 size.DropDownItems.Add(item);
             }
             m.Items.Add(size);
+            sizeMenu = size;
             ToolStripMenuItem games = new ToolStripMenuItem("Stay over games") { Checked = overGames, CheckOnClick = true };
             games.CheckedChanged += (_, __) => { overGames = games.Checked; Save(); };
             m.Items.Add(games);

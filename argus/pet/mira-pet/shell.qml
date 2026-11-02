@@ -66,9 +66,28 @@ ShellRoot {
     FileView {
         id: petPrefs
         path: root.companion + "pet-laphvk.json"
-        onLoaded: { try { root.miniOff = JSON.parse(text()).mini_player_off === true } catch (e) { } }
+        onLoaded: {
+            try {
+                const p = JSON.parse(text())
+                root.miniOff = p.mini_player_off === true
+                if (root.sizes[p.size]) root.size = root.sizes[p.size]
+            } catch (e) { }
+        }
     }
-    function setMiniOff(off) { miniOff = off; petPrefs.setText(JSON.stringify({ mini_player_off: off })) }
+    // her sizes, as on winhvk (`argus companion body size small|medium|large|huge|giant`), kept in pet-laphvk.json
+    readonly property var sizes: ({ small: 150, medium: 190, large: 240, huge: 300, giant: 380 })
+    function savePrefs() {
+        let name = "medium"
+        for (const k in sizes) if (sizes[k] === size) name = k
+        petPrefs.setText(JSON.stringify({ mini_player_off: miniOff, size: name }))
+    }
+    function setMiniOff(off) { miniOff = off; savePrefs() }
+    function setSize(name) {
+        if (!sizes[name] || sizes[name] === size) return
+        size = sizes[name]
+        savePrefs()
+        if (mode === "resting" && ledge) settle(ledge, hip().x, floorSit || !ledge.floor)
+    }
     property real danceUntil: 0
     property bool panelBusy: false
     property string said: ""
@@ -518,6 +537,7 @@ ShellRoot {
         case "hide": if (mode !== "hidden") vanish(() => { hiddenUntil = now + 900 }); break
         case "hop": if (mode === "resting") hop(); break
         case "elsewhere": elsewhere(); break
+        case "size": setSize(arg.toLowerCase()); break
         case "next_screen": case "this_screen": teleport(spots.find(l => l.floor), false); break   // one screen here
         case "walk": if (mode === "resting") walk(); break
         case "drop": if (mode === "resting") { ay -= size * 1.5; fall() } break
