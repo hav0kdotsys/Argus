@@ -106,11 +106,25 @@ def _talked_since(folder: Path, since: float) -> bool:
 PANEL_MIRA = "http://127.0.0.1:8769/mira/"
 
 
+MIRA_ROUTES = ("cockpit/agenda", "cockpit/music", "cockpit/notifications", "autonomy/status")
+
+
+def _mira_request(route: str) -> urllib.request.Request | str:
+    """laphvk: the voice panel's read-only proxy (it holds the token). winhvk: mira-api itself, the way MiraAgent
+    reaches it (MIRA_API, default debhvk:5000, bearer MIRA_AUTH_TOKEN from the user's environment)."""
+    if sys.platform != "win32":
+        return PANEL_MIRA + route
+    base = os.environ.get("MIRA_API", "http://debian-hvkt431s:5000").rstrip("/")
+    return urllib.request.Request(f"{base}/v1/mira/{route}",
+                                  headers={"Authorization": f"Bearer {os.environ.get('MIRA_AUTH_TOKEN', '')}"})
+
+
 def mira(route: str) -> dict:
-    """A read-only mira-api route through MIRA's voice panel (its allowlist: cockpit/agenda, cockpit/music,
-    cockpit/notifications, autonomy/status); {} when the panel isn't there (winhvk) or can't say."""
+    """A read-only mira-api route (only ``MIRA_ROUTES``); {} when it can't be reached or can't say."""
+    if route not in MIRA_ROUTES:
+        return {}
     try:
-        with urllib.request.urlopen(PANEL_MIRA + route, timeout=6) as reply:
+        with urllib.request.urlopen(_mira_request(route), timeout=6) as reply:
             data = json.loads(reply.read().decode("utf-8"))
     except (OSError, ValueError):
         return {}
@@ -337,6 +351,36 @@ def _chess_tick(folder: Path, coach, m: presence.Moment) -> None:
                              kwargs={"extra": seen[1]}).start()
 
 
+REMINDER_EVERY = 120.0      # seconds between agenda reads
+
+
+def due_reminders(agenda: dict, told: set[str]) -> list[str]:
+    """Overdue reminders she hasn't been told about today, most urgent (lowest priority number) first."""
+    out = [r for r in agenda.get("reminders") or [] if isinstance(r, dict) and r.get("overdue") and r.get("summary")
+           and r["summary"] not in told]
+    return [r["summary"] for r in sorted(out, key=lambda r: r.get("priority") or 9)]
+
+
+def _reminder_tick(folder: Path, m: presence.Moment, last: list[float]) -> None:
+    """A reminder of hers just went overdue and she's here: Mira says it her way (once per reminder per day)."""
+    if m.idle >= presence.AWAY or m.quiet or m.busy or time.time() - last[0] < REMINDER_EVERY:
+        return
+    last[0] = time.time()
+    path, today = folder / "reminded.json", datetime.now().strftime("%Y-%m-%d")
+    try:
+        saved = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        saved = {}
+    told = set(saved.get(today, []))
+    due = due_reminders(mira("cockpit/agenda"), told)
+    if not due:
+        return
+    path.write_text(json.dumps({today: sorted(told | {due[0]})}), encoding="utf-8")
+    facts = f"Her reminder \"{due[0]}\" is now overdue." + (
+        f" Also overdue: {', '.join(due[1:4])}." if len(due) > 1 else "")
+    moment_now(folder, "reminder", timedelta(0), m.idle, extra=facts)
+
+
 def _toggle_coach(folder: Path) -> None:
     from . import chess_coach
     on = not chess_coach.settings(folder)["coach"]
@@ -358,6 +402,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     seen_event = _event(folder)[0]   # what was already there when she started isn't news
     seen_ask = _ask(folder)[0]
     coach = _coach(folder)
+    reminder_read = [0.0]
     while True:
         ask_id, text = _ask(folder)
         if ask_id and ask_id != seen_ask:
@@ -377,6 +422,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             m = moment(folder, last_tick)
             last_tick = time.time()
             _chess_tick(folder, coach, m)
+            _reminder_tick(folder, m, reminder_read)
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)

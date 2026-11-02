@@ -40,6 +40,7 @@ REASONS = {
     "bored": "the two of you haven't talked in a while even though she's right there",
     "popin": "no particular reason - you might just feel like reacting to what she's doing, or not",
     "back": "she's just come back to her desk after {away} away",
+    "reminder": "one of her reminders just came due",
     "chess": "she's just opened a chess board",
     "chess_new": "a fresh chess game just started on her board",
     "chess_blunder": "she just made a real mistake in her chess game",

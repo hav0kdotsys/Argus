@@ -98,3 +98,17 @@ def test_forced_away_holds_until_shes_seen_back_after_the_grace(tmp_path):
     assert ticker._forced_away(tmp_path, 2.0, now + 500) == 2.0                          # back: the marker goes
     assert not marker.exists()
     assert ticker._forced_away(tmp_path, 2.0, now + 600) == 2.0
+
+
+def test_overdue_reminders_come_up_once_most_urgent_first():
+    ticker = _ticker()
+    agenda = {"reminders": [{"summary": "Charge your phone", "overdue": True, "priority": 5},
+                            {"summary": "Bins out", "overdue": True, "priority": 1},
+                            {"summary": "Call the vet", "overdue": False}]}
+    assert ticker.due_reminders(agenda, set()) == ["Bins out", "Charge your phone"]
+    assert ticker.due_reminders(agenda, {"Bins out"}) == ["Charge your phone"]
+    assert ticker.due_reminders({}, set()) == []
+
+
+def test_only_allowlisted_mira_routes_are_read():
+    assert _ticker().mira("users") == {}
