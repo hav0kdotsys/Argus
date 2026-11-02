@@ -450,7 +450,7 @@ ShellRoot {
             if (text && id !== root.lastId) {
                 root.lastId = id
                 root.said = text.slice(0, 400)
-                hold.interval = Math.max(5000, Math.min(20000, text.length * 65))
+                hold.interval = Math.max(8000, Math.min(25000, text.length * 80))
                 hold.restart()
                 if (root.mode === "resting" && !root.oneShot) root.play(root.glitchClip())
             }
