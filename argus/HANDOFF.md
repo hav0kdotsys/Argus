@@ -200,6 +200,17 @@ Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too)
 - **Talking to her body**: typing box (Ctrl+Alt+T on winhvk) -> `ask.json` -> a real ARGUS turn in the
   "Mira (companion)" session -> her bubble (and voice on laphvk). Touch reactions via `event.json`.
 - One Mira at a time: each machine's companion only reaches out while that machine is in use.
+- **Greeting**: MIRA already greets Hannah on her return (winhvk camera presence + face recognition -> mira-api
+  `/greeting`, facts: autonomy while away, reminders -> `/notify` -> laphvk voice). The companion's own `back`
+  moment exists in presence.py but is disabled in the ticker so there's one greeting, not two. The greeting's
+  persona line is part of `ops/persona/patch_mira_soul.py` (applied to source, backup, awaiting the mira-api deploy).
+- **Her day in every moment**: the laphvk voice panel proxies an allowlist of read-only mira-api routes
+  (`GET /mira/cockpit/agenda|cockpit/music|cockpit/notifications|autonomy/status`,
+  `ops/voice-ui/patch_panel_mira_read.py`); check-ins get the agenda (overdue first) and waiting decisions.
+- **Night fixes**: presence is input-based (the laphvk pet ignores idle inhibitors - a paused browser video kept her
+  "present" all night); idle survives pet restarts; the scheduler remembers its gap/nights/meals across restarts
+  (`scheduler.json`); `argus companion away` forces away until she's back at that machine; `quiet` file = quiet.
+- Drop gestures: Shift+drop sits her right there, Ctrl+drop leaves her hanging until clicked (both bodies).
 
 Waiting on HavoK:
 - **mira-api persona** (voice/phone/Discord Mira): `ops/persona/patch_mira_soul.py` is APPLIED to debhvk's source
