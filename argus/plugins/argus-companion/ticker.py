@@ -434,6 +434,24 @@ def mind_window(folder: Path) -> str:
         return "a game"
 
 
+def _room(folder: Path):
+    """Her games room (a local page): tic-tac-toe, connect four, rock paper scissors, chess against her."""
+    from . import room
+
+    def react(facts: str) -> None:
+        m = moment(folder)
+        if not m.quiet:
+            moment_now(folder, "game", timedelta(0), m.idle, extra=facts)
+
+    try:
+        games = room.Room(folder, react)
+        games.start()
+        return games
+    except OSError:  # the port's taken (another companion here): no room this run
+        logger.warning("companion: games room unavailable", exc_info=True)
+        return None
+
+
 def _toggle_coach(folder: Path) -> None:
     from . import chess_coach
     on = not chess_coach.settings(folder)["coach"]
@@ -455,6 +473,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     seen_event = _event(folder)[0]   # what was already there when she started isn't news
     seen_ask = _ask(folder)[0]
     coach = _coach(folder)
+    _room(folder)
     reminder_read = [0.0]
     game_clock = GameClock()
     while True:
@@ -468,6 +487,9 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             seen_event = event_id
             if kind == "coach":
                 _toggle_coach(folder)
+            elif kind == "play":
+                from . import room
+                room.open_window(folder)
             elif kind in EVENT_KINDS:
                 m = moment(folder, last_tick)
                 if not m.quiet:

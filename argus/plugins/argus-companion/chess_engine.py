@@ -123,6 +123,43 @@ class Engine:
                     break
             return fen
 
+    def legal(self, fen: str) -> list[str]:
+        """Every legal move in the position (UCI), from Stockfish's own move generator (``go perft 1``)."""
+        with self._lock:
+            if self._proc is None or self._proc.poll() is not None:
+                self._proc = self._start()
+            proc = self._proc
+            proc.stdin.write(f"position fen {fen}\ngo perft 1\n")
+            proc.stdin.flush()
+            moves = []
+            for line in proc.stdout:
+                if line.startswith("Nodes searched"):
+                    break
+                head = line.split(":")[0].strip()
+                if ":" in line and 4 <= len(head) <= 5 and head[0] in "abcdefgh" and head[1].isdigit():
+                    moves.append(head)
+            return moves
+
+    def play(self, fen: str, elo: int | None = None, think_ms: int = 800) -> str | None:
+        """Her move as an opponent: full strength, or limited to about ``elo`` (1320-3190)."""
+        with self._lock:
+            if self._proc is None or self._proc.poll() is not None:
+                self._proc = self._start()
+            proc = self._proc
+            limit = "true" if elo else "false"
+            proc.stdin.write(f"setoption name MultiPV value 1\nsetoption name UCI_LimitStrength value {limit}\n"
+                             + (f"setoption name UCI_Elo value {max(1320, min(3190, elo))}\n" if elo else "")
+                             + f"position fen {fen}\ngo movetime {think_ms}\n")
+            proc.stdin.flush()
+            move = None
+            for line in proc.stdout:
+                if line.startswith("bestmove"):
+                    move = line.split()[1]
+                    break
+            proc.stdin.write(f"setoption name UCI_LimitStrength value false\nsetoption name MultiPV value {LINES}\n")
+            proc.stdin.flush()
+            return None if move in (None, "(none)") else move
+
     def in_check(self, fen: str) -> bool:
         """Is the side to move in check? (Stockfish's board lists the checkers.)"""
         with self._lock:

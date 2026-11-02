@@ -196,3 +196,53 @@ def test_coaching_gives_the_engines_move_only_when_she_asked_and_never_in_a_live
     coach.set_coach(tmp_path, True, bot=True)                             # Hannah: "it's a bot"
     c.position(live, FEN, "w", False)
     assert len(said) == 2
+
+
+# -- her games room ------------------------------------------------------------------------------------------
+
+@pytest.mark.skipif(not shutil.which("stockfish"), reason="no Stockfish on this machine")
+def test_chess_against_her_follows_the_rules_and_she_answers(pkg):
+    eng, room, cb = _mod("chess_engine"), _mod("room"), _mod("chess_board")
+    engine = eng.Engine(shutil.which("stockfish"))
+    try:
+        assert len(engine.legal(cb.START_FEN)) == 20
+        bad = room.chess_turn(engine, cb.START_FEN, "e2e5", "easy")
+        assert bad["error"] == "illegal" and bad["fen"] == cb.START_FEN
+        turn = room.chess_turn(engine, cb.START_FEN, "e2e4", "easy")
+        assert turn["mine"] == "e4" and turn["hers"] and turn["fen"].split()[1] == "w" and turn["status"] == "play"
+        # Fool's mate: Hannah delivers it, and Mira has no reply to make
+        fools = "rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2"
+        over = room.chess_turn(engine, fools, "d8h4", "max")
+        assert over["status"] == "checkmate" and "hers" not in over
+    finally:
+        engine.close()
+
+
+def test_the_room_only_answers_with_its_token_and_hands_her_the_result(pkg, tmp_path, monkeypatch):
+    import json as _json
+    import time
+    import urllib.error
+    import urllib.request
+    room = _mod("room")
+    monkeypatch.setattr(room, "PORT", 0)        # any free port
+    told = []
+    r = room.Room(tmp_path, told.append)
+    r.start()
+    port = r.server.server_address[1]
+    try:
+        with pytest.raises(urllib.error.HTTPError) as no:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/")
+        assert no.value.code == 403
+        page = urllib.request.urlopen(f"http://127.0.0.1:{port}/?t={r.token}").read().decode()
+        assert "M I R A" in page
+        body = _json.dumps({"game": "tictactoe", "result": "win", "score": "you 2, Mira 1"}).encode()
+        urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}/api/result?t={r.token}", data=body,
+                                                      headers={"Content-Type": "application/json"}))
+        for _ in range(50):
+            if told:
+                break
+            time.sleep(0.02)
+        assert told == ["You just played tic-tac-toe with her on your games board: Hannah beat you. "
+                        "Score this session: you 2, Mira 1."]
+    finally:
+        r.server.shutdown()

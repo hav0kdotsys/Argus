@@ -17,6 +17,8 @@ Later slices: the day-by-day memory fold, screen glances, perching on windows, w
 
 from __future__ import annotations
 
+import re
+
 from collections import OrderedDict, deque
 from typing import Any
 
@@ -66,6 +68,9 @@ def own_words_since(log_lines: list[str], since: str) -> list[str]:
     return found
 
 
+_GAMES = re.compile(r"\b(play|game|games|chess|tic.?tac|connect.?four|connect ?4|rock.?paper|rps)\b", re.IGNORECASE)
+
+
 def _on_turn(session_id: str = "", **_: Any) -> dict | None:
     from datetime import datetime, timedelta
     folder = _companion_dir()
@@ -83,6 +88,11 @@ def _on_turn(session_id: str = "", **_: Any) -> dict | None:
         _heard.popitem(last=False)
     from .chess_coach import turn_context
     chess = turn_context(folder)
+    if _GAMES.search(str(_.get("user_message") or "")):
+        chess = (chess + "\n" if chess else "") + (
+            "[Your games board: `argus companion play chess|tictactoe|connect4|rps` (terminal) opens it on her screen; "
+            "chess there is against you at the level she picks. `argus companion chess on` coaches the board she has "
+            "open on chess.com/lichess. You see how games end.]")
     if not words and not chess:
         return None
     parts = []
@@ -103,11 +113,12 @@ argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, 
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
+argus companion play [GAME]  her games board: chess, tictactoe, connect4, rps (chess against her at any level)
 argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("rest", nargs="*", help="for body: words after the action (perch discord)")
@@ -141,6 +152,13 @@ def _cli_run(args) -> int:
         return 0
     if args.action == "chess":
         return _cli_chess(folder, args)
+    if args.action == "play":
+        from . import room
+        game = args.kind if args.kind in room.GAMES else ""
+        if not room.open_window(folder, game):
+            print("Her games room isn't up: is `argus companion run` running here?")
+            return 1
+        return 0
     if args.action == "body":
         ticker.body(folder, " ".join([args.kind, *args.rest]))
         return 0
