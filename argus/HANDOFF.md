@@ -236,6 +236,28 @@ Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too)
   "present" all night); idle survives pet restarts; the scheduler remembers its gap/nights/meals across restarts
   (`scheduler.json`); `argus companion away` forces away until she's back at that machine; `quiet` file = quiet.
 - Drop gestures: Shift+drop sits her right there, Ctrl+drop leaves her hanging until clicked (both bodies).
+- **Chess coach** (`chess_coach.py`, `chess_eyes.py`, `chess_engine.py`, `chess_board.py`): finds a chess.com/lichess
+  window, reads the exact position off the screen (board = 8x8 checker; pieces learnt from any starting position,
+  stored per board style in `companion/chess-styles.json`; orientation from pawns; side to move from the last-move
+  highlight), Stockfish 19 (laphvk `/usr/bin/stockfish`; winhvk `%LOCALAPPDATA%\argus\tools\stockfish`, official
+  sf_19 zip, sha256 checked) gives move/score/line in her bubble when coaching is on (`argus companion chess
+  on|off|look|status`, Windows menu "Coach my chess"); her own reactions to blunders, gifts, mates, game ends.
+  **Fair play: no engine at all on a possibly-live game against a person** (title not computer/analysis/puzzle/
+  lesson...), unless Hannah says it's a bot (`--bot`); she offers a review afterwards instead. Her turns get the
+  board + engine lines (`turn_context`).
+- **Games room** (`room.py` + `room.html`, 127.0.0.1:8771, per-run token in `companion/room.json`): chess against
+  her (Stockfish: legal moves via perft, her moves at easy/medium/hard/full strength), tic-tac-toe, connect four,
+  rock paper scissors; `argus companion play [game]` or the Windows menu; results become her moments.
+- **Mini player** on both bodies (MPRIS on laphvk, Windows media session on winhvk); a ledge she hops onto.
+- **Moves**: `argus companion body come_here | floor | perch WINDOW | ride | hop_off | mini_player_on/off`;
+  double-click rides (click-through while riding); pop-ins and bored check-ins bring her over to the pointer first.
+- **winhvk voice** via MiraAgent `POST /say`; winhvk reads MIRA's agenda from mira-api directly.
+- **Reminders**: an overdue reminder is a moment, once a day each. **Game break** after 2 h in a game.
+- **Voice captions**: MIRA's spoken replies on laphvk appear in her bubble (from the voice feed), never re-spoken.
+- Still to do vs Capri: sound effects (no assets of hers yet), startup tendrils, beat-synced dance/notes,
+  next-screen commands, drawing on screen, a settings window, Discord status, watch-along with audio, a move arrow
+  on the coached board. JarvisInfrastructure ops/ patches are still uncommitted; the mira-api persona/greeting
+  patch is applied to source (backups) and waits for HavoK's guarded mira-api deploy.
 
 Waiting on HavoK:
 - **mira-api persona** (voice/phone/Discord Mira): `ops/persona/patch_mira_soul.py` is APPLIED to debhvk's source
