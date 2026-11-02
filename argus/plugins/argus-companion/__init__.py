@@ -237,8 +237,5 @@ def _cli_chess_look(folder) -> int:
 def register(ctx) -> None:
     ctx.register_hook("transform_llm_output", _on_reply)
     ctx.register_hook("pre_llm_call", _on_turn)
-    ctx.register_auxiliary_task("companion", display_name="Mira's own check-ins",
-                                description="Mira deciding whether and what to say when a moment comes up "
-                                            "(follows the main model unless set)", defaults={"timeout": 90})
     ctx.register_cli_command(name="companion", help="Mira's check-ins and her pet's bubble", setup_fn=_cli_setup,
                              handler_fn=_cli_run, description=USAGE)

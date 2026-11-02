@@ -243,43 +243,25 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True, log: boo
             fh.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
 
 
-CHAT_SESSION = "Mira (companion)"   # the ARGUS session typing to her body continues
 CHAT_TIMEOUT = 300.0
 _asking = threading.Lock()
 
 
 def answer(folder: Path, text: str) -> str:
-    """Hannah typed to her body: a real ARGUS turn (her whole self - SOUL, memory, tools) in one ongoing session,
-    and her reply in her bubble and out loud. While she thinks the bubble shows the dots."""
+    """Hannah typed to her body: a real Mira turn through her own backend (``backend.py``: her router, her tools,
+    her companion session), and her reply in her bubble and out loud. While she thinks the bubble shows the dots."""
     if not _asking.acquire(blocking=False):
         say(folder, "One at a time, I'm still on your last one.", "reply", aloud=False, log=False)
         return ""
     try:
+        from . import backend
         say(folder, "…", "thinking", aloud=False, log=False)
-        repo = Path(os.environ.get("ARGUS_REPO") or Path(__file__).resolve().parents[3])
-        command = [sys.executable, str(repo / "hermes"), "chat", "-Q", "--continue", CHAT_SESSION,
-                   "--create-if-missing", "--query-file", "-"]
-        try:
-            run = subprocess.run(command, input=text, capture_output=True, text=True, encoding="utf-8",
-                                 errors="replace", timeout=CHAT_TIMEOUT, check=False, cwd=str(Path.home()))
-            reply = clean_reply(run.stdout) if run.returncode == 0 else ""
-            if not reply:
-                logger.warning("companion: her turn gave no reply (exit %s): %s", run.returncode, run.stderr[-800:])
-        except (OSError, subprocess.SubprocessError) as exc:
-            logger.warning("companion: her turn couldn't run: %s", exc)
-            reply = ""
+        reply, who = backend.call(text, max_tokens=1500, timeout=CHAT_TIMEOUT)
+        logger.info("companion: Hannah's message answered by %s", who or "nobody")
         say(folder, reply or "Lost my train of thought there. Say that again?", "reply", log=False)
         return reply
     finally:
         _asking.release()
-
-
-def clean_reply(out: str) -> str:
-    """Her reply from `chat -Q` output: without the session footer and session notices."""
-    out = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", out or "")
-    lines = [line for line in out.splitlines()
-             if not line.startswith(("session_id:", "Session ")) and line.strip()]
-    return "\n".join(lines).strip()
 
 
 def _ask(folder: Path) -> tuple[str, str]:

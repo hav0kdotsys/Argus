@@ -81,12 +81,6 @@ def test_replies_and_thinking_dots_are_not_logged_as_her_own_words(tmp_path, mon
     assert "thinking" not in (tmp_path / "checkins.log").read_text(encoding="utf-8")
 
 
-def test_her_reply_loses_colour_codes_and_session_lines():
-    ticker = _ticker()
-    out = "\x1b[1;31mStill here.\x1b[0m\nSession abc found but has no messages.\n\nsession_id: local-1\n"
-    assert ticker.clean_reply(out) == "Still here."
-
-
 def test_forced_away_holds_until_shes_seen_back_after_the_grace(tmp_path):
     import os
     ticker = _ticker()

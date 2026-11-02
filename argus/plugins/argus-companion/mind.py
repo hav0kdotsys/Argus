@@ -1,8 +1,8 @@
 """Mira decides. Nobody writes her lines.
 
-When the scheduler opens a moment, this asks MIRA herself - her identity (SOUL.md), through ARGUS's provider chain
-(auxiliary task ``companion``, which follows the main model and its fallbacks) - whether she wants to reach out, and
-what she'd say. She gets what she would naturally know right then: what she remembers about Hannah, what they talked
+When the scheduler opens a moment, this asks MIRA herself - through her own backend (``backend.py``: mira-api's
+router picks groqcloud, claude-code or opencode, as for every Mira turn) - whether she wants to reach out, and what
+she'd say. She gets what she would naturally know right then: what she remembers about Hannah, what they talked
 about lately, what she can see on the machine, what she's already said today, and why the moment came up. She answers
 with her line, or SKIP. The reason is context, never a script: "it's been a while since she drank anything" may
 become a joke about the show that's paused, or nothing at all.
@@ -24,7 +24,6 @@ from . import voice
 
 logger = logging.getLogger(__name__)
 
-TASK = "companion"
 RECENT_HOURS = 6
 RECENT_LINES = 10
 OWN_LINES = 8
@@ -61,12 +60,14 @@ AUTONOMY = """
 
 ## Right now: your own moment
 
-This is not a reply - nobody asked you anything. ARGUS noticed a moment and is asking whether YOU want to reach out
+This is not a reply - nobody asked you anything, and this message isn't Hannah typing: it's your body's companion
+on her machine (ARGUS). It noticed a moment and is asking whether YOU want to reach out
 to Hannah on your own. It's entirely your call. If you do, write exactly what you'd say to her: one or two short lines,
 spoken out loud on her laptop and shown in your bubble. Make it yours - use what you remember about her and what you
 can see right now, react to her actual situation, and never sound like a wellness app or a reminder bot. If there's
 nothing worth saying, you'd only be repeating yourself, or it would just be noise, reply with exactly SKIP.
-Output only the line (or SKIP): no quotes, no emoji, no *actions*, no explanation."""
+Output only the line (or SKIP): no quotes, no emoji, no *actions*, no explanation. Don't use tools or say it aloud
+yourself: your body says it for you."""
 
 
 @dataclass(frozen=True)
@@ -84,19 +85,6 @@ class Seen:
 def _home() -> Path:
     from hermes_constants import get_hermes_home
     return Path(get_hermes_home())
-
-
-def soul() -> str:
-    """Her identity: the SOUL.md this home actually uses, else the built-in one."""
-    path = _home() / "SOUL.md"
-    try:
-        text = path.read_text(encoding="utf-8-sig").strip()
-    except OSError:
-        text = ""
-    if not text:
-        from hermes_cli.default_soul import DEFAULT_SOUL_MD
-        text = DEFAULT_SOUL_MD
-    return text
 
 
 def memories() -> list[str]:
@@ -253,14 +241,6 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
     return "\n\n".join(parts)
 
 
-def _answer_text(response) -> str:
-    try:
-        content = response.choices[0].message.content or ""
-    except (AttributeError, IndexError, TypeError):
-        return ""
-    return re.sub(r"<think>.*?(</think>|$)", "", str(content), flags=re.DOTALL | re.IGNORECASE).strip()
-
-
 def decide(text: str) -> str | None:
     """Her raw answer as a line to say, or None when she passed (SKIP, empty, or nothing but punctuation)."""
     line = text.strip().strip('"“”').strip()
@@ -271,24 +251,14 @@ def decide(text: str) -> str | None:
 
 def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
         gaming: bool = False, away_for: timedelta = timedelta(0), extra: str = "") -> str | None:
-    """Ask Mira about this moment. Her line, or None when she passes or the provider can't be reached."""
-    from agent.auxiliary_client import call_llm
+    """Ask Mira about this moment. Her line, or None when she passes or her backend can't be reached."""
+    from . import backend
 
     now = time.time()
-    messages = [
-        {"role": "system", "content": soul() + AUTONOMY},
-        {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now), memories(),
-                                          recent_talk(now), own_lines(folder), away_for, _agenda(), extra)},
-    ]
-    try:
-        # Room for a reasoning model to think first: her line is short, the thinking may not be.
-        response = call_llm(TASK, messages=messages, max_tokens=2000, temperature=0.9, timeout=90)
-    except Exception as exc:  # the provider chain failed: she simply doesn't speak this time
-        logger.warning("companion: Mira couldn't be asked (%s)", exc, exc_info=True)
-        return None
-    raw = _answer_text(response)
+    facts = brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now),
+                  memories(), recent_talk(now), own_lines(folder), away_for, _agenda(), extra)
+    raw, who = backend.call(AUTONOMY.strip() + "\n\n" + facts)
     line = decide(raw)
-    finish = getattr((getattr(response, "choices", None) or [None])[0], "finish_reason", None)
-    logger.info("companion: %s moment -> %s (finish=%s, %d chars raw)", kind,
-                repr(line) if line else "passed", finish, len(raw))
+    logger.info("companion: %s moment -> %s (answered by %s, %d chars raw)", kind,
+                repr(line) if line else "passed", who or "nobody", len(raw))
     return line

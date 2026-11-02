@@ -129,3 +129,36 @@ def test_a_slow_mind_never_blocks_the_ticker_and_only_one_moment_thinks_at_a_tim
             break
         time.sleep(0.05)
     assert calls == ["pat"] and ticker.moment_soon(tmp_path, "water", 0) is True
+
+
+def test_her_words_come_from_her_own_backend_in_her_companion_session(monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    backend = _mod("backend")
+    seen = {}
+
+    class Fake(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def do_POST(self):
+            seen.update(path=self.path, auth=self.headers.get("Authorization"), client=self.headers.get("X-Jarvis-Client"),
+                        body=json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            data = json.dumps({"status": "success", "answeredBy": "groqcloud",
+                               "choice": {"message": {"content": "<think>hm</think>Drink something, gremlin."}}})
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data.encode())
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{server.server_port}", "tok"))
+        assert backend.call("a moment") == ("Drink something, gremlin.", "groqcloud")
+        assert seen["path"] == "/v1/mira/call" and seen["auth"] == "Bearer tok" and seen["client"] == "api"
+        assert seen["body"]["userId"] == "companion" and seen["body"]["mode"] == "agent"
+        monkeypatch.setattr(backend, "_config", lambda: ("http://127.0.0.1:9", "tok"))
+        assert backend.call("a moment") == ("", "")                    # her backend down: she just doesn't speak
+    finally:
+        server.shutdown()
