@@ -287,7 +287,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     """Tick until interrupted. Talking to Mira (an ARGUS turn, or MIRA's voice busy) counts for ``bored``."""
     folder = folder or companion_dir()
     folder.mkdir(parents=True, exist_ok=True)
-    sched = presence.Scheduler()
+    # No `back`: MIRA already greets Hannah on her return (winhvk's camera presence -> mira-api's spoken greeting).
+    sched = presence.Scheduler(presence.Settings(enabled=frozenset(presence.KINDS) - {"back"}))
     try:
         sched.recall(json.loads((folder / "scheduler.json").read_text(encoding="utf-8")))
     except (OSError, ValueError):
