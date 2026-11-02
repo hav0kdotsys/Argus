@@ -246,3 +246,14 @@ def test_the_room_only_answers_with_its_token_and_hands_her_the_result(pkg, tmp_
                         "Score this session: you 2, Mira 1."]
     finally:
         r.server.shutdown()
+
+
+def test_her_settings_switch_moments_off_and_set_the_pop_in_pace(pkg, tmp_path):
+    prefs = _mod("prefs")
+    assert prefs.scheduler_settings(tmp_path).enabled >= {"water", "popin"}
+    prefs.save(tmp_path, {"off": ["water", "not-a-moment"], "popin": "often"})
+    s = prefs.scheduler_settings(tmp_path)
+    assert "water" not in s.enabled and "back" not in s.enabled and "stretch" in s.enabled
+    assert (s.minutes["popin_min"], s.minutes["popin_max"]) == prefs.POPIN["often"]
+    assert not prefs.allowed(tmp_path, "water") and prefs.allowed(tmp_path, "reminder")
+    assert prefs.load(tmp_path)["off"] == ["water"]
