@@ -222,8 +222,14 @@ Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too)
 - **winhvk**: ARGUS installed and running (`argus/bin/argus.ps1` fixed), the Windows body `MiraPet.exe` and the
   brain - see `argus/pet/windows/README.md` (setup, update steps, and the gotchas: brain via Startup shortcut, not a
   task; never run ARGUS turns over SSH there).
-- **Talking to her body**: typing box (Ctrl+Alt+T on winhvk) -> `ask.json` -> a real ARGUS turn in the
-  "Mira (companion)" session -> her bubble (and voice on laphvk). Touch reactions via `event.json`.
+- **Her words come from MIRA's own backend** (`backend.py`, HavoK's call 2026-11-02): moments and typed messages go
+  to mira-api `POST /v1/mira/call` (mode agent, `userId: companion`, `X-Jarvis-Client: api` -> session scope
+  `agent:companion`), so her router picks groqcloud (short) or claude-code -> opencode, never ARGUS's provider.
+  Each moment is a full Mira turn there (live-turn slot, tools, transcript): HavoK chose that over a new route.
+  Credentials: winhvk user env MIRA_API/MIRA_AUTH_TOKEN; laphvk `~/.config/mira-agent/config.env`.
+- **Talking to her body**: typing box (Ctrl+Alt+T on winhvk) -> `ask.json` -> the same backend session -> her
+  bubble (and voice). Touch reactions via `event.json`. Moments run off the ticker loop, one at a time
+  (`moment_soon`): a slow provider used to freeze the menu's Coach/Play/Settings for minutes.
 - One Mira at a time: each machine's companion only reaches out while that machine is in use.
 - **Greeting**: MIRA already greets Hannah on her return (winhvk camera presence + face recognition -> mira-api
   `/greeting`, facts: autonomy while away, reminders -> `/notify` -> laphvk voice). The companion's own `back`
@@ -254,9 +260,17 @@ Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too)
 - **winhvk voice** via MiraAgent `POST /say`; winhvk reads MIRA's agenda from mira-api directly.
 - **Reminders**: an overdue reminder is a moment, once a day each. **Game break** after 2 h in a game.
 - **Voice captions**: MIRA's spoken replies on laphvk appear in her bubble (from the voice feed), never re-spoken.
-- Still to do vs Capri: sound effects (no assets of hers yet), startup tendrils, beat-synced dance/notes,
-  next-screen commands, drawing on screen, a settings window, Discord status, watch-along with audio, a move arrow
-  on the coached board. JarvisInfrastructure ops/ patches are still uncommitted; the mira-api persona/greeting
+- **Settings tab** in her room (`prefs.py`, `companion/settings.json`): quiet, coaching, mini player, each moment
+  on/off, pop-in pace; the ticker applies it every tick. Windows menu "Settings…".
+- **One Mira, two bodies** (`link.py`): laphvk serves 127.0.0.1:8772, winhvk reaches it through `mira-link.service`
+  (laphvk's SSH reverse tunnel; token `companion/link-token` copied file to file). Crossing over: what's playing
+  (she dances on both), quiet/coaching/settings (newest change wins, `link-switches.json`), moves for the other
+  body (`argus companion body --there hop_in`). `argus companion link` shows the link. Clocks aligned per exchange.
+- **Her ears / beat** (`ears.py` via parec on laphvk, `MiraPet/Ears.cs` WASAPI loopback on winhvk): tempo + beat
+  phase -> `beat.json`; she nods on the beat and music notes float off her, on the playing machine's beat on both.
+- **Go somewhere else** = `body elsewhere` (always moves: other window, other screen, along the floor).
+- Still to do vs Capri: sound effects (no assets of hers yet), startup tendrils, next-screen commands, drawing on
+  screen, Discord status, watch-along with audio, a move arrow on the coached board, laphvk sizes/tray. JarvisInfrastructure ops/ patches are still uncommitted; the mira-api persona/greeting
   patch is applied to source (backups) and waits for HavoK's guarded mira-api deploy.
 
 Waiting on HavoK:
