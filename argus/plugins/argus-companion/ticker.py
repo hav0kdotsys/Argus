@@ -103,6 +103,20 @@ def _talked_since(folder: Path, since: float) -> bool:
         return False
 
 
+PANEL_MIRA = "http://127.0.0.1:8769/mira/"
+
+
+def mira(route: str) -> dict:
+    """A read-only mira-api route through MIRA's voice panel (its allowlist: cockpit/agenda, cockpit/music,
+    cockpit/notifications, autonomy/status); {} when the panel isn't there (winhvk) or can't say."""
+    try:
+        with urllib.request.urlopen(PANEL_MIRA + route, timeout=6) as reply:
+            data = json.loads(reply.read().decode("utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def _presence() -> dict:
     """{host: state} from MIRA's presence table (fresh rows only); {} when the panel can't say."""
     try:

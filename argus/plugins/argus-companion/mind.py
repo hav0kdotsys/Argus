@@ -188,6 +188,27 @@ def look(idle: float, where: str = "laphvk", gaming: bool = False, state: dict |
                 where=where, gaming=gaming, local=where == "laphvk")
 
 
+def agenda_lines(agenda: dict, autonomy: dict) -> list[str]:
+    """Her day from MIRA: upcoming events and reminders (overdue first), and decisions waiting on her."""
+    lines = []
+    for r in sorted(agenda.get("reminders") or [], key=lambda r: not r.get("overdue")):
+        if isinstance(r, dict) and r.get("summary"):
+            lines.append(f"- reminder{' (OVERDUE)' if r.get('overdue') else ''}: {r['summary']}")
+    for e in agenda.get("events") or []:
+        if isinstance(e, dict):
+            when = e.get("start") or e.get("when") or ""
+            lines.append(f"- event: {e.get('summary') or e.get('title') or '?'}{f' at {when}' if when else ''}")
+    waiting = autonomy.get("proposals_awaiting_decision") or 0
+    if waiting:
+        lines.append(f"- {waiting} of MIRA's own proposals are waiting on her decision")
+    return lines[:8]
+
+
+def _agenda() -> list[str]:
+    from . import ticker
+    return agenda_lines(ticker.mira("cockpit/agenda"), ticker.mira("autonomy/status"))
+
+
 def _body_state(folder: Path) -> dict:
     from . import ticker
     return ticker.body_state(folder)
@@ -199,7 +220,7 @@ def _span(delta: timedelta) -> str:
 
 
 def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: list[str], talk: list[str],
-          said: list[str], away_for: timedelta = timedelta(0)) -> str:
+          said: list[str], away_for: timedelta = timedelta(0), day: list[str] | None = None) -> str:
     """The context she decides from: why this moment, what she can see, what she remembers, what was said."""
     meal = "lunch" if now.hour < 16 else "dinner"
     if kind == "back" and not away_for:
@@ -214,6 +235,7 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
         ("She's at winhvk, her main PC (its camera sees her); you can't see its screen from here."
          + (" Game Mode is on there: she's gaming." if seen.gaming else "")),
         f"Playing there: {seen.playing or 'nothing'}." if seen.local else f"Playing on laphvk: {seen.playing or 'nothing'}.",
+        *(["Her day, from MIRA (mention it only if it's actually worth it right now):\n" + "\n".join(day)] if day else []),
         "What you remember about her:\n" + ("\n".join(f"- {m}" for m in mem) if mem else "- (nothing saved yet)"),
         "Your recent conversations with her (newest last):\n" + ("\n".join(talk) if talk else "- (none in the last few hours)"),
         "What you've said on your own lately (don't repeat yourself):\n" + ("\n".join(said) if said else "- (nothing yet today)"),
@@ -246,7 +268,7 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     messages = [
         {"role": "system", "content": soul() + AUTONOMY},
         {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now), memories(),
-                                          recent_talk(now), own_lines(folder), away_for)},
+                                          recent_talk(now), own_lines(folder), away_for, _agenda())},
     ]
     try:
         # Room for a reasoning model to think first: her line is short, the thinking may not be.

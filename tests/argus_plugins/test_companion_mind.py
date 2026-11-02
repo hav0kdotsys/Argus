@@ -106,3 +106,14 @@ def test_a_body_that_reports_what_it_sees_is_believed_first(mind):
     assert (seen.window, seen.playing, seen.local) == ("Spotify - Rosa Walton", "Rosa Walton - Stay [Playing]", True)
     text = mind.brief("popin", timedelta(minutes=30), seen, datetime(2026, 11, 2, 12, 0), [], [], [])
     assert "She's at winhvk" in text and "Spotify - Rosa Walton" in text and "can't see" not in text
+
+
+def test_her_day_from_mira_puts_overdue_first_and_counts_waiting_decisions(mind):
+    agenda = {"reminders": [{"summary": "Charge your phone"}, {"summary": "Bins out", "overdue": True}],
+              "events": [{"summary": "Dentist", "start": "10:30"}]}
+    lines = mind.agenda_lines(agenda, {"proposals_awaiting_decision": 2})
+    assert lines[0] == "- reminder (OVERDUE): Bins out" and "- event: Dentist at 10:30" in lines
+    assert lines[-1].startswith("- 2 of MIRA's own proposals")
+    text = mind.brief("popin", timedelta(minutes=5), mind.Seen(), datetime(2026, 11, 2, 9, 0), [], [], [], day=lines)
+    assert "Her day, from MIRA" in text and "Bins out" in text
+    assert "Her day" not in mind.brief("popin", timedelta(minutes=5), mind.Seen(), datetime(2026, 11, 2, 9, 0), [], [], [])
