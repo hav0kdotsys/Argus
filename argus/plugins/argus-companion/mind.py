@@ -65,8 +65,9 @@ class Seen:
     fullscreen: bool = False
     playing: str = ""
     idle: float = 0.0
-    where: str = "laphvk"       # laphvk, or winhvk (her main PC: its screen isn't visible from here)
+    where: str = "laphvk"       # the machine she's at
     gaming: bool = False        # winhvk's Lan Mouse Game Mode is on
+    local: bool = True          # her screen is the one Mira can see from here (window/playing are hers)
 
 
 def _home() -> Path:
@@ -168,9 +169,13 @@ def _run(argv: list[str]) -> str:
         return ""
 
 
-def look(idle: float, where: str = "laphvk", gaming: bool = False) -> Seen:
-    """laphvk's focused window (Hyprland), whether it's fullscreen, what's playing (MPRIS via playerctl), and where
-    Hannah is."""
+def look(idle: float, where: str = "laphvk", gaming: bool = False, state: dict | None = None) -> Seen:
+    """The focused window, whether it's fullscreen, what's playing, and where Hannah is. A body that reports these
+    itself (state.json: the Windows body) is believed first; on laphvk, Hyprland and playerctl answer."""
+    state = state or {}
+    if "window" in state:
+        return Seen(window=str(state.get("window") or "")[:160], fullscreen=bool(state.get("fullscreen")),
+                    playing=str(state.get("playing") or "")[:160], idle=idle, where=where, gaming=gaming, local=True)
     try:
         win = json.loads(_run(["hyprctl", "activewindow", "-j"]) or "{}")
     except ValueError:
@@ -178,7 +183,12 @@ def look(idle: float, where: str = "laphvk", gaming: bool = False) -> Seen:
     window = " - ".join(p for p in (str(win.get("class") or ""), str(win.get("title") or "")) if p)
     playing = _run(["playerctl", "metadata", "--format", "{{artist}} - {{title}} [{{status}}]"])
     return Seen(window=window[:160], fullscreen=bool(win.get("fullscreen")), playing=playing[:160], idle=idle,
-                where=where, gaming=gaming)
+                where=where, gaming=gaming, local=where == "laphvk")
+
+
+def _body_state(folder: Path) -> dict:
+    from . import ticker
+    return ticker.body_state(folder)
 
 
 def _span(delta: timedelta) -> str:
@@ -194,12 +204,12 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
     parts = [
         f"Why ARGUS flagged this moment: {reason}.",
         f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at her desk for {_span(present_for)} this sitting.",
+        (f"She's at {seen.where} (last input {int(seen.idle)}s ago). Focused window: {seen.window or 'unknown'}"
+         f"{' (fullscreen)' if seen.fullscreen else ''}." + (" winhvk's Game Mode is on." if seen.gaming else ""))
+        if seen.local else
         ("She's at winhvk, her main PC (its camera sees her); you can't see its screen from here."
-         + (" Game Mode is on there: she's gaming." if seen.gaming else ""))
-        if seen.where == "winhvk" else
-        f"She's on laphvk (last input {int(seen.idle)}s ago). Focused window: {seen.window or 'unknown'}"
-        f"{' (fullscreen)' if seen.fullscreen else ''}." + (" winhvk's Game Mode is on." if seen.gaming else ""),
-        f"Playing on laphvk: {seen.playing or 'nothing'}.",
+         + (" Game Mode is on there: she's gaming." if seen.gaming else "")),
+        f"Playing there: {seen.playing or 'nothing'}." if seen.local else f"Playing on laphvk: {seen.playing or 'nothing'}.",
         "What you remember about her:\n" + ("\n".join(f"- {m}" for m in mem) if mem else "- (nothing saved yet)"),
         "Your recent conversations with her (newest last):\n" + ("\n".join(talk) if talk else "- (none in the last few hours)"),
         "What you've said on your own lately (don't repeat yourself):\n" + ("\n".join(said) if said else "- (nothing yet today)"),
@@ -231,7 +241,7 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     now = time.time()
     messages = [
         {"role": "system", "content": soul() + AUTONOMY},
-        {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming), datetime.fromtimestamp(now), memories(),
+        {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now), memories(),
                                           recent_talk(now), own_lines(folder))},
     ]
     try:

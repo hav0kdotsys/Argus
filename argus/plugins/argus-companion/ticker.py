@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import json
 import os
+import socket
+import sys
 import subprocess
 import time
 import urllib.request
@@ -40,6 +42,24 @@ def companion_dir() -> Path:
     return Path(get_hermes_home()) / "companion"
 
 
+STATE_FRESH = 15.0   # seconds a body's state.json report stays current
+
+
+def body_state(folder: Path) -> dict:
+    """What this machine's body reports it sees (state.json): idle_since, and on Windows also window, fullscreen,
+    playing and machine. {} when there's no fresh report."""
+    try:
+        data = json.loads((folder / "state.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    at = data.get("at")
+    if isinstance(at, (int, float)) and time.time() - at > STATE_FRESH:
+        return {k: v for k, v in data.items() if k == "idle_since"}
+    return data
+
+
 def _idle_seconds(folder: Path, now: float) -> float:
     try:
         since = json.loads((folder / "state.json").read_text(encoding="utf-8")).get("idle_since")
@@ -48,7 +68,10 @@ def _idle_seconds(folder: Path, now: float) -> float:
     return max(0.0, now - float(since)) if isinstance(since, (int, float)) else 0.0
 
 
-def _fullscreen() -> bool:
+def _fullscreen(folder: Path | None = None) -> bool:
+    state = body_state(folder) if folder else {}
+    if "fullscreen" in state:
+        return bool(state["fullscreen"])
     try:
         out = subprocess.run(["hyprctl", "activewindow", "-j"], capture_output=True, text=True, timeout=3,
                              check=False).stdout
@@ -84,7 +107,10 @@ def _presence() -> dict:
 
 
 def game_mode() -> bool:
-    """winhvk's Lan Mouse Game Mode, checked at most every GAME_MODE_EVERY seconds (an ssh round trip)."""
+    """winhvk's Lan Mouse Game Mode, checked at most every GAME_MODE_EVERY seconds (an ssh round trip). On winhvk
+    itself the body already reports a fullscreen game."""
+    if sys.platform == "win32":
+        return False
     now = time.time()
     if now - _game_mode["at"] >= GAME_MODE_EVERY:
         out = subprocess.run(
@@ -100,8 +126,16 @@ def _has_ssh() -> bool:
     return shutil.which("ssh") is not None
 
 
+def here() -> str:
+    """This machine's name as the estate knows it (laphvk, winhvk)."""
+    return socket.gethostname().lower() if sys.platform != "win32" else (os.environ.get("COMPUTERNAME", "winhvk").lower())
+
+
 def where(folder: Path, hosts: dict | None = None) -> str:
-    """Where Hannah is: laphvk when she's using it, else winhvk when its camera sees her there, else laphvk."""
+    """Where Hannah is: on winhvk the body there sees her directly; on laphvk, laphvk when she's using it, else
+    winhvk when its camera sees her there, else laphvk."""
+    if sys.platform == "win32":
+        return "winhvk"
     hosts = _presence() if hosts is None else hosts
     if _idle_seconds(folder, time.time()) < 120 or hosts.get("winhvk") != "active":
         return "laphvk"
@@ -116,7 +150,7 @@ def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     if hosts.get("winhvk") == "active":
         idle = 0.0  # at her main PC: present, whatever laphvk's input says
     return presence.Moment(now=datetime.fromtimestamp(now), idle=idle,
-                           busy=_fullscreen() or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
+                           busy=_fullscreen(folder) or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
                            talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
 
 

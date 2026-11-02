@@ -95,6 +95,14 @@ def test_talk_with_mira_elsewhere_joins_argus_talk_in_time_order(mind, tmp_path)
 
 
 def test_at_winhvk_she_knows_she_cant_see_the_screen(mind):
-    seen = mind.Seen(window="foot - ignored", where="winhvk", gaming=True)
+    seen = mind.Seen(window="foot - ignored", where="winhvk", gaming=True, local=False)
     text = mind.brief("popin", timedelta(minutes=50), seen, datetime(2026, 11, 1, 21, 0), [], [], [])
     assert "winhvk" in text and "can't see its screen" in text and "gaming" in text and "foot - ignored" not in text
+
+
+def test_a_body_that_reports_what_it_sees_is_believed_first(mind):
+    state = {"window": "Spotify - Rosa Walton", "fullscreen": False, "playing": "Rosa Walton - Stay [Playing]"}
+    seen = mind.look(4, where="winhvk", state=state)
+    assert (seen.window, seen.playing, seen.local) == ("Spotify - Rosa Walton", "Rosa Walton - Stay [Playing]", True)
+    text = mind.brief("popin", timedelta(minutes=30), seen, datetime(2026, 11, 2, 12, 0), [], [], [])
+    assert "She's at winhvk" in text and "Spotify - Rosa Walton" in text and "can't see" not in text
