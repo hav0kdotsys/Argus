@@ -190,6 +190,17 @@ Live on laphvk (main = argus-own, deployed 2026-11-01 ~23:40):
   (JarvisInfrastructure `ops/voice-ui/patch_panel_speak.py`, `patch_panel_presence.py`; backups `.bak-*`).
 - **Lan Mouse Game Mode:** Ctrl+Alt+G on winhvk / `lan-mouse-gamemode` on laphvk (`ops/lan-mouse/README.md`).
 
+Night of 2026-11-01/02 (HavoK asleep, asked for full Capri parity on winhvk too):
+- **Pet rewrite on laphvk** (`argus/pet/mira-pet`: Sheet.qml, pet.js, shell.qml; sheets prepared by
+  `argus/pet/build_sheets.py`): Capri's whole sprite life plus floor sitting/lying for tiling layouts, a body
+  command channel (`body.json`, `argus companion body`-style actions), shadow, talk glow, glitch split.
+- **winhvk**: ARGUS installed and running (`argus/bin/argus.ps1` fixed), the Windows body `MiraPet.exe` and the
+  brain - see `argus/pet/windows/README.md` (setup, update steps, and the gotchas: brain via Startup shortcut, not a
+  task; never run ARGUS turns over SSH there).
+- **Talking to her body**: typing box (Ctrl+Alt+T on winhvk) -> `ask.json` -> a real ARGUS turn in the
+  "Mira (companion)" session -> her bubble (and voice on laphvk). Touch reactions via `event.json`.
+- One Mira at a time: each machine's companion only reaches out while that machine is in use.
+
 Waiting on HavoK:
 - **mira-api persona** (voice/phone/Discord Mira): `ops/persona/patch_mira_soul.py` is APPLIED to debhvk's source
   (backup `server.js.bak-mira-soul-*`, syntax-checked) but needs a mira-api rebuild/redeploy through MIRA's guarded
