@@ -49,7 +49,7 @@ namespace MiraPet
         private double ax = 300, ay = 600;           // her square's top-left, screen pixels
         private Ledge ledge;
         private List<Ledge> spots = new List<Ledge>();
-        private bool lying, sleeping, forcedSleep, floorSit, gameHidden;
+        private bool lying, sleeping, forcedSleep, floorSit, gameHidden, riding;
         private double danceUntil, nextWander, nextLie, lyingUntil, nextGlitch, nextPosture, hiddenUntil, nextLedges, nextState, nextFiles;
         private double vy, fallFrom, walkTo;
         private Ledge fallTo;
@@ -118,7 +118,7 @@ namespace MiraPet
         // Her keys, from anywhere, like Capri's: Ctrl+Alt+T type to her, Ctrl+Alt+H hide or show her, Ctrl+Alt+P quiet.
         private void Keys_(bool on)
         {
-            (int id, Keys key)[] keys = { (1, Keys.T), (2, Keys.H), (3, Keys.P) };
+            (int id, Keys key)[] keys = { (1, Keys.T), (2, Keys.H), (3, Keys.P), (4, Keys.C) };
             foreach ((int id, Keys key) in keys)
             {
                 if (on) Native.RegisterHotKey(Handle, id, Native.MOD_CONTROL | Native.MOD_ALT | Native.MOD_NOREPEAT, (int)key);
@@ -135,6 +135,7 @@ namespace MiraPet
                     case 1: TypeToHer(); break;
                     case 2: Command(mode == "hidden" ? "show" : "hide"); break;
                     case 3: ToggleQuiet(); break;
+                    case 4: Command(riding ? "hop_off" : "ride"); break;
                 }
                 return;
             }
@@ -462,6 +463,13 @@ namespace MiraPet
             if (now >= nextFiles) { nextFiles = now + 0.5; ReadFiles(); }
             if (now >= nextState) { nextState = now + 2; WriteState(); }
             if (said.Length > 0 && now >= saidUntil) { said = ""; bubble.Quiet(); }
+            if (riding && mode == "resting")
+            {
+                // Riding the cursor: her seat is just under the pointer's tip, wherever it goes.
+                Point c = Cursor.Position;
+                ledge = new Ledge { X1 = c.X - 4, X2 = c.X + 4, Y = c.Y + 18, Free = true };
+                PlaceOn(ledge, c.X + 6, true);
+            }
             Physics(dt);
             Behave();
             Animate();
@@ -594,7 +602,7 @@ namespace MiraPet
             if (mode != "dragging" && dx * dx + dy * dy < 36) return;
             if (mode != "dragging")
             {
-                mode = "dragging"; ledge = null; lying = false; sleeping = false; forcedSleep = false;
+                mode = "dragging"; ledge = null; lying = false; sleeping = false; forcedSleep = false; riding = false;
                 oneShot = false; current = "dangle"; clipStart = Now;
                 bubble.Quiet(); said = "";
             }
@@ -658,7 +666,7 @@ namespace MiraPet
             Point c = Cursor.Position;
             RectangleF box = Rules.Box(current, sheets.Info(Rules.SheetFor(current, facing, sheets)), S, facing);
             box.Offset((float)ax, (float)ay);
-            if (pressed || mode != "resting" || !box.Contains(c)) { turns.Clear(); petWay = 0; petX = c.X; return; }
+            if (pressed || riding || mode != "resting" || !box.Contains(c)) { turns.Clear(); petWay = 0; petX = c.X; return; }
             int dx = c.X - petX;
             if (Math.Abs(dx) < 6) return;
             int way = Math.Sign(dx);
@@ -772,6 +780,8 @@ namespace MiraPet
                 case "dance": danceUntil = Now + 45; break;
                 case "stop_dancing": danceUntil = 0; break;
                 case "glitch": if (mode == "resting") Play(GlitchClip()); break;
+                case "ride": if (mode == "resting" || mode == "hanging") { riding = true; lying = false; sleeping = false; mode = "resting"; Play("perch_glitch"); } break;
+                case "hop_off": if (riding) { riding = false; Play("perch_glitch", Fall); } break;
                 case "grin": if (mode == "resting" && !Seated) Play("grin"); else if (Seated) blinkWith = lying ? "laydown_blink" : "perch_blink"; break;
             }
         }
@@ -790,6 +800,7 @@ namespace MiraPet
             m.Items.Add("Dance", null, (_, __) => Command(danceUntil > Now ? "stop_dancing" : "dance"));
             m.Items.Add("Nap / wake up", null, (_, __) => Command(sleeping ? "wake" : "sleep"));
             m.Items.Add("Go somewhere else", null, (_, __) => Command("hop"));
+            m.Items.Add("Ride my cursor / hop off   Ctrl+Alt+C", null, (_, __) => Command(riding ? "hop_off" : "ride"));
             ToolStripMenuItem size = new ToolStripMenuItem("Size");
             for (int i = 0; i < Sizes.Length; i++)
             {
