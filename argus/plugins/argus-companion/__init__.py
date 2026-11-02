@@ -92,11 +92,12 @@ argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, 
                              --dry prints what she'd do without showing or saying it
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
                              stop_dancing, glitch, grin, drop (bind `body type` to a key to talk to her)
+argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("--dry", action="store_true", help="for moment: print her decision only")
@@ -120,6 +121,11 @@ def _cli_run(args) -> int:
         else:
             line = ticker.moment_now(folder, args.kind, timedelta(minutes=0), m.idle)
         print(line or "(Mira passed)")
+        return 0
+    if args.action == "away":
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "away").write_text("away", encoding="utf-8")
+        print("Away. She'll wait until you're back at this machine.")
         return 0
     if args.action == "body":
         import json

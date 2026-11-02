@@ -85,3 +85,16 @@ def test_her_reply_loses_colour_codes_and_session_lines():
     ticker = _ticker()
     out = "\x1b[1;31mStill here.\x1b[0m\nSession abc found but has no messages.\n\nsession_id: local-1\n"
     assert ticker.clean_reply(out) == "Still here."
+
+
+def test_forced_away_holds_until_shes_seen_back_after_the_grace(tmp_path):
+    import os
+    ticker = _ticker()
+    marker = tmp_path / "away"
+    marker.write_text("away", encoding="utf-8")
+    now = marker.stat().st_mtime
+    assert ticker._forced_away(tmp_path, 3.0, now + 10) > ticker.presence.AWAY          # just ran the command: away
+    assert ticker._forced_away(tmp_path, 900.0, now + 500) > ticker.presence.AWAY       # still gone
+    assert ticker._forced_away(tmp_path, 2.0, now + 500) == 2.0                          # back: the marker goes
+    assert not marker.exists()
+    assert ticker._forced_away(tmp_path, 2.0, now + 600) == 2.0

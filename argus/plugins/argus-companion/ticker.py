@@ -149,6 +149,23 @@ def where(folder: Path, hosts: dict | None = None) -> str:
     return "winhvk"
 
 
+AWAY_GRACE = 120.0   # seconds after `argus companion away` before her own input counts as her being back
+
+
+def _forced_away(folder: Path, idle: float, now: float) -> float:
+    """`argus companion away`: away now, without waiting for the idle clock, until she's seen using this machine
+    again (after a short grace, so the keystroke that ran the command doesn't cancel it)."""
+    marker = folder / "away"
+    try:
+        age = now - marker.stat().st_mtime
+    except OSError:
+        return idle
+    if age > AWAY_GRACE and idle < 30:
+        marker.unlink(missing_ok=True)
+        return idle
+    return max(idle, presence.AWAY + 1)
+
+
 def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     now = time.time()
     panel = _panel()
@@ -156,6 +173,7 @@ def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     # only offers moments while it's the one in use: an idle laphvk is "away" even when the camera sees Hannah at
     # winhvk, and winhvk's companion reaches her there. One Mira at a time, never two at once.
     idle = _idle_seconds(folder, now)
+    idle = _forced_away(folder, idle, now)
     return presence.Moment(now=datetime.fromtimestamp(now), idle=idle,
                            busy=_fullscreen(folder) or bool(panel.get("busy")),
                            quiet=bool(panel.get("quiet")) or (folder / "quiet").exists(),
