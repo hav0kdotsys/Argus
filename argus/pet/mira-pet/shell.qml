@@ -485,7 +485,13 @@ ShellRoot {
     IdleMonitor { id: awayMonitor; timeout: 300; respectInhibitors: true }
     Timer { id: awake; interval: 120000 }   // a click-woken nap doesn't fall straight back asleep
 
-    Timer { interval: 33; running: true; repeat: true; onTriggered: root.tick() }
+    // As fast as she needs: 30 fps for her 30 fps clips and while she moves, 15 otherwise, 4 while hidden.
+    Timer {
+        interval: root.mode === "hidden" ? 250
+                  : (root.mode !== "resting" || (root.baseInfo && root.baseInfo.fps >= 24) || root.glitching) ? 33 : 66
+        running: true; repeat: true
+        onTriggered: root.tick()
+    }
 
     // ---- her
 
