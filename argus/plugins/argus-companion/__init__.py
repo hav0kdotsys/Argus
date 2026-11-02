@@ -100,7 +100,7 @@ argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, 
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
                              stop_dancing, glitch, grin, drop (bind `body type` to a key to talk to her)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
-argus companion chess [on|off|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
+argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
 argus companion status       the signals the ticker sees right now"""
 
@@ -155,7 +155,9 @@ def _cli_run(args) -> int:
 def _cli_chess(folder, args) -> int:
     from . import chess_coach
     from .chess_engine import find_engine
-    choice = args.kind if args.kind in ("on", "off") else "status"
+    choice = args.kind if args.kind in ("on", "off", "look") else "status"
+    if choice == "look":
+        return _cli_chess_look(folder)
     if choice != "status":
         chess_coach.set_coach(folder, choice == "on", bot=args.bot)
     coach = chess_coach.settings(folder)
@@ -166,6 +168,40 @@ def _cli_chess(folder, args) -> int:
         print(f"board on {state['host']}: {state['title']}\n  {state.get('fen', '(position not read yet)')}")
         if state.get("best"):
             print(f"  best {state['best']} {state['score']}  line {state.get('line', '')}")
+    return 0
+
+
+def _cli_chess_look(folder) -> int:
+    """One look at the board on screen, and the engine's verdict (fair play applies)."""
+    from . import chess_board as cb
+    from . import chess_coach
+    from .chess_engine import Engine, find_engine
+    from .chess_eyes import Eyes
+    seen = chess_coach.boards()
+    if not seen:
+        print("no chess board on screen")
+        return 1
+    board = seen[0]
+    shot = chess_coach.capture(board)
+    read = Eyes(folder).read(shot) if shot is not None else {"found": False}
+    print(f"{board.host}: {board.title}{'  [maybe a live game vs a person]' if board.live else ''}")
+    if not read.get("fen"):
+        print("board found, but this piece set isn't learnt yet: show a starting position once" if read.get("found")
+              else "couldn't find the board in the window")
+        return 1
+    print(read["fen"])
+    path = find_engine()
+    if board.live and not chess_coach.settings(folder)["bot"]:
+        print("no engine: possibly a live game against a person")
+    elif path:
+        engine = Engine(path)
+        try:
+            best = engine.analyse(read["fen"]).best
+        finally:
+            engine.close()
+        if best:
+            print(f"best {cb.readable(read['fen'], best.move)} {cb.score_text(best.cp, best.mate)} (side to move)  "
+                  f"line {cb.line_text(read['fen'], best.pv)}")
     return 0
 
 
