@@ -26,6 +26,7 @@ namespace MiraPet
 
         private readonly Sheets sheets;
         private readonly Senses senses = new Senses();
+        private readonly Ears ears;
         private MiniPlayer player;
         private bool playerUp, playerOff, clickThrough;
         private readonly Bubble bubble;
@@ -72,7 +73,14 @@ namespace MiraPet
 
         private double Now => watch.Elapsed.TotalSeconds;
         private bool Talking => said.Length > 0;
-        private bool Grooving => (senses.Playing || danceUntil > Now) && !Talking;
+        private bool Grooving => (senses.Playing || peerMusic || danceUntil > Now) && !Talking;
+        // one Mira, two bodies: music on laphvk (link.json, from the companion's link) makes her dance here too
+        private bool peerMusic;
+        private double peerBpm, peerBeatAt;
+        private readonly List<Note> notes = new List<Note>();
+        private double lastNote;
+        private long lastBeat = -1;
+        private struct Note { public double Born, X, Y, Wob; public string Glyph; public Color Color; }
         private bool Seated => ledge != null && mode == "resting" && (!ledge.Floor || floorSit);
         private bool Quiet => mode == "resting" && !oneShot && !Talking;
 
@@ -90,6 +98,7 @@ namespace MiraPet
             bubble = new Bubble(face);
             Load_();
             player = new MiniPlayer(senses) { Off = playerOff };
+            ears = new Ears(() => senses.Playing, Companion);
             player.Changed += () => { playerOff = player.Off; Save(); };
             menu = BuildMenu();
             tray = new NotifyIcon
@@ -352,6 +361,26 @@ namespace MiraPet
             Vanish(() => { Show(); Settle(l, l.X1 + (l.X2 - l.X1) * rng.NextDouble(), sit); Play(l.Floor && !sit ? "arrive" : "perch_arrive"); });
         }
 
+        // "Go somewhere else": always somewhere - another window, another screen's floor, or well along this one -
+        // from wherever she is (hidden, asleep, hanging, riding).
+        private void Elsewhere()
+        {
+            if (mode == "dragging" || mode == "falling") return;
+            List<Ledge> wide = spots.Where(l => l.X2 - l.X1 > S * 0.6).ToList();
+            if (wide.Count == 0) return;
+            PointF h = Hip();
+            for (int tries = 0; tries < 24; tries++)
+            {
+                Ledge l = wide[rng.Next(wide.Count)];
+                double x = Rules.ClampX(l, l.X1 + (l.X2 - l.X1) * rng.NextDouble(), S);
+                if (Math.Abs(x - h.X) < S * 2 && Math.Abs(l.Y - h.Y) < S && mode != "hidden") continue;
+                riding = false; sleeping = false; forcedSleep = false; hiddenUntil = 0; gameHidden = false;
+                bool sit = l.Floor && rng.NextDouble() < 0.4;
+                Vanish(() => { Show(); Settle(l, x, sit); Play(l.Floor && !sit ? "arrive" : "perch_arrive"); });
+                return;
+            }
+        }
+
         private void Walk()
         {
             if (ledge == null) return;
@@ -574,7 +603,13 @@ namespace MiraPet
             double breathe = settled ? Math.Sin(Now * 1.75) * 2.2 * S / 240 : 0;
             double tilt = settled ? Math.Sin(Now * 0.95) * 0.65 : 0;
             RectangleF box = Rules.Box(current, info, S, facing);
-            box.Offset((float)ox, (float)(oy + breathe));
+            bool dancing = (current == "dance" || current == "perch_music") && mode == "resting";
+            bool beat = Beat(out double bpm, out double beatAt);
+            double beats = beat ? (Ears.UnixNow - beatAt) * bpm / 60 : 0;
+            double phase = beats - Math.Floor(beats);
+            double nod = dancing && beat ? S * 0.028 * Math.Exp(-phase * 6) : 0;
+            box.Offset((float)ox, (float)(oy + breathe + nod));
+            NoteTick(dancing, beat, beats, box);
             // blink: its frames replace the loop's for a few cells
             (int from, int n) rule = current == "idle" ? (9, 4) : current == "perch" || current == "laydown" ? (28, 8) : (-1, 0);
             string blinkName = rule.from >= 0 && blinkWith.Length > 0 && cell >= rule.from && cell < rule.from + rule.n
@@ -617,10 +652,58 @@ namespace MiraPet
                 Draw(g, drawSheet, src, box, null);
                 if (Talking && current == "idle" && blinkName == null && sheets.Has("mouth"))
                     Draw(g, sheets.Sheet("mouth"), sheets.Info("mouth").Cell((int)(Now * 12)), box, null);
+                g.ResetTransform();
+                DrawNotes(g);
             }
             Native.Show(Handle, canvas, new Point((int)Math.Round(ax - ox), (int)Math.Round(ay - oy)));
             if (said.Length > 0 && bubble.Saying)
                 bubble.Say(said, new Point((int)(ax - ox + box.X + box.Width / 2), (int)(ay - oy + box.Y)), Screen.FromPoint(Point.Round(Hip())).WorkingArea);
+        }
+
+        // Music notes off her head while she dances: every other beat with a lock, about a beat's time without.
+        private static readonly string[] Glyphs = { "\u266A", "\u266B", "\u266C", "\u2669" };
+        private void NoteTick(bool dancing, bool beat, double beats, RectangleF box)
+        {
+            double now = Now;
+            notes.RemoveAll(n => now - n.Born >= 1.8);
+            bool due = false;
+            if (dancing && mode != "hidden")
+            {
+                if (beat)
+                {
+                    long b = (long)Math.Floor(beats);
+                    if (b != lastBeat) { due = b % 2 == 0; lastBeat = b; }
+                }
+                else due = now - lastNote > 0.9;
+            }
+            if (!due) return;
+            lastNote = now;
+            notes.Add(new Note
+            {
+                Born = now, Glyph = Glyphs[rng.Next(Glyphs.Length)], Wob = rng.NextDouble() * 6,
+                Color = rng.NextDouble() < 0.5 ? Color.FromArgb(255, 42, 109) : Color.FromArgb(5, 217, 232),
+                X = box.X + box.Width * (0.25 + rng.NextDouble() * 0.5), Y = box.Y + box.Height * 0.12,
+            });
+        }
+
+        private void DrawNotes(Graphics g)
+        {
+            if (notes.Count == 0) return;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+            foreach (Note n in notes)
+            {
+                double age = Now - n.Born;
+                float size = (float)(S * 0.12 * (0.7 + Math.Min(0.5, age * 0.6)));
+                int alpha = (int)Math.Max(0, Math.Min(255, 255 * (1 - age / 1.8)));
+                float x = (float)(n.X + Math.Sin(age * 3 + n.Wob) * S * 0.05), y = (float)(n.Y - age * S * 0.24);
+                using (Font font = new Font("Segoe UI Symbol", size, FontStyle.Bold, GraphicsUnit.Pixel))
+                using (SolidBrush shade = new SolidBrush(Color.FromArgb(alpha / 2, 0, 0, 0)))
+                using (SolidBrush ink = new SolidBrush(Color.FromArgb(alpha, n.Color)))
+                {
+                    g.DrawString(n.Glyph, font, shade, x + 1, y + 1);
+                    g.DrawString(n.Glyph, font, ink, x, y);
+                }
+            }
         }
 
         private static RectangleF Grow(RectangleF r, float by) { r.Inflate(r.Width * by, r.Height * by); return r; }
@@ -817,7 +900,26 @@ namespace MiraPet
                 if (!filesRead) lastBody = id;
                 else if (id.Length > 0 && id != lastBody) { lastBody = id; Command(what); }
             }
+            JsonElement? link = ReadJson("link.json");
+            peerMusic = false; peerBpm = 0;
+            if (link is JsonElement l && l.ValueKind == JsonValueKind.Object && l.TryGetProperty("at", out JsonElement la)
+                && la.ValueKind == JsonValueKind.Number && Ears.UnixNow - la.GetDouble() < 15
+                && l.TryGetProperty("music", out JsonElement m) && m.ValueKind == JsonValueKind.Object)
+            {
+                peerMusic = m.TryGetProperty("playing", out JsonElement p) && p.ValueKind == JsonValueKind.True;
+                if (peerMusic && m.TryGetProperty("bpm", out JsonElement pb) && pb.ValueKind == JsonValueKind.Number
+                    && m.TryGetProperty("beat_at", out JsonElement pa) && pa.ValueKind == JsonValueKind.Number)
+                { peerBpm = pb.GetDouble(); peerBeatAt = pa.GetDouble(); }
+            }
             filesRead = true;
+        }
+
+        // The beat she nods to: her own ears' when the music's here, her other body's when it's there.
+        private bool Beat(out double bpm, out double beatAt)
+        {
+            if (senses.Playing && ears.Locked(out bpm, out beatAt)) return true;
+            bpm = peerMusic ? peerBpm : 0; beatAt = peerBeatAt;
+            return bpm > 0;
         }
 
         private void Command(string what)
@@ -828,11 +930,13 @@ namespace MiraPet
             switch (what)
             {
                 case "come_here": ComeHere(); break;
+                case "hop_in": hiddenUntil = Now + 5; gameHidden = false; ComeHere(); break;   // over from her other body
                 case "perch": PerchOn(arg); break;
                 case "floor": { Ledge f = spots.FirstOrDefault(l => l.Floor && l.X1 <= Cursor.Position.X && Cursor.Position.X <= l.X2) ?? spots.FirstOrDefault(l => l.Floor); if (f != null) Teleport(f, false); } break;
                 case "show": if (mode == "hidden") { hiddenUntil = 0; gameHidden = false; Appear(); } break;
                 case "hide": if (mode != "hidden") Vanish(() => hiddenUntil = Now + 900); break;
                 case "hop": if (mode == "resting") Hop(); break;
+                case "elsewhere": Elsewhere(); break;
                 case "walk": if (mode == "resting") Walk(); break;
                 case "drop": if (mode == "resting") { ay -= S * 1.5; Fall(); } break;
                 case "lie": if (Seated && !lying) { int f = Rules.LieFacing(ledge, Hip().X, S); if (f != 0) LieDown(f, 180); } break;
@@ -862,7 +966,7 @@ namespace MiraPet
             m.Items.Add(quiet);
             m.Items.Add("Dance", null, (_, __) => Command(danceUntil > Now ? "stop_dancing" : "dance"));
             m.Items.Add("Nap / wake up", null, (_, __) => Command(sleeping ? "wake" : "sleep"));
-            m.Items.Add("Go somewhere else", null, (_, __) => Command("hop"));
+            m.Items.Add("Go somewhere else", null, (_, __) => Command("elsewhere"));
             m.Items.Add("Ride my cursor / hop off   Ctrl+Alt+C", null, (_, __) => Command(riding ? "hop_off" : "ride"));
             m.Items.Add("Coach my chess (on / off)", null, (_, __) => { told.Remove("coach"); Tell("coach"); });
             m.Items.Add("Play a game with her…", null, (_, __) => { told.Remove("play"); Tell("play"); });
@@ -935,6 +1039,7 @@ namespace MiraPet
                 Keys_(false);
                 clock.Dispose();
                 senses.Dispose();
+                ears.Dispose();
                 player?.Dispose();
                 tray.Dispose();
                 bubble.Dispose();

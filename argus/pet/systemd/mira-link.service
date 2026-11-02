@@ -1,0 +1,18 @@
+# MIRA's link between her bodies: winhvk's companion reaches laphvk's (127.0.0.1:8772, argus-companion's link.py)
+# through this reverse tunnel over the SSH laphvk already uses for winhvk, so no port opens on either machine.
+# The token rides as a file: the first run copies ~/.argus/companion/link-token to winhvk's companion folder.
+# Enable once:
+#   systemctl --user link ~/argus/argus/pet/systemd/mira-link.service && systemctl --user enable --now mira-link
+[Unit]
+Description=MIRA's link between her bodies (laphvk <-> winhvk tunnel)
+After=network-online.target mira-companion.service
+Wants=network-online.target
+
+[Service]
+ExecStartPre=/bin/sh -c 'test -s %h/.argus/companion/link-token && scp -q -o BatchMode=yes -o ConnectTimeout=20 %h/.argus/companion/link-token winhvk:AppData/Local/argus/companion/link-token'
+ExecStart=/usr/bin/ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes -o ServerAliveInterval=20 -o ServerAliveCountMax=3 -R 127.0.0.1:8772:127.0.0.1:8772 winhvk
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=default.target

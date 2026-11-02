@@ -94,7 +94,7 @@ ShellRoot {
     readonly property real screenH: win.height
     readonly property var floor: ({ x1: 76, x2: screenW - 12, y: screenH - 2 })
     readonly property bool talking: said !== "" || panelBusy
-    readonly property bool grooving: (music || danceUntil > now) && !talking
+    readonly property bool grooving: (music || peerMusic || danceUntil > now) && !talking
     property bool floorSit: false                 // on the floor: sitting on the bottom edge rather than standing
     property real nextPosture: 0
     readonly property bool seated: ledge !== null && mode === "resting" && (!ledge.floor || floorSit)
@@ -237,6 +237,22 @@ ShellRoot {
         riding = false
         cursor.then = p => vanish(() => { settle({ x1: p.x - 4, x2: p.x + 4, y: p.y, win: "", floor: false, free: true }, p.x, false); play("glitch", fall) })
         cursor.running = true
+    }
+    // "Go somewhere else": always somewhere - another window, or well along the floor - from wherever she is.
+    function elsewhere() {
+        if (mode === "dragging" || mode === "falling") return
+        const wide = spots.filter(l => l.x2 - l.x1 > size * 0.6)
+        if (!wide.length) return
+        const h = hip()
+        for (let tries = 0; tries < 24; tries++) {
+            const l = wide[Math.floor(Math.random() * wide.length)]
+            const x = Pet.clampX(l, l.x1 + (l.x2 - l.x1) * Math.random(), size, screenW)
+            if (Math.abs(x - h.x) < size * 2 && Math.abs(l.y - h.y) < size && mode !== "hidden") continue
+            riding = false; sleeping = false; forcedSleep = false; hiddenUntil = now + 5
+            const sit = l.floor && Math.random() < 0.4
+            vanish(() => { settle(l, x, sit); play(l.floor && !sit ? "arrive" : "perch_arrive") })
+            return
+        }
     }
     function teleport(l, sit) {
         riding = false
@@ -385,6 +401,7 @@ ShellRoot {
 
     function tick() {
         now = Date.now() / 1000
+        noteTick()
         const dt = Math.min(0.05, now - lastTick)
         lastTick = now
         if (!loaded) return
@@ -460,6 +477,7 @@ ShellRoot {
         if (space > 0) { arg = what.slice(space + 1).trim(); what = what.slice(0, space) }
         switch (what) {
         case "come_here": comeHere(); break
+        case "hop_in": hiddenUntil = now + 5; comeHere(); break    // she came over from her other body (no appearing elsewhere first)
         case "perch": perchOn(arg); break
         case "floor": teleport(spots.find(l => l.floor), false); break
         case "ride": if (mode === "resting" || mode === "hanging") { riding = true; lying = false; sleeping = false; mode = "resting"; play("perch_glitch") } break
@@ -469,6 +487,7 @@ ShellRoot {
         case "show": if (mode === "hidden") { hiddenUntil = 0; appear() } break
         case "hide": if (mode !== "hidden") vanish(() => { hiddenUntil = now + 900 }); break
         case "hop": if (mode === "resting") hop(); break
+        case "elsewhere": elsewhere(); break
         case "walk": if (mode === "resting") walk(); break
         case "drop": if (mode === "resting") { ay -= size * 1.5; fall() } break
         case "lie": if (seated && !lying) { const f = Pet.lieFacing(ledge, hip().x, size); if (f) lieDown(f, 180) } break
@@ -578,6 +597,69 @@ ShellRoot {
         }
     }
 
+    // ---- one Mira, two bodies: music on winhvk makes her dance here too (link.json, from the companion's link),
+    // and she nods on the beat her ears hear (beat.json here, or the one winhvk's ears send over the link).
+    property bool peerMusic: false
+    property real beatBpm: 0
+    property real beatAt: 0
+    property var peerBeat: null
+    property var localBeat: null
+    FileView {
+        id: linkFile
+        path: root.companion + "link.json"
+        onLoaded: {
+            try {
+                const l = JSON.parse(text())
+                const fresh = Date.now() / 1000 - (l.at || 0) < 15
+                root.peerMusic = fresh && !!(l.music && l.music.playing)
+                root.peerBeat = root.peerMusic && l.music.bpm ? { bpm: l.music.bpm, at: l.music.beat_at } : null
+            } catch (e) { root.peerMusic = false; root.peerBeat = null }
+            root.pickBeat()
+        }
+    }
+    FileView {
+        id: beatFile
+        path: root.companion + "beat.json"
+        onLoaded: {
+            try {
+                const b = JSON.parse(text())
+                root.localBeat = b.bpm && Date.now() / 1000 - (b.at || 0) < 15 ? { bpm: b.bpm, at: b.beat_at } : null
+            } catch (e) { root.localBeat = null }
+            root.pickBeat()
+        }
+    }
+    function pickBeat() {
+        const b = music && localBeat ? localBeat : (peerMusic ? peerBeat : null)
+        beatBpm = b ? b.bpm : 0
+        beatAt = b ? b.at : 0
+    }
+    Timer { interval: 1000; running: true; repeat: true; onTriggered: { linkFile.reload(); beatFile.reload() } }
+    // where in the beat she is (0 on it, rising to 1 just before the next), -1 with no beat lock
+    readonly property real beatPhase: beatBpm > 0 ? ((((now - beatAt) * beatBpm / 60) % 1) + 1) % 1 : -1
+    readonly property bool dancing: (current === "dance" || current === "perch_music") && mode === "resting"
+    readonly property real nod: dancing && beatPhase >= 0 ? size * 0.028 * Math.exp(-beatPhase * 6) : 0
+    // music notes off her head: every other beat with a lock, about a beat's worth of time without
+    property var notes: []
+    property real lastNote: 0
+    property int lastBeat: -1
+    function noteTick() {
+        let due = false
+        if (dancing && body.visible) {
+            if (beatBpm > 0) {
+                const n = Math.floor((now - beatAt) * beatBpm / 60)
+                if (n !== lastBeat) { due = n % 2 === 0; lastBeat = n }
+            } else due = now - lastNote > 0.9
+        }
+        const kept = notes.filter(n => now - n.born < 1.8)
+        if (due) {
+            lastNote = now
+            kept.push({ born: now, glyph: ["♪", "♫", "♬", "♩"][Math.floor(Math.random() * 4)],
+                        color: Math.random() < 0.5 ? "#ff2a6d" : "#05d9e8", wob: Math.random() * 6,
+                        x: bx.x + bx.w * (0.25 + Math.random() * 0.5), y: bx.y + bx.h * 0.12 })
+        }
+        if (due || kept.length !== notes.length) notes = kept
+    }
+
     // For the companion's ticker: {"idle_since": <unix seconds> | null} (Wayland only says "idle at least N s").
     // Presence is about input, not the screensaver: a paused video in a browser holds an idle inhibitor for hours,
     // and respecting it made Hannah look present all night (2026-11-02: "late" check-ins at 3 am).
@@ -660,7 +742,7 @@ ShellRoot {
             id: body
             visible: root.mode !== "hidden" && root.loaded
             x: root.bx.x
-            y: root.bx.y + (root.settled ? Math.sin(root.now * 1.75) * 2.2 * root.size / 240 : 0)
+            y: root.bx.y + root.nod + (root.settled ? Math.sin(root.now * 1.75) * 2.2 * root.size / 240 : 0)
             width: root.bx.w
             height: root.bx.h
             rotation: root.settled ? Math.sin(root.now * 0.95) * 0.65 : 0
@@ -716,6 +798,24 @@ ShellRoot {
             source: snap; x: body.x + 5 * Math.random(); y: body.y; width: body.width; height: body.height
             colorization: 1; colorizationColor: "#05d9e8"; brightness: 0.2
             opacity: root.glitching && body.visible ? 0.45 : 0; visible: opacity > 0
+        }
+
+        Repeater {
+            model: root.notes
+            delegate: Text {
+                required property var modelData
+                readonly property real age: root.now - modelData.born
+                text: modelData.glyph
+                color: modelData.color
+                font.pixelSize: Math.round(root.size * 0.12)
+                font.bold: true
+                style: Text.Outline; styleColor: "#80000000"
+                x: modelData.x + Math.sin(age * 3 + modelData.wob) * root.size * 0.05
+                y: modelData.y - age * root.size * 0.24
+                opacity: Math.max(0, 1 - age / 1.8)
+                scale: 0.7 + Math.min(0.5, age * 0.6)
+                visible: body.visible
+            }
         }
 
         // What she says, over her head (kept on screen, clear of the left bar and the right edge).

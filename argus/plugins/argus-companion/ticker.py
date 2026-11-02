@@ -338,6 +338,30 @@ def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for
     return line
 
 
+_thinking = threading.Lock()
+
+
+def moment_soon(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None, extra: str = "") -> bool:
+    """``moment_now`` off the ticker's loop: her mind can take minutes when the provider is slow, and Hannah's
+    clicks (the menu, her room, coaching) must never wait on it. One at a time; while she's still thinking, a new
+    moment passes (False)."""
+    if not _thinking.acquire(blocking=False):
+        logger.info("companion: %s moment passed (still thinking about the last one)", kind)
+        return False
+
+    def think() -> None:
+        try:
+            moment_now(folder, kind, present_for, idle, away_for, extra)
+        except Exception:     # her moment failing never takes the ticker down
+            logger.warning("companion: %s moment failed", kind, exc_info=True)
+        finally:
+            _thinking.release()
+
+    from agent.memory_provider import spawn_context_thread
+    spawn_context_thread(think, name=f"companion-{kind}").start()
+    return True
+
+
 def _coach(folder: Path):
     """Her chess coach (Stockfish + her eyes on the board), or None when it can't run here."""
     from . import chess_coach
@@ -345,7 +369,7 @@ def _coach(folder: Path):
     def react(kind: str, facts: str) -> None:
         m = moment(folder)
         if not m.quiet:
-            moment_now(folder, kind, timedelta(0), m.idle, extra=facts)
+            moment_soon(folder, kind, timedelta(0), m.idle, extra=facts)
 
     try:
         return chess_coach.Coach(folder, lambda text: say(folder, text, "chess", aloud=False, log=False), react)
@@ -361,9 +385,7 @@ def _chess_tick(folder: Path, coach, m: presence.Moment) -> None:
     seen = coach.notice(active=m.idle < presence.AWAY)
     from . import prefs
     if seen and not m.quiet and not m.busy and prefs.allowed(folder, "chess"):
-        from agent.memory_provider import spawn_context_thread
-        spawn_context_thread(moment_now, name="companion-chess-offer", args=(folder, "chess", timedelta(0), m.idle),
-                             kwargs={"extra": seen[1]}).start()
+        moment_soon(folder, "chess", timedelta(0), m.idle, extra=seen[1])
 
 
 REMINDER_EVERY = 120.0      # seconds between agenda reads
@@ -395,7 +417,7 @@ def _reminder_tick(folder: Path, m: presence.Moment, last: list[float]) -> None:
     path.write_text(json.dumps({today: sorted(told | {due[0]})}), encoding="utf-8")
     facts = f"Her reminder \"{due[0]}\" is now overdue." + (
         f" Also overdue: {', '.join(due[1:4])}." if len(due) > 1 else "")
-    moment_now(folder, "reminder", timedelta(0), m.idle, extra=facts)
+    moment_soon(folder, "reminder", timedelta(0), m.idle, extra=facts)
 
 
 GAME_BREAK = 2 * 3600.0     # a game stretch this long earns a nudge
@@ -427,7 +449,7 @@ def _game_break_tick(folder: Path, m: presence.Moment, clock: GameClock) -> None
     from . import prefs
     if clock.due(m.now.timestamp(), gaming) and not m.quiet and prefs.allowed(folder, "game_break"):
         hours = (m.now.timestamp() - clock.since) / 3600
-        moment_now(folder, "game_break", timedelta(0), m.idle,
+        moment_soon(folder, "game_break", timedelta(0), m.idle,
                    extra=f"She's been gaming for about {hours:.1f} hours without a break (focused: {mind_window(folder)}).")
 
 
@@ -505,6 +527,13 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     seen_ask = _ask(folder)[0]
     coach = _coach(folder)
     _room(folder)
+    from . import link
+    link.start(folder, here())
+    if sys.platform != "win32":       # winhvk's body has its own ears (MiraPet/Ears.cs)
+        from agent.memory_provider import spawn_context_thread
+
+        from . import ears
+        spawn_context_thread(ears.listen, name="mira-ears", args=(folder, lambda: link.local_music(folder)["playing"])).start()
     reminder_read = [0.0]
     game_clock = GameClock()
     from . import mind
@@ -526,7 +555,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             elif kind in EVENT_KINDS:
                 m = moment(folder, last_tick)
                 if not m.quiet:
-                    moment_now(folder, kind, timedelta(0), m.idle)
+                    moment_soon(folder, kind, timedelta(0), m.idle)
         for line in captions.new_lines() if captions else []:
             say(folder, line, "voice", aloud=False, log=False)
         if time.time() - last_tick >= tick:
@@ -539,5 +568,5 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)
-                moment_now(folder, opening.kind, opening.present_for, m.idle, opening.away_for)
+                moment_soon(folder, opening.kind, opening.present_for, m.idle, opening.away_for)
         time.sleep(EVENT_POLL)

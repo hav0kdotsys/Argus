@@ -109,7 +109,9 @@ argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, 
                              --dry prints what she'd do without showing or saying it
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
                              stop_dancing, glitch, grin, drop, ride, hop_off, come_here, floor,
-                             perch WINDOW ("perch discord"), mini_player_on/off (bind `body type` to a key)
+                             perch WINDOW ("perch discord"), mini_player_on/off (bind `body type` to a key);
+                             --there sends it to her body on the other machine (hop_in: she comes over)
+argus companion link         how her two bodies are linked (music, quiet, coaching and settings cross over)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
@@ -118,12 +120,13 @@ argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "link", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("rest", nargs="*", help="for body: words after the action (perch discord)")
     parser.add_argument("--dry", action="store_true", help="for moment: print her decision only")
     parser.add_argument("--bot", action="store_true", help="for chess on: Hannah says this game is against a bot")
+    parser.add_argument("--there", action="store_true", help="for body: her body on the other machine")
 
 
 def _cli_run(args) -> int:
@@ -160,7 +163,16 @@ def _cli_run(args) -> int:
             return 1
         return 0
     if args.action == "body":
-        ticker.body(folder, " ".join([args.kind, *args.rest]))
+        action = " ".join([args.kind, *args.rest])
+        if args.there:
+            from . import link
+            link.send_there(folder, action)
+        else:
+            ticker.body(folder, action)
+        return 0
+    if args.action == "link":
+        from . import link
+        print(link.status(folder))
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")
