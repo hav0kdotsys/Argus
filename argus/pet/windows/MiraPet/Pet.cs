@@ -26,6 +26,8 @@ namespace MiraPet
 
         private readonly Sheets sheets;
         private readonly Senses senses = new Senses();
+        private MiniPlayer player;
+        private bool playerUp, playerOff;
         private readonly Bubble bubble;
         private readonly Image face;
         private readonly NotifyIcon tray;
@@ -87,6 +89,8 @@ namespace MiraPet
             face = File.Exists(facePath) ? Image.FromFile(facePath) : null;
             bubble = new Bubble(face);
             Load_();
+            player = new MiniPlayer(senses) { Off = playerOff };
+            player.Changed += () => { playerOff = player.Off; Save(); };
             menu = BuildMenu();
             tray = new NotifyIcon
             {
@@ -459,7 +463,12 @@ namespace MiraPet
         {
             double now = Now, dt = Math.Min(0.05, now - lastTick);
             lastTick = now;
-            if (now >= nextLedges) { nextLedges = now + 0.5; spots = Desk.Ledges(S, new[] { Handle, bubble.Handle }); }
+            if (now >= nextLedges)
+            {
+                nextLedges = now + 0.5;
+                spots = Desk.Ledges(S, new[] { Handle, bubble.Handle, player.Handle });
+                PlayerTick();
+            }
             if (now >= nextFiles) { nextFiles = now + 0.5; ReadFiles(); }
             if (now >= nextState) { nextState = now + 2; WriteState(); }
             if (said.Length > 0 && now >= saidUntil) { said = ""; bubble.Quiet(); }
@@ -821,9 +830,27 @@ namespace MiraPet
             ToolStripMenuItem games = new ToolStripMenuItem("Stay over games") { Checked = overGames, CheckOnClick = true };
             games.CheckedChanged += (_, __) => { overGames = games.Checked; Save(); };
             m.Items.Add(games);
+            ToolStripMenuItem mini = new ToolStripMenuItem("Mini player") { Checked = !playerOff, CheckOnClick = true };
+            mini.CheckedChanged += (_, __) => { playerOff = !mini.Checked; player.Off = playerOff; Save(); };
+            m.Items.Add(mini);
             m.Items.Add(new ToolStripSeparator());
             m.Items.Add("Quit", null, (_, __) => { tray.Visible = false; Application.Exit(); });
             return m;
+        }
+
+        // The mini player: her seat while it's up, and the first time it comes up she hops onto it (like Capri),
+        // unless she's somewhere Hannah put her (a Shift-drop seat, her cursor) or busy being carried.
+        private void PlayerTick()
+        {
+            player.Suppressed = mode == "hidden" || gameHidden;
+            bool up = player.Visible;
+            if (up) spots.Insert(0, player.AsLedge());
+            if (up && !playerUp && mode == "resting" && !riding && !(ledge?.Free ?? false) && !sleeping && !Talking)
+            {
+                Ledge seat = player.AsLedge();
+                Vanish(() => { Show(); Settle(seat, seat.X1 + (seat.X2 - seat.X1) * 0.3, true); Play("perch_arrive"); });
+            }
+            playerUp = up;
         }
 
         private void Load_()
@@ -833,12 +860,16 @@ namespace MiraPet
             {
                 if (e.TryGetProperty("size", out JsonElement z) && z.TryGetInt32(out int i)) sizeIndex = Math.Max(0, Math.Min(Sizes.Length - 1, i));
                 if (e.TryGetProperty("over_games", out JsonElement g)) overGames = g.ValueKind == JsonValueKind.True;
+                if (e.TryGetProperty("mini_player_off", out JsonElement mp)) playerOff = mp.ValueKind == JsonValueKind.True;
             }
         }
 
         private void Save()
         {
-            WriteJson("pet-windows.json", new Dictionary<string, object> { ["size"] = sizeIndex, ["over_games"] = overGames });
+            WriteJson("pet-windows.json", new Dictionary<string, object>
+            {
+                ["size"] = sizeIndex, ["over_games"] = overGames, ["mini_player_off"] = playerOff,
+            });
         }
 
         protected override void Dispose(bool disposing)
@@ -848,6 +879,7 @@ namespace MiraPet
                 Keys_(false);
                 clock.Dispose();
                 senses.Dispose();
+                player?.Dispose();
                 tray.Dispose();
                 bubble.Dispose();
                 canvas?.Dispose();
