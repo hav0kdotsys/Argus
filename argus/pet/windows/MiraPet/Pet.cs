@@ -40,7 +40,7 @@ namespace MiraPet
 
         // state
         private double S => Sizes[sizeIndex];
-        private string mode = "hidden";              // hidden, resting, walking, falling, dragging
+        private string mode = "hidden";              // hidden, resting, walking, falling, dragging, hanging
         private string current = "idle";
         private bool oneShot;
         private Action after;
@@ -189,7 +189,7 @@ namespace MiraPet
 
         private string LoopClip()
         {
-            if (mode == "dragging" || mode == "falling") return "dangle";
+            if (mode == "dragging" || mode == "falling" || mode == "hanging") return "dangle";
             if (mode == "walking") return "walk";
             if (Seated && lying) return sleeping ? "laydown_sleep" : (Talking ? "laydown_talk" : "laydown");
             if (Seated) return Talking ? "perch_talk" : (Grooving ? "perch_music" : "perch");
@@ -407,7 +407,7 @@ namespace MiraPet
             }
             if (game && !overGames && mode == "resting" && !oneShot) { gameHidden = true; Vanish(); return; }
             if (mode != "resting" || ledge == null) return;
-            if (!ledge.Floor)
+            if (!ledge.Floor && !ledge.Free)
             {
                 Ledge c = spots.FirstOrDefault(l => l.Window == ledge.Window && !l.Floor && l.X2 > l.X1);
                 if (c == null) { Play(GlitchClip(), Fall); return; }
@@ -433,7 +433,7 @@ namespace MiraPet
                 if (Seated && lying) lyingUntil = Now + 20 + rng.NextDouble() * 20;
                 else Play("wake");
             }
-            if (!Quiet || sleeping) return;
+            if (!Quiet || sleeping || ledge.Free) return;
             if (ledge.Floor && !lying && Now >= nextPosture)
             {
                 nextPosture = Now + 90 + rng.NextDouble() * 150;
@@ -608,7 +608,13 @@ namespace MiraPet
             if (e.Button != MouseButtons.Left || !pressed) return;
             pressed = false;
             Capture = false;
-            if (mode == "dragging") Fall();
+            if (mode == "dragging")
+            {
+                // Like Capri: Shift sits her right where she's let go, Ctrl leaves her hanging there.
+                if ((ModifierKeys & Keys.Shift) != 0) SitHere();
+                else if ((ModifierKeys & Keys.Control) != 0) { mode = "hanging"; current = "dangle"; clipStart = Now; }
+                else Fall();
+            }
             else React();
         }
 
@@ -618,9 +624,21 @@ namespace MiraPet
             if (e.Button == MouseButtons.Left) danceUntil = danceUntil > Now ? 0 : Now + 45;
         }
 
+        private void SitHere()
+        {
+            PointF h = Hip();
+            Ledge seat = new Ledge { X1 = (int)h.X - 4, X2 = (int)h.X + 4, Y = (int)h.Y, Free = true };
+            ledge = seat;
+            mode = "resting";
+            floorSit = false;
+            PlaceOn(seat, h.X, true);
+            Play("perch_glitch");
+        }
+
         private void React()
         {
             double now = Now;
+            if (mode == "hanging") { Play("glitch", Fall); return; }
             clicks.RemoveAll(t => now - t > 4);
             clicks.Add(now);
             if (clicks.Count >= 3) { clicks.Clear(); Tell("poked"); }

@@ -91,6 +91,7 @@ function below(all, hx, hy, S) {
 
 // A spot to stand or sit on a ledge, kept inside it (and off the screen's right edge, Lan Mouse's strip).
 function clampX(l, x, S, screenRight) {
+    if (l.free) return x
     var lo = l.x1 + S * 0.15
     var hi = Math.min(l.x2, screenRight - 12) - S * 0.45
     return hi < lo ? (l.x1 + l.x2) / 2 : Math.max(lo, Math.min(hi, x))

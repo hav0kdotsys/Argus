@@ -10,6 +10,7 @@ namespace MiraPet
         public int X1, X2, Y;
         public IntPtr Window;            // IntPtr.Zero for a floor
         public bool Floor;
+        public bool Free;                // a seat in mid-air where she was dropped with Shift: hers until moved
         public Rectangle Bounds;         // the window's frame (a floor: its screen's working area)
         public int Z;                    // z-order, 0 = topmost
     }
@@ -95,6 +96,7 @@ namespace MiraPet
 
         internal static double ClampX(Ledge l, double x, double s)
         {
+            if (l.Free) return x;
             double lo = l.X1 + s * 0.15, hi = l.X2 - s * 0.45;
             return hi < lo ? (l.X1 + l.X2) / 2.0 : Math.Max(lo, Math.Min(hi, x));
         }

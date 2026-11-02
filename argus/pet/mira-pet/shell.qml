@@ -31,7 +31,7 @@ ShellRoot {
     property real size: 190                          // her square, in pixels
 
     // ---- state
-    property string mode: "hidden"                // hidden, resting, walking, falling, dragging
+    property string mode: "hidden"                // hidden, resting, walking, falling, dragging, hanging
     property string current: "idle"               // the clip playing
     property bool oneShot: false                  // a transition plays once, then `after` runs
     property var after: null
@@ -100,7 +100,7 @@ ShellRoot {
     }
 
     function loopClip() {
-        if (mode === "dragging" || mode === "falling") return "dangle"
+        if (mode === "dragging" || mode === "falling" || mode === "hanging") return "dangle"
         if (mode === "walking") return "walk"
         if (seated && lying) return sleeping ? "laydown_sleep" : (talking ? "laydown_talk" : "laydown")
         if (seated) return talking ? "perch_talk" : (grooving ? "perch_music" : "perch")
@@ -277,7 +277,7 @@ ShellRoot {
             return
         }
         if (mode !== "resting" || !ledge) return
-        if (!ledge.floor) {
+        if (!ledge.floor && !ledge.free) {
             const c = spots.find(l => l.win === ledge.win)
             if (!c) { play(glitchClip(), fall); return }
             if (c.y !== ledge.y || c.x1 !== ledge.x1 || c.x2 !== ledge.x2) {
@@ -298,7 +298,7 @@ ShellRoot {
             if (seated && lying) lyingUntil = now + 20 + Math.random() * 20
             else play("wake")
         }
-        if (!quiet || sleeping) return
+        if (!quiet || sleeping || ledge.free) return
         if (ledge.floor && !lying && now >= nextPosture) {
             nextPosture = now + 90 + Math.random() * 150
             posture(!floorSit)
@@ -341,7 +341,19 @@ ShellRoot {
     property int petWay: 0
     property real petAt: -60
 
+    // Like Capri: dropped with Shift she sits right there (a seat of her own until moved); with Ctrl she hangs.
+    function sitHere() {
+        const h = hip()
+        const seat = { x1: h.x - 4, x2: h.x + 4, y: h.y, win: "", floor: false, free: true }
+        ledge = seat
+        mode = "resting"
+        floorSit = false
+        placeOn(seat, h.x, true)
+        play("perch_glitch")
+    }
+
     function react() {
+        if (mode === "hanging") { play("glitch", fall); return }
         clicks = clicks.filter(t => now - t < 4).concat([now])
         if (clicks.length >= 3) { clicks = []; tell("poked") }
         if (said !== "") { said = ""; hold.stop(); return }
@@ -681,7 +693,11 @@ ShellRoot {
             onReleased: mouse => {
                 if (mouse.button !== Qt.LeftButton || !root.pressed) return
                 root.pressed = false
-                if (root.mode === "dragging") root.fall()
+                if (root.mode === "dragging") {
+                    if (mouse.modifiers & Qt.ShiftModifier) root.sitHere()
+                    else if (mouse.modifiers & Qt.ControlModifier) { root.mode = "hanging"; root.current = "dangle"; root.clipStart = root.now }
+                    else root.fall()
+                }
                 else root.react()
             }
             onDoubleClicked: mouse => {

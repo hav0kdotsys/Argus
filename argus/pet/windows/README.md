@@ -12,9 +12,10 @@ companion protocol as laphvk (`argus/pet/mira-pet`): `%ARGUS_HOME%\companion\` h
 | body | `argus\pet\windows\MiraPet\bin\Release\net9.0-windows10.0.19041.0\MiraPet.exe` | Scheduled Task **MIRA-Pet** (at logon) |
 | brain | `argus.ps1 companion run` | Startup-folder shortcut **MIRA Companion** (not a task, see below) |
 
-Update after a push: `cd D:\Network\Projects\Argus; git fetch --depth 1 origin main; git reset --hard FETCH_HEAD`,
-then `dotnet build -c Release` in `argus\pet\windows\MiraPet` (stop MiraPet first), and restart both.
+Update after a push: run `argus\pet\windows\deploy.ps1` on winhvk (it stops both, resets the checkout to main, rebuilds
+the body, starts the body task and relaunches the brain through the shell).
 
+Drop her with **Shift** held and she sits right there; with **Ctrl** she hangs there until clicked.
 Her keys (from anywhere): **Ctrl+Alt+T** type to her, **Ctrl+Alt+H** hide/show, **Ctrl+Alt+P** quiet. Middle-click
 her to type; right-click or the tray icon for the menu (show/hide, quiet, dance, nap, go somewhere else, size, stay
 over games, quit). She ducks out of fullscreen apps unless "Stay over games" is on.
