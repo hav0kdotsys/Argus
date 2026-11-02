@@ -233,6 +233,12 @@ def _ask(folder: Path) -> tuple[str, str]:
     return (str(data.get("id", "")), str(data.get("text", "")).strip()) if isinstance(data, dict) else ("", "")
 
 
+def _remember(folder: Path, sched: presence.Scheduler) -> None:
+    tmp = folder / "scheduler.json.tmp"
+    tmp.write_text(json.dumps(sched.remember()), encoding="utf-8")
+    os.replace(tmp, folder / "scheduler.json")
+
+
 EVENT_KINDS = ("pat", "tossed", "poked", "woke")
 EVENT_POLL = 2.0
 
@@ -263,6 +269,10 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     folder = folder or companion_dir()
     folder.mkdir(parents=True, exist_ok=True)
     sched = presence.Scheduler()
+    try:
+        sched.recall(json.loads((folder / "scheduler.json").read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        pass
     last_tick = 0.0
     seen_event = _event(folder)[0]   # what was already there when she started isn't news
     seen_ask = _ask(folder)[0]
@@ -284,5 +294,6 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             last_tick = time.time()
             opening = sched.tick(m)
             if opening:
+                _remember(folder, sched)
                 moment_now(folder, opening.kind, opening.present_for, m.idle)
         time.sleep(EVENT_POLL)

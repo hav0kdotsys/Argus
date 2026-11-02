@@ -72,6 +72,26 @@ class Scheduler:
         self._night_done: set = set()
         self._turn = 0
 
+    # What must survive a restart (an update or a crash): the gap since the last opening, which nights already had
+    # their `late` and which meal windows their `meal`, and whose turn is next. Restarts used to reset these, and every
+    # deploy one night brought another "go to bed" (2026-11-02).
+    def remember(self) -> dict:
+        return {"last_offered": self._last_offered.isoformat() if self._last_offered else None,
+                "nights": sorted(d.isoformat() for d in self._night_done),
+                "meals": sorted(f"{d.isoformat()}@{h}" for d, h in self._meals_done),
+                "turn": self._turn}
+
+    def recall(self, saved: dict) -> None:
+        try:
+            if saved.get("last_offered"):
+                self._last_offered = datetime.fromisoformat(saved["last_offered"])
+            self._night_done = {datetime.fromisoformat(d).date() for d in saved.get("nights", [])}
+            self._meals_done = {(datetime.fromisoformat(m.split("@")[0]).date(), int(m.split("@")[1]))
+                                for m in saved.get("meals", [])}
+            self._turn = int(saved.get("turn", 0)) % len(KINDS)
+        except (ValueError, TypeError, IndexError, AttributeError):
+            pass  # a damaged file only costs what it held
+
     def _popin_wait(self) -> timedelta:
         low, high = self.settings.minutes["popin_min"], self.settings.minutes["popin_max"]
         return timedelta(minutes=self.rng.uniform(low, high))

@@ -91,3 +91,20 @@ def test_an_opening_carries_how_long_she_has_been_here():
         hit = sched.tick(presence.Moment(now=T0 + timedelta(minutes=minute)))
     assert hit.kind == "session" and hit.present_for == timedelta(minutes=30)
 
+
+
+def test_a_restart_remembers_the_gap_and_that_tonight_already_had_its_goodnight():
+    first = _only("late")
+    assert _run(first, datetime(2026, 11, 2, 1, 30), 5) == [(0, "late")]
+    again = _only("late")
+    again.recall(first.remember())
+    assert _run(again, datetime(2026, 11, 2, 2, 30), 60) == []
+    gap = _only("water", water=1)
+    gap.recall({"last_offered": datetime(2026, 11, 2, 9, 0).isoformat()})
+    assert _run(gap, datetime(2026, 11, 2, 9, 5), 5) == []   # still inside the 15-minute gap
+
+
+def test_a_damaged_memory_is_just_forgotten():
+    sched = _only("late")
+    sched.recall({"nights": ["not a date"], "turn": "x"})
+    assert _run(sched, datetime(2026, 11, 2, 1, 30), 2) == [(0, "late")]

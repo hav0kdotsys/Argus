@@ -90,12 +90,15 @@ def _on_turn(session_id: str = "", **_: Any) -> dict | None:
 USAGE = """argus companion run          offer Mira moments as they come up (foreground; Ctrl-C stops)
 argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, session, meal, late, bored, popin);
                              --dry prints what she'd do without showing or saying it
+argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
+                             stop_dancing, glitch, grin, drop (bind `body type` to a key to talk to her)
 argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "status"))
-    parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin)")
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "status"))
+    parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
+                                                                     "for body: the action")
     parser.add_argument("--dry", action="store_true", help="for moment: print her decision only")
 
 
@@ -117,6 +120,14 @@ def _cli_run(args) -> int:
         else:
             line = ticker.moment_now(folder, args.kind, timedelta(minutes=0), m.idle)
         print(line or "(Mira passed)")
+        return 0
+    if args.action == "body":
+        import json
+        import time
+        folder.mkdir(parents=True, exist_ok=True)
+        tmp = folder / "body.json.tmp"
+        tmp.write_text(json.dumps({"id": str(int(time.time() * 1000)), "do": args.kind}), encoding="utf-8")
+        tmp.replace(folder / "body.json")
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")

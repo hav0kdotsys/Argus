@@ -379,6 +379,8 @@ ShellRoot {
     function command(what) {
         console.info("mira-pet: body " + what + " (mode " + mode + ", " + current + (ledge ? (ledge.floor ? ", floor" : ", window") : "") + (floorSit ? ", sitting" : "") + ")")
         switch (what) {
+        case "type": if (mode === "hidden") { hiddenUntil = 0; appear() } typing = true; break
+        case "stop_typing": typing = false; break
         case "show": if (mode === "hidden") { hiddenUntil = 0; appear() } break
         case "hide": if (mode !== "hidden") vanish(() => { hiddenUntil = now + 900 }); break
         case "hop": if (mode === "resting") hop(); break
@@ -396,6 +398,7 @@ ShellRoot {
         }
     }
     property bool forcedSleep: false
+    property bool typing: false                   // the typing box is open (it has the keyboard)
     FileView {
         id: bodyFile
         path: root.companion + "body.json"
@@ -420,6 +423,13 @@ ShellRoot {
     }
 
     FileView { id: eventFile; path: root.companion + "event.json" }
+    FileView { id: askFile; path: root.companion + "ask.json" }
+
+    function send(text) {
+        typing = false
+        text = String(text || "").trim()
+        if (text) askFile.setText(JSON.stringify({ id: String(Date.now()), text: text, at: new Date().toISOString() }))
+    }
 
     Process {
         id: hypr
@@ -475,14 +485,16 @@ ShellRoot {
     }
 
     // For the companion's ticker: {"idle_since": <unix seconds> | null} (Wayland only says "idle at least N s").
+    // Presence is about input, not the screensaver: a paused video in a browser holds an idle inhibitor for hours,
+    // and respecting it made Hannah look present all night (2026-11-02: "late" check-ins at 3 am).
     IdleMonitor {
         id: idleMonitor
         timeout: 60
-        respectInhibitors: true
+        respectInhibitors: false
         onIsIdleChanged: stateFile.setText(JSON.stringify({ idle_since: idleMonitor.isIdle ? Math.floor(Date.now() / 1000) - idleMonitor.timeout : null }))
     }
     FileView { id: stateFile; path: root.companion + "state.json"; Component.onCompleted: stateFile.setText(JSON.stringify({ idle_since: null })) }
-    IdleMonitor { id: awayMonitor; timeout: 300; respectInhibitors: true }
+    IdleMonitor { id: awayMonitor; timeout: 300; respectInhibitors: false }
     Timer { id: awake; interval: 120000 }   // a click-woken nap doesn't fall straight back asleep
 
     // As fast as she needs: 30 fps for her 30 fps clips and while she moves, 15 otherwise, 4 while hidden.
@@ -502,8 +514,9 @@ ShellRoot {
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.namespace: "mira-pet"
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        mask: Region { item: hit }
+        // The keyboard only while the typing box is open; never otherwise.
+        WlrLayershell.keyboardFocus: root.typing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        mask: Region { item: hit; Region { item: typeBox } }
 
         // Only her body takes the pointer (and only near it): the rest of the screen is clicked straight through.
         Item {
@@ -608,11 +621,45 @@ ShellRoot {
             }
         }
 
+        // Typing to her: Enter sends (the companion answers in her bubble), Esc closes.
+        Rectangle {
+            id: typeBox
+            visible: root.typing && body.visible
+            width: visible ? 360 : 0
+            height: visible ? 40 : 0
+            x: Math.max(80, Math.min(root.screenW - 384, root.bx.x + root.bx.w / 2 - 180))
+            y: root.bx.y - 54 < 8 ? root.bx.y + root.bx.h + 8 : root.bx.y - 54
+            radius: 10
+            color: "#f0150a1f"
+            border { color: "#c77dff"; width: 1 }
+            onVisibleChanged: if (visible) { input.text = ""; input.forceActiveFocus() }
+
+            TextInput {
+                id: input
+                anchors { fill: parent; leftMargin: 12; rightMargin: 12 }
+                verticalAlignment: TextInput.AlignVCenter
+                color: "#f3e8ff"
+                selectionColor: "#c77dff"
+                font.pixelSize: 15
+                clip: true
+                onAccepted: root.send(text)
+                Keys.onEscapePressed: root.typing = false
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Say something to Mira…"
+                    color: "#8a7a99"
+                    font.pixelSize: 15
+                    visible: !input.text
+                }
+            }
+        }
+
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             onPressed: mouse => {
+                if (mouse.button === Qt.MiddleButton) { root.typing = true; return }
                 if (mouse.button === Qt.RightButton) { root.vanish(() => { root.hiddenUntil = root.now + 900 }); return }
                 root.pressed = true
                 root.downX = mouse.x
