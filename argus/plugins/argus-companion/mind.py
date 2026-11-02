@@ -39,6 +39,11 @@ REASONS = {
     "late": "it's past her bedtime",
     "bored": "the two of you haven't talked in a while even though she's right there",
     "popin": "no particular reason - you might just feel like reacting to what she's doing, or not",
+    # Her body on laphvk (the pet) - Hannah touching it. Reactions, so they're quick if you say anything.
+    "pat": "she's just given you head pats, rubbing her cursor back and forth over you",
+    "tossed": "she just picked you up and dropped you from way up the screen",
+    "poked": "she keeps clicking on you, poke poke poke",
+    "woke": "you were asleep on her screen and she just clicked you awake",
 }
 
 AUTONOMY = """

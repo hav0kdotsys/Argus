@@ -1,4 +1,6 @@
-# Mira's body on laphvk (argus/pet/mira-pet). Enable once:
+# Mira's body on laphvk (argus/pet/mira-pet). Needs her sheets prepared once (and after replacing any):
+#   python3 ~/argus/argus/pet/build_sheets.py      (writes ~/.argus/sprites/mira/grid)
+# Enable once:
 #   ln -s ~/argus/argus/pet/mira-pet ~/.config/quickshell/mira-pet
 #   systemctl --user link ~/argus/argus/pet/systemd/mira-pet.service && systemctl --user enable --now mira-pet
 [Unit]

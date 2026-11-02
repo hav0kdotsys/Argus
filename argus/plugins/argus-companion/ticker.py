@@ -9,7 +9,8 @@ Signals, all local and read-only:
   Hannah at winhvk is present even while laphvk sits idle; and winhvk's Lan Mouse Game Mode (she's gaming).
 
 A missing signal reads as "not busy, not quiet, not idle": the ticker never blocks on MIRA or Hyprland being down.
-What she says goes to ``~/.argus/companion/say.json`` (the pet's bubble), out loud through MIRA's voice panel
+Touches on her pet body (``event.json``: a pat, a toss, pokes, waking her) are offered to her straight away, unless
+MIRA is quiet. What she says goes to ``~/.argus/companion/say.json`` (the pet's bubble), out loud through MIRA's voice panel
 (``POST /speak``: refused while MIRA is mid-conversation or quiet, and then the bubble alone carries it), and a line in
 ``checkins.log``.
 """
@@ -21,7 +22,7 @@ import os
 import subprocess
 import time
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from . import presence
@@ -141,6 +142,19 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True) -> None:
         log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
 
 
+EVENT_KINDS = ("pat", "tossed", "poked", "woke")
+EVENT_POLL = 2.0
+
+
+def _event(folder: Path) -> tuple[str, str]:
+    """The pet's latest touch (``event.json``: {"id", "kind"}): (id, kind), or ("", "") when there is none."""
+    try:
+        data = json.loads((folder / "event.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "", ""
+    return (str(data.get("id", "")), str(data.get("kind", ""))) if isinstance(data, dict) else ("", "")
+
+
 def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0) -> str | None:
     """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
     from . import mind
@@ -158,11 +172,20 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     folder = folder or companion_dir()
     folder.mkdir(parents=True, exist_ok=True)
     sched = presence.Scheduler()
-    last_tick = time.time()
+    last_tick = 0.0
+    seen_event = _event(folder)[0]   # what was already there when she started isn't news
     while True:
-        m = moment(folder, last_tick)
-        last_tick = time.time()
-        opening = sched.tick(m)
-        if opening:
-            moment_now(folder, opening.kind, opening.present_for, m.idle)
-        time.sleep(tick)
+        event_id, kind = _event(folder)
+        if event_id and event_id != seen_event:
+            seen_event = event_id
+            if kind in EVENT_KINDS:
+                m = moment(folder, last_tick)
+                if not m.quiet:
+                    moment_now(folder, kind, timedelta(0), m.idle)
+        if time.time() - last_tick >= tick:
+            m = moment(folder, last_tick)
+            last_tick = time.time()
+            opening = sched.tick(m)
+            if opening:
+                moment_now(folder, opening.kind, opening.present_for, m.idle)
+        time.sleep(EVENT_POLL)

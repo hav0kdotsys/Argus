@@ -48,3 +48,13 @@ def test_with_mira_and_hyprland_unreachable_the_moment_is_free_and_present(tmp_p
     monkeypatch.setenv("PATH", str(tmp_path))  # no hyprctl
     m = ticker.moment(tmp_path)
     assert (m.idle, m.busy, m.quiet) == (0.0, False, False)
+
+
+def test_the_pets_touch_events_are_read_by_id_and_a_broken_file_is_no_event(tmp_path):
+    ticker = _ticker()
+    assert ticker._event(tmp_path) == ("", "")
+    (tmp_path / "event.json").write_text(json.dumps({"id": "171", "kind": "pat", "at": "x"}), encoding="utf-8")
+    assert ticker._event(tmp_path) == ("171", "pat")
+    (tmp_path / "event.json").write_text("{half", encoding="utf-8")
+    assert ticker._event(tmp_path) == ("", "")
+    assert set(ticker.EVENT_KINDS) <= set(importlib.import_module("argus_companion_t.mind").REASONS)
