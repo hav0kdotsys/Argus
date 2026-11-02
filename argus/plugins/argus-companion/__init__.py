@@ -98,7 +98,8 @@ USAGE = """argus companion run          offer Mira moments as they come up (fore
 argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, session, meal, late, bored, popin);
                              --dry prints what she'd do without showing or saying it
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
-                             stop_dancing, glitch, grin, drop, mini_player_on/off (bind `body type` to a key to talk to her)
+                             stop_dancing, glitch, grin, drop, ride, hop_off, come_here, floor,
+                             perch WINDOW ("perch discord"), mini_player_on/off (bind `body type` to a key)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
@@ -109,6 +110,7 @@ def _cli_setup(parser) -> None:
     parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
+    parser.add_argument("rest", nargs="*", help="for body: words after the action (perch discord)")
     parser.add_argument("--dry", action="store_true", help="for moment: print her decision only")
     parser.add_argument("--bot", action="store_true", help="for chess on: Hannah says this game is against a bot")
 
@@ -140,12 +142,7 @@ def _cli_run(args) -> int:
     if args.action == "chess":
         return _cli_chess(folder, args)
     if args.action == "body":
-        import json
-        import time
-        folder.mkdir(parents=True, exist_ok=True)
-        tmp = folder / "body.json.tmp"
-        tmp.write_text(json.dumps({"id": str(int(time.time() * 1000)), "do": args.kind}), encoding="utf-8")
-        tmp.replace(folder / "body.json")
+        ticker.body(folder, " ".join([args.kind, *args.rest]))
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")

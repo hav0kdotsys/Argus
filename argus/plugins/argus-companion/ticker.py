@@ -311,12 +311,26 @@ def _event(folder: Path) -> tuple[str, str]:
     return (str(data.get("id", "")), str(data.get("kind", ""))) if isinstance(data, dict) else ("", "")
 
 
+COME_OVER = ("popin", "bored")   # like Capri's check-ins: she glitches over to the pointer before she says it
+
+
+def body(folder: Path, action: str) -> None:
+    """Tell her body to do something (``body.json``: {"id", "do"})."""
+    folder.mkdir(parents=True, exist_ok=True)
+    tmp = folder / "body.json.tmp"
+    tmp.write_text(json.dumps({"id": str(time.time_ns()), "do": action}), encoding="utf-8")
+    os.replace(tmp, folder / "body.json")
+
+
 def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None, extra: str = "") -> str | None:
     """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
     from . import mind
     line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode(),
                     away_for=away_for or timedelta(0), extra=extra)
     if line:
+        if kind in COME_OVER:
+            body(folder, "come_here")
+            time.sleep(1.2)       # her glitch over lands before the bubble
         say(folder, line, kind)
     else:
         with open(folder / "checkins.log", "a", encoding="utf-8") as log:

@@ -27,7 +27,7 @@ namespace MiraPet
         private readonly Sheets sheets;
         private readonly Senses senses = new Senses();
         private MiniPlayer player;
-        private bool playerUp, playerOff;
+        private bool playerUp, playerOff, clickThrough;
         private readonly Bubble bubble;
         private readonly Image face;
         private readonly NotifyIcon tray;
@@ -302,6 +302,47 @@ namespace MiraPet
             Play(Seated ? "perch_leave" : "leave", () => { mode = "hidden"; Hide(); bubble.Quiet(); then?.Invoke(); });
         }
 
+        // Glitch over to the pointer and drop onto whatever is under it.
+        private void ComeHere()
+        {
+            if (mode == "dragging") return;
+            riding = false;
+            Point c = Cursor.Position;
+            Vanish(() =>
+            {
+                Show();
+                Settle(new Ledge { X1 = c.X - 4, X2 = c.X + 4, Y = c.Y, Free = true }, c.X, false);
+                Play("glitch", Fall);
+            });
+        }
+
+        // "Sit on my Discord window": the ledge of the first window whose title or app name has the words in it.
+        private void PerchOn(string what)
+        {
+            if (what.Length == 0) return;
+            if (what == "taskbar" || what == "floor") { Command("floor"); return; }
+            if (what == "player" || what == "mini player") { if (player.Visible) Teleport(player.AsLedge(), true); return; }
+            Ledge l = spots.FirstOrDefault(x => !x.Floor && x.Window != IntPtr.Zero && Names(x.Window).IndexOf(what, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (l != null) Teleport(l, true);
+        }
+
+        private static string Names(IntPtr hwnd)
+        {
+            string title = Native.Text(hwnd);
+            try
+            {
+                Native.GetWindowThreadProcessId(hwnd, out uint pid);
+                return title + " " + System.Diagnostics.Process.GetProcessById((int)pid).ProcessName;
+            }
+            catch (Exception) { return title; }
+        }
+
+        private void Teleport(Ledge l, bool sit)
+        {
+            riding = false;
+            Vanish(() => { Show(); Settle(l, l.X1 + (l.X2 - l.X1) * 0.4, sit); Play(l.Floor && !sit ? "arrive" : "perch_arrive"); });
+        }
+
         private void Hop()
         {
             List<Ledge> others = spots.Where(l => l.X2 - l.X1 > S * 0.6 && (ledge == null || l.Window != ledge.Window || l.Floor != ledge.Floor)).ToList();
@@ -472,6 +513,13 @@ namespace MiraPet
             if (now >= nextFiles) { nextFiles = now + 0.5; ReadFiles(); }
             if (now >= nextState) { nextState = now + 2; WriteState(); }
             if (said.Length > 0 && now >= saidUntil) { said = ""; bubble.Quiet(); }
+            if (riding != clickThrough)
+            {
+                // Riding: clicks pass through her to whatever is under the pointer (Ctrl+Alt+C or the menu hop off).
+                clickThrough = riding;
+                int ex = Native.GetWindowLong(Handle, Native.GWL_EXSTYLE);
+                Native.SetWindowLong(Handle, Native.GWL_EXSTYLE, riding ? ex | Native.WS_EX_TRANSPARENT : ex & ~Native.WS_EX_TRANSPARENT);
+            }
             if (riding && mode == "resting")
             {
                 // Riding the cursor: her seat is just under the pointer's tip, wherever it goes.
@@ -638,7 +686,7 @@ namespace MiraPet
         protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
             base.OnMouseDoubleClick(e);
-            if (e.Button == MouseButtons.Left) danceUntil = danceUntil > Now ? 0 : Now + 45;
+            if (e.Button == MouseButtons.Left) Command(riding ? "hop_off" : "ride");
         }
 
         private void SitHere()
@@ -774,8 +822,14 @@ namespace MiraPet
 
         private void Command(string what)
         {
+            string arg = "";
+            int space = what.IndexOf(' ');
+            if (space > 0) { arg = what.Substring(space + 1).Trim(); what = what.Substring(0, space); }
             switch (what)
             {
+                case "come_here": ComeHere(); break;
+                case "perch": PerchOn(arg); break;
+                case "floor": { Ledge f = spots.FirstOrDefault(l => l.Floor && l.X1 <= Cursor.Position.X && Cursor.Position.X <= l.X2) ?? spots.FirstOrDefault(l => l.Floor); if (f != null) Teleport(f, false); } break;
                 case "show": if (mode == "hidden") { hiddenUntil = 0; gameHidden = false; Appear(); } break;
                 case "hide": if (mode != "hidden") Vanish(() => hiddenUntil = Now + 900); break;
                 case "hop": if (mode == "resting") Hop(); break;

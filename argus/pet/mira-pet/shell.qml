@@ -231,6 +231,48 @@ ShellRoot {
         play(seated ? "perch_leave" : "leave", () => { mode = "hidden"; if (then) then() })
     }
 
+    // Glitch over to the pointer (Hyprland's cursor) and drop onto whatever is under it.
+    function comeHere() {
+        if (mode === "dragging") return
+        riding = false
+        cursor.then = p => vanish(() => { settle({ x1: p.x - 4, x2: p.x + 4, y: p.y, win: "", floor: false, free: true }, p.x, false); play("glitch", fall) })
+        cursor.running = true
+    }
+    function teleport(l, sit) {
+        riding = false
+        vanish(() => { settle(l, l.x1 + (l.x2 - l.x1) * 0.4, sit); play(l.floor && !sit ? "arrive" : "perch_arrive") })
+    }
+    // "Sit on my Discord window": the ledge of the first window whose class or title has the words in it.
+    function perchOn(what) {
+        what = String(what || "").toLowerCase()
+        if (!what) return
+        if (what === "taskbar" || what === "floor") { teleport(spots.find(l => l.floor), false); return }
+        if (what === "player" || what === "mini player") { if (miniShown) teleport(miniLedge(), true); return }
+        const names = {}
+        for (const c of clients) names[c.address] = ((c.class || "") + " " + (c.title || "")).toLowerCase()
+        const l = spots.find(x => !x.floor && names[x.win] && names[x.win].indexOf(what) >= 0)
+        if (l) teleport(l, true)
+    }
+    // Riding her cursor: while on, her seat is just under the pointer (polled from Hyprland only while riding).
+    property bool riding: false
+    Process {
+        id: cursor
+        property var then: null
+        command: ["hyprctl", "cursorpos", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let p
+                try { p = JSON.parse(text) } catch (e) { return }
+                if (cursor.then) { const f = cursor.then; cursor.then = null; f(p); return }
+                if (root.riding && root.mode === "resting") {
+                    root.ledge = { x1: p.x - 4, x2: p.x + 4, y: p.y + 18, win: "", floor: false, free: true }
+                    root.placeOn(root.ledge, p.x + 6, true)
+                }
+            }
+        }
+    }
+    Timer { interval: 40; repeat: true; running: root.riding; onTriggered: if (!cursor.running) cursor.running = true }
+
     function hop() {
         const others = spots.filter(l => !ledge || l.win !== ledge.win || l.floor !== ledge.floor)
         if (!others.length) return
@@ -413,7 +455,15 @@ ShellRoot {
     property string lastCommand: ""
     function command(what) {
         console.info("mira-pet: body " + what + " (mode " + mode + ", " + current + (ledge ? (ledge.floor ? ", floor" : ", window") : "") + (floorSit ? ", sitting" : "") + ")")
+        let arg = ""
+        const space = String(what).indexOf(" ")
+        if (space > 0) { arg = what.slice(space + 1).trim(); what = what.slice(0, space) }
         switch (what) {
+        case "come_here": comeHere(); break
+        case "perch": perchOn(arg); break
+        case "floor": teleport(spots.find(l => l.floor), false); break
+        case "ride": if (mode === "resting" || mode === "hanging") { riding = true; lying = false; sleeping = false; mode = "resting"; play("perch_glitch") } break
+        case "hop_off": if (riding) { riding = false; play("perch_glitch", fall) } break
         case "type": if (mode === "hidden") { hiddenUntil = 0; appear() } typing = true; break
         case "stop_typing": typing = false; break
         case "show": if (mode === "hidden") { hiddenUntil = 0; appear() } break
@@ -599,7 +649,7 @@ ShellRoot {
         // Only her body takes the pointer (and only near it): the rest of the screen is clicked straight through.
         Item {
             id: hit
-            readonly property bool on: root.mode !== "hidden" && root.loaded
+            readonly property bool on: root.mode !== "hidden" && root.loaded && !root.riding   // riding: clicks pass through her
             x: on ? root.bx.x + root.bx.w * 0.15 : 0
             y: on ? root.bx.y + root.bx.h * 0.05 : 0
             width: on ? root.bx.w * 0.7 : 0
@@ -750,7 +800,7 @@ ShellRoot {
                 const dx = mouse.x - root.downX, dy = mouse.y - root.downY
                 if (root.mode !== "dragging" && dx * dx + dy * dy < 36) return
                 if (root.mode !== "dragging") {
-                    root.mode = "dragging"; root.ledge = null; root.lying = false; root.sleeping = false
+                    root.mode = "dragging"; root.ledge = null; root.lying = false; root.sleeping = false; root.riding = false
                     root.oneShot = false; root.current = "dangle"; root.clipStart = root.now
                 }
                 root.ax = Math.min(root.screenW - root.size - 16, mouse.x - root.grabX)
@@ -767,7 +817,7 @@ ShellRoot {
                 else root.react()
             }
             onDoubleClicked: mouse => {
-                if (mouse.button === Qt.LeftButton) root.danceUntil = root.danceUntil > root.now ? 0 : root.now + 45
+                if (mouse.button === Qt.LeftButton) root.command(root.riding ? "hop_off" : "ride")
             }
         }
     }

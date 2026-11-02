@@ -41,6 +41,8 @@ namespace MiraPet
         [DllImport("user32.dll")] internal static extern bool IsWindowVisible(IntPtr hwnd);
         [DllImport("user32.dll")] internal static extern bool IsIconic(IntPtr hwnd);
         [DllImport("user32.dll")] internal static extern int GetWindowLong(IntPtr hwnd, int index);
+        [DllImport("user32.dll")] internal static extern int SetWindowLong(IntPtr hwnd, int index, int value);
+        internal const int WS_EX_TRANSPARENT = 0x20;
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] internal static extern int GetWindowText(IntPtr hwnd, StringBuilder text, int max);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] internal static extern int GetClassName(IntPtr hwnd, StringBuilder text, int max);
         [DllImport("user32.dll")] internal static extern bool GetWindowRect(IntPtr hwnd, out RECT rect);
