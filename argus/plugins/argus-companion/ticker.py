@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -203,7 +204,7 @@ def answer(folder: Path, text: str) -> str:
         try:
             run = subprocess.run(command, input=text, capture_output=True, text=True, encoding="utf-8",
                                  errors="replace", timeout=CHAT_TIMEOUT, check=False, cwd=str(Path.home()))
-            reply = clean_reply(run.stdout)
+            reply = clean_reply(run.stdout) if run.returncode == 0 else ""
             if not reply:
                 logger.warning("companion: her turn gave no reply (exit %s): %s", run.returncode, run.stderr[-800:])
         except (OSError, subprocess.SubprocessError) as exc:
@@ -217,7 +218,8 @@ def answer(folder: Path, text: str) -> str:
 
 def clean_reply(out: str) -> str:
     """Her reply from `chat -Q` output: without the session footer and session notices."""
-    lines = [line for line in (out or "").splitlines()
+    out = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", out or "")
+    lines = [line for line in out.splitlines()
              if not line.startswith(("session_id:", "Session ")) and line.strip()]
     return "\n".join(lines).strip()
 
