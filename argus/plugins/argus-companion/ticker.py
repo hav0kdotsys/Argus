@@ -395,6 +395,45 @@ def _reminder_tick(folder: Path, m: presence.Moment, last: list[float]) -> None:
     moment_now(folder, "reminder", timedelta(0), m.idle, extra=facts)
 
 
+GAME_BREAK = 2 * 3600.0     # a game stretch this long earns a nudge
+GAME_GAP = 300.0            # out of the game this long ends a stretch
+
+
+class GameClock:
+    """How long she's been in a game (fullscreen or winhvk's Game Mode) without a real break, and whether that
+    stretch has had its break nudge yet."""
+
+    def __init__(self):
+        self.since: float | None = None
+        self.last_seen = 0.0
+        self.nudged = False
+
+    def due(self, now: float, gaming: bool) -> bool:
+        if gaming:
+            if self.since is None or now - self.last_seen > GAME_GAP:
+                self.since, self.nudged = now, False
+            self.last_seen = now
+        if self.since is None or self.nudged or not gaming or now - self.since < GAME_BREAK:
+            return False
+        self.nudged = True
+        return True
+
+
+def _game_break_tick(folder: Path, m: presence.Moment, clock: GameClock) -> None:
+    gaming = m.idle < presence.AWAY and (_fullscreen(folder) or game_mode())
+    if clock.due(m.now.timestamp(), gaming) and not m.quiet:
+        hours = (m.now.timestamp() - clock.since) / 3600
+        moment_now(folder, "game_break", timedelta(0), m.idle,
+                   extra=f"She's been gaming for about {hours:.1f} hours without a break (focused: {mind_window(folder)}).")
+
+
+def mind_window(folder: Path) -> str:
+    try:
+        return str(json.loads((folder / "state.json").read_text(encoding="utf-8")).get("window") or "a game")
+    except (OSError, ValueError):
+        return "a game"
+
+
 def _toggle_coach(folder: Path) -> None:
     from . import chess_coach
     on = not chess_coach.settings(folder)["coach"]
@@ -417,6 +456,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     seen_ask = _ask(folder)[0]
     coach = _coach(folder)
     reminder_read = [0.0]
+    game_clock = GameClock()
     while True:
         ask_id, text = _ask(folder)
         if ask_id and ask_id != seen_ask:
@@ -437,6 +477,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             last_tick = time.time()
             _chess_tick(folder, coach, m)
             _reminder_tick(folder, m, reminder_read)
+            _game_break_tick(folder, m, game_clock)
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)

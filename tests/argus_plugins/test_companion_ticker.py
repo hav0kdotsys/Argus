@@ -112,3 +112,18 @@ def test_overdue_reminders_come_up_once_most_urgent_first():
 
 def test_only_allowlisted_mira_routes_are_read():
     assert _ticker().mira("users") == {}
+
+
+def test_a_long_game_stretch_earns_one_break_nudge_and_a_real_break_resets_it():
+    ticker = _ticker()
+    clock = ticker.GameClock()
+    t0 = 1_000_000.0
+
+    def play(start, minutes, gaming=True):
+        return [t for t in range(int(start), int(start + minutes * 60), 30) if clock.due(float(t), gaming)]
+
+    nudges = play(t0, 150)
+    assert len(nudges) == 1 and nudges[0] - t0 >= 2 * 3600             # once, at two hours in
+    play(t0 + 150 * 60, 10, gaming=False)                               # a real break (10 min)
+    again = play(t0 + 160 * 60, 130)
+    assert len(again) == 1 and again[0] - (t0 + 160 * 60) >= 2 * 3600  # a fresh stretch
