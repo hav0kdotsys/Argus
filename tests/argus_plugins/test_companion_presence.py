@@ -108,3 +108,22 @@ def test_a_damaged_memory_is_just_forgotten():
     sched = _only("late")
     sched.recall({"nights": ["not a date"], "turn": "x"})
     assert _run(sched, datetime(2026, 11, 2, 1, 30), 2) == [(0, "late")]
+
+
+def test_coming_back_after_a_long_absence_is_a_back_moment_with_how_long_she_was_gone():
+    sched = _only("back", "water")
+    sched.tick(presence.Moment(now=T0))                                          # first sight: hello
+    sched.tick(presence.Moment(now=T0 + timedelta(minutes=1)))
+    sched._last_offered = None
+    gone = T0 + timedelta(minutes=5)
+    sched.tick(presence.Moment(now=gone, idle=presence.AWAY))                    # away since 4:50 in
+    hit = sched.tick(presence.Moment(now=gone + timedelta(minutes=50)))          # back 50 min later
+    assert hit.kind == "back" and hit.away_for >= timedelta(minutes=50)
+
+
+def test_a_short_break_or_a_restart_is_no_greeting():
+    sched = _only("back")
+    sched.recall({"last_offered": (T0 - timedelta(minutes=5)).isoformat()})     # she spoke 5 min ago: a restart
+    assert sched.tick(presence.Moment(now=T0)) is None
+    sched.tick(presence.Moment(now=T0 + timedelta(minutes=20), idle=presence.AWAY))
+    assert sched.tick(presence.Moment(now=T0 + timedelta(minutes=25))) is None  # gone ~15 min: not a return

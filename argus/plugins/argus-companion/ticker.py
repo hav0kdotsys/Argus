@@ -270,10 +270,11 @@ def _event(folder: Path) -> tuple[str, str]:
     return (str(data.get("id", "")), str(data.get("kind", ""))) if isinstance(data, dict) else ("", "")
 
 
-def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0) -> str | None:
+def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None) -> str | None:
     """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
     from . import mind
-    line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode())
+    line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode(),
+                    away_for=away_for or timedelta(0))
     if line:
         say(folder, line, kind)
     else:
@@ -313,5 +314,5 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
             opening = sched.tick(m)
             if opening:
                 _remember(folder, sched)
-                moment_now(folder, opening.kind, opening.present_for, m.idle)
+                moment_now(folder, opening.kind, opening.present_for, m.idle, opening.away_for)
         time.sleep(EVENT_POLL)

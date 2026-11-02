@@ -39,6 +39,8 @@ REASONS = {
     "late": "it's past her bedtime",
     "bored": "the two of you haven't talked in a while even though she's right there",
     "popin": "no particular reason - you might just feel like reacting to what she's doing, or not",
+    "back": "she's just come back to her desk after {away} away",
+    "hello": "you've just come up on her machine and she's here",
     # Her body on laphvk (the pet) - Hannah touching it. Reactions, so they're quick if you say anything.
     "pat": "she's just given you head pats, rubbing her cursor back and forth over you",
     "tossed": "she just picked you up and dropped you from way up the screen",
@@ -197,10 +199,12 @@ def _span(delta: timedelta) -> str:
 
 
 def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: list[str], talk: list[str],
-          said: list[str]) -> str:
+          said: list[str], away_for: timedelta = timedelta(0)) -> str:
     """The context she decides from: why this moment, what she can see, what she remembers, what was said."""
     meal = "lunch" if now.hour < 16 else "dinner"
-    reason = REASONS.get(kind, REASONS["popin"]).format(present=_span(present_for), meal=meal)
+    if kind == "back" and not away_for:
+        kind = "hello"
+    reason = REASONS.get(kind, REASONS["popin"]).format(present=_span(present_for), meal=meal, away=_span(away_for))
     parts = [
         f"Why ARGUS flagged this moment: {reason}.",
         f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at her desk for {_span(present_for)} this sitting.",
@@ -234,7 +238,7 @@ def decide(text: str) -> str | None:
 
 
 def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
-        gaming: bool = False) -> str | None:
+        gaming: bool = False, away_for: timedelta = timedelta(0)) -> str | None:
     """Ask Mira about this moment. Her line, or None when she passes or the provider can't be reached."""
     from agent.auxiliary_client import call_llm
 
@@ -242,7 +246,7 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     messages = [
         {"role": "system", "content": soul() + AUTONOMY},
         {"role": "user", "content": brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now), memories(),
-                                          recent_talk(now), own_lines(folder))},
+                                          recent_talk(now), own_lines(folder), away_for)},
     ]
     try:
         # Room for a reasoning model to think first: her line is short, the thinking may not be.

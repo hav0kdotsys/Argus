@@ -25,7 +25,8 @@ from datetime import datetime, timedelta
 AWAY = 600.0          # seconds of idle input that count as away
 GAP = 15 * 60.0       # minimum seconds between two openings
 
-KINDS = ("water", "stretch", "eyes", "session", "meal", "late", "bored", "popin")
+KINDS = ("back", "water", "stretch", "eyes", "session", "meal", "late", "bored", "popin")
+BACK_AFTER = 30 * 60.0   # an absence at least this long earns a `back` moment when she returns
 
 # Minutes for the interval kinds, the sitting length for ``session``, the quiet stretch for ``bored``, and the
 # shortest and longest wait between pop-ins.
@@ -46,9 +47,11 @@ class Moment:
 
 @dataclass(frozen=True)
 class Opening:
-    """A moment Mira may use: why it came up, and how long Hannah has been at the PC this sitting."""
+    """A moment Mira may use: why it came up, how long Hannah has been at the PC this sitting, and for `back`, how
+    long she was away."""
     kind: str
     present_for: timedelta
+    away_for: timedelta = timedelta(0)
 
 
 @dataclass
@@ -71,6 +74,8 @@ class Scheduler:
         self._meals_done: set[tuple] = set()
         self._night_done: set = set()
         self._turn = 0
+        self._away_since: datetime | None = None
+        self._away_for = timedelta(0)
 
     # What must survive a restart (an update or a crash): the gap since the last opening, which nights already had
     # their `late` and which meal windows their `meal`, and whose turn is next. Restarts used to reset these, and every
@@ -97,10 +102,20 @@ class Scheduler:
         return timedelta(minutes=self.rng.uniform(low, high))
 
     def _back(self, now: datetime) -> None:
-        """She's at the PC again (or for the first time): every timer starts from now."""
+        """She's at the PC again (or for the first time): every timer starts from now, and a long absence (or the
+        first sight of her since Mira started) is a `back` moment."""
         self._present_since = now
         self._last_talk = now
         self._pending.clear()
+        if "back" in self.settings.enabled:
+            gone = (now - self._away_since) if self._away_since else None
+            quiet_since = (now - self._last_offered).total_seconds() if self._last_offered else None
+            # First sight since Mira started only counts when she hasn't spoken lately (a restart isn't a return).
+            if (gone is None and (quiet_since is None or quiet_since >= BACK_AFTER)) or \
+                    (gone is not None and gone.total_seconds() >= BACK_AFTER):
+                self._away_for = gone or timedelta(0)
+                self._pending.add("back")
+        self._away_since = None
         for kind in ("water", "stretch", "eyes", "session"):
             self._due_at[kind] = now + timedelta(minutes=self.settings.minutes[kind])
         self._due_at["popin"] = now + self._popin_wait()
@@ -136,6 +151,8 @@ class Scheduler:
 
     def tick(self, m: Moment) -> Opening | None:
         if m.idle >= AWAY:
+            if self._present_since is not None or self._away_since is None:
+                self._away_since = m.now - timedelta(seconds=m.idle)
             self._present_since = None
             return None
         if self._present_since is None:
@@ -146,7 +163,7 @@ class Scheduler:
         self._mark_due(m)
         if m.busy or m.quiet or not self._pending:
             return None
-        if self._last_offered and (m.now - self._last_offered).total_seconds() < GAP:
+        if self._last_offered and (m.now - self._last_offered).total_seconds() < GAP and self._pending != {"back"}:
             return None
         for offset in range(len(KINDS)):
             kind = KINDS[(self._turn + offset) % len(KINDS)]
@@ -154,5 +171,5 @@ class Scheduler:
                 self._pending.discard(kind)
                 self._turn = (KINDS.index(kind) + 1) % len(KINDS)
                 self._last_offered = m.now
-                return Opening(kind, m.now - self._present_since)
+                return Opening(kind, m.now - self._present_since, self._away_for if kind == "back" else timedelta(0))
         return None
