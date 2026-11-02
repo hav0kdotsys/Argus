@@ -96,6 +96,7 @@ namespace MiraPet
                 Visible = true,
             };
             tray.DoubleClick += (_, __) => Command(mode == "hidden" ? "show" : "hide");
+            HandleCreated += (_, __) => Keys_(true);
             clock.Tick += (_, __) => Tick();
             clock.Interval = 33;
             clock.Start();
@@ -113,6 +114,67 @@ namespace MiraPet
         }
 
         protected override bool ShowWithoutActivation => true;
+
+        // Her keys, from anywhere, like Capri's: Ctrl+Alt+T type to her, Ctrl+Alt+H hide or show her, Ctrl+Alt+P quiet.
+        private void Keys_(bool on)
+        {
+            (int id, Keys key)[] keys = { (1, Keys.T), (2, Keys.H), (3, Keys.P) };
+            foreach ((int id, Keys key) in keys)
+            {
+                if (on) Native.RegisterHotKey(Handle, id, Native.MOD_CONTROL | Native.MOD_ALT | Native.MOD_NOREPEAT, (int)key);
+                else Native.UnregisterHotKey(Handle, id);
+            }
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == Native.WM_HOTKEY)
+            {
+                switch ((int)m.WParam)
+                {
+                    case 1: TypeToHer(); break;
+                    case 2: Command(mode == "hidden" ? "show" : "hide"); break;
+                    case 3: ToggleQuiet(); break;
+                }
+                return;
+            }
+            base.WndProc(ref m);
+        }
+
+        private TypeBox typing;
+
+        private void TypeToHer()
+        {
+            if (typing != null && !typing.IsDisposed) { typing.Activate(); return; }
+            if (mode == "hidden") Command("show");
+            typing = new TypeBox(text => WriteJson("ask.json", new Dictionary<string, object>
+            {
+                ["id"] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(), ["text"] = text, ["at"] = DateTimeOffset.UtcNow.ToString("o"),
+            }));
+            PointF hip = Hip();
+            typing.Open(Point.Round(hip), Screen.FromPoint(Point.Round(hip)).WorkingArea);
+        }
+
+        private static string QuietFile => Path.Combine(Companion, "quiet");
+        private bool QuietOn => File.Exists(QuietFile);
+
+        private void ToggleQuiet()
+        {
+            try
+            {
+                if (QuietOn) File.Delete(QuietFile); else File.WriteAllText(QuietFile, DateTimeOffset.UtcNow.ToString("o"));
+            }
+            catch (IOException) { }
+            ShowLine(QuietOn ? "Going quiet. Ctrl+Alt+P when you want me back." : "I'm back.");
+        }
+
+        // A line of her own in the bubble (not through the companion: her body's own acknowledgements).
+        private void ShowLine(string text)
+        {
+            said = text;
+            saidUntil = Now + 4;
+            bubble.Say(said, Point.Round(Hip()), Screen.FromPoint(Point.Round(Hip())).WorkingArea);
+        }
 
         // ---------------------------------------------------------------- clips
 
@@ -515,6 +577,7 @@ namespace MiraPet
         {
             base.OnMouseDown(e);
             if (e.Button == MouseButtons.Right) { menu.Show(Cursor.Position); return; }
+            if (e.Button == MouseButtons.Middle) { TypeToHer(); return; }
             if (e.Button != MouseButtons.Left) return;
             pressed = true;
             down = Cursor.Position;
@@ -700,7 +763,12 @@ namespace MiraPet
         private ContextMenuStrip BuildMenu()
         {
             ContextMenuStrip m = new ContextMenuStrip();
-            m.Items.Add("Show / hide", null, (_, __) => Command(mode == "hidden" ? "show" : "hide"));
+            m.Items.Add("Talk to Mira…   Ctrl+Alt+T", null, (_, __) => TypeToHer());
+            m.Items.Add("Show / hide   Ctrl+Alt+H", null, (_, __) => Command(mode == "hidden" ? "show" : "hide"));
+            ToolStripMenuItem quiet = new ToolStripMenuItem("Quiet   Ctrl+Alt+P");
+            quiet.Click += (_, __) => ToggleQuiet();
+            m.Opening += (_, __) => quiet.Checked = QuietOn;
+            m.Items.Add(quiet);
             m.Items.Add("Dance", null, (_, __) => Command(danceUntil > Now ? "stop_dancing" : "dance"));
             m.Items.Add("Nap / wake up", null, (_, __) => Command(sleeping ? "wake" : "sleep"));
             m.Items.Add("Go somewhere else", null, (_, __) => Command("hop"));
@@ -747,6 +815,7 @@ namespace MiraPet
         {
             if (disposing)
             {
+                Keys_(false);
                 clock.Dispose();
                 senses.Dispose();
                 tray.Dispose();

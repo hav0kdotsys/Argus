@@ -26,6 +26,9 @@ namespace MiraPet
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref POINT pptDst, ref SIZE psize, IntPtr hdcSrc,
                                                         ref POINT pprSrc, int crKey, ref BLENDFUNCTION pblend, int dwFlags);
+        internal const int WM_HOTKEY = 0x0312, MOD_ALT = 0x1, MOD_CONTROL = 0x2, MOD_NOREPEAT = 0x4000;
+        [DllImport("user32.dll")] internal static extern bool RegisterHotKey(IntPtr hwnd, int id, int mods, int key);
+        [DllImport("user32.dll")] internal static extern bool UnregisterHotKey(IntPtr hwnd, int id);
         [DllImport("user32.dll")] internal static extern IntPtr GetDC(IntPtr hwnd);
         [DllImport("user32.dll")] internal static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
         [DllImport("gdi32.dll")] internal static extern IntPtr CreateCompatibleDC(IntPtr hdc);

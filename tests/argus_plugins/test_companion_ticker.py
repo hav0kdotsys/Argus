@@ -58,3 +58,24 @@ def test_the_pets_touch_events_are_read_by_id_and_a_broken_file_is_no_event(tmp_
     (tmp_path / "event.json").write_text("{half", encoding="utf-8")
     assert ticker._event(tmp_path) == ("", "")
     assert set(ticker.EVENT_KINDS) <= set(importlib.import_module("argus_companion_t.mind").REASONS)
+
+
+def test_what_hannah_types_is_read_by_id_and_the_quiet_key_quiets_her(tmp_path, monkeypatch):
+    ticker = _ticker()
+    assert ticker._ask(tmp_path) == ("", "")
+    (tmp_path / "ask.json").write_text(json.dumps({"id": "9", "text": "  you awake?  "}), encoding="utf-8")
+    assert ticker._ask(tmp_path) == ("9", "you awake?")
+    monkeypatch.setattr(ticker, "PANEL_STATUS", "http://127.0.0.1:9/status")
+    monkeypatch.setattr(ticker, "PANEL_PRESENCE", "http://127.0.0.1:9/presence")
+    assert ticker.moment(tmp_path).quiet is False
+    (tmp_path / "quiet").write_text("on", encoding="utf-8")
+    assert ticker.moment(tmp_path).quiet is True
+
+
+def test_replies_and_thinking_dots_are_not_logged_as_her_own_words(tmp_path, monkeypatch):
+    ticker = _ticker()
+    monkeypatch.setattr(ticker, "PANEL_SPEAK", "http://127.0.0.1:9/speak")
+    ticker.say(tmp_path, "…", "thinking", aloud=False, log=False)
+    ticker.say(tmp_path, "Water.", "water")
+    assert (tmp_path / "checkins.log").read_text(encoding="utf-8").splitlines()[-1].endswith("water: Water.")
+    assert "thinking" not in (tmp_path / "checkins.log").read_text(encoding="utf-8")

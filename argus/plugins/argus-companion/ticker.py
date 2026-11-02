@@ -4,12 +4,14 @@ Signals, all local and read-only:
 - idle: ``~/.argus/companion/state.json`` ``{"idle_since": <unix s> | null}``, written by the pet's Wayland
   IdleMonitor (Wayland gives no idle time to a plain process);
 - busy: the focused window is fullscreen (``hyprctl activewindow -j``), or MIRA's voice panel is mid-conversation;
-- quiet: MIRA's voice panel quiet switch (``127.0.0.1:8769/status``), so one switch quiets MIRA and the pet alike;
+- quiet: MIRA's voice panel quiet switch (``127.0.0.1:8769/status``), so one switch quiets MIRA and the pet alike,
+  or the bodies' quiet key (a ``quiet`` file in the companion folder);
 - where: MIRA's presence table through the panel (``/presence``: winhvk's camera detector, laphvk, the phone), so
   Hannah at winhvk is present even while laphvk sits idle; and winhvk's Lan Mouse Game Mode (she's gaming).
 
 A missing signal reads as "not busy, not quiet, not idle": the ticker never blocks on MIRA or Hyprland being down.
-Touches on her pet body (``event.json``: a pat, a toss, pokes, waking her) are offered to her straight away, unless
+Typing to her body (``ask.json``) gets a real ARGUS turn in one ongoing session, answered in her bubble and out
+loud. Touches on her pet body (``event.json``: a pat, a toss, pokes, waking her) are offered to her straight away, unless
 MIRA is quiet. What she says goes to ``~/.argus/companion/say.json`` (the pet's bubble), out loud through MIRA's voice panel
 (``POST /speak``: refused while MIRA is mid-conversation or quiet, and then the bubble alone carries it), and a line in
 ``checkins.log``.
@@ -20,8 +22,9 @@ from __future__ import annotations
 import json
 import os
 import socket
-import sys
 import subprocess
+import sys
+import threading
 import time
 import urllib.request
 from datetime import datetime, timedelta
@@ -150,7 +153,8 @@ def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     # winhvk, and winhvk's companion reaches her there. One Mira at a time, never two at once.
     idle = _idle_seconds(folder, now)
     return presence.Moment(now=datetime.fromtimestamp(now), idle=idle,
-                           busy=_fullscreen(folder) or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
+                           busy=_fullscreen(folder) or bool(panel.get("busy")),
+                           quiet=bool(panel.get("quiet")) or (folder / "quiet").exists(),
                            talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
 
 
@@ -164,16 +168,54 @@ def _speak(text: str) -> bool:
         return False
 
 
-def say(folder: Path, text: str, kind: str = "say", aloud: bool = True) -> None:
+def say(folder: Path, text: str, kind: str = "say", aloud: bool = True, log: bool = True) -> None:
     """Show *text* in the pet's bubble (atomic replace, a fresh id per line), say it out loud when MIRA's voice is
-    free, and log it."""
+    free, and log it (her own words only: replies and the thinking dots aren't logged)."""
     folder.mkdir(parents=True, exist_ok=True)
     tmp = folder / "say.json.tmp"
     tmp.write_text(json.dumps({"id": f"{time.time_ns()}", "text": text, "kind": kind}), encoding="utf-8")
     os.replace(tmp, folder / "say.json")
     spoken = aloud and _speak(text)
-    with open(folder / "checkins.log", "a", encoding="utf-8") as log:
-        log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
+    if log:
+        with open(folder / "checkins.log", "a", encoding="utf-8") as fh:
+            fh.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")
+
+
+CHAT_SESSION = "Mira (companion)"   # the ARGUS session typing to her body continues
+CHAT_TIMEOUT = 300.0
+_asking = threading.Lock()
+
+
+def answer(folder: Path, text: str) -> str:
+    """Hannah typed to her body: a real ARGUS turn (her whole self - SOUL, memory, tools) in one ongoing session,
+    and her reply in her bubble and out loud. While she thinks the bubble shows the dots."""
+    if not _asking.acquire(blocking=False):
+        say(folder, "One at a time, I'm still on your last one.", "reply", aloud=False, log=False)
+        return ""
+    try:
+        say(folder, "…", "thinking", aloud=False, log=False)
+        repo = Path(os.environ.get("ARGUS_REPO") or Path(__file__).resolve().parents[3])
+        command = [sys.executable, str(repo / "hermes"), "chat", "-Q", "--continue", CHAT_SESSION,
+                   "--create-if-missing", "--query-file", "-"]
+        try:
+            run = subprocess.run(command, input=text, capture_output=True, text=True, encoding="utf-8",
+                                 timeout=CHAT_TIMEOUT, check=False, cwd=str(Path.home()))
+            reply = run.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            reply = ""
+        say(folder, reply or "Lost my train of thought there. Say that again?", "reply", log=False)
+        return reply
+    finally:
+        _asking.release()
+
+
+def _ask(folder: Path) -> tuple[str, str]:
+    """What Hannah typed to her body (``ask.json``: {"id", "text"}): (id, text), or ("", "")."""
+    try:
+        data = json.loads((folder / "ask.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "", ""
+    return (str(data.get("id", "")), str(data.get("text", "")).strip()) if isinstance(data, dict) else ("", "")
 
 
 EVENT_KINDS = ("pat", "tossed", "poked", "woke")
@@ -208,7 +250,13 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     sched = presence.Scheduler()
     last_tick = 0.0
     seen_event = _event(folder)[0]   # what was already there when she started isn't news
+    seen_ask = _ask(folder)[0]
     while True:
+        ask_id, text = _ask(folder)
+        if ask_id and ask_id != seen_ask:
+            seen_ask = ask_id
+            if text:
+                threading.Thread(target=answer, args=(folder, text), name="companion-answer", daemon=True).start()
         event_id, kind = _event(folder)
         if event_id and event_id != seen_event:
             seen_event = event_id
