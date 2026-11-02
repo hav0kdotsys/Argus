@@ -98,7 +98,7 @@ USAGE = """argus companion run          offer Mira moments as they come up (fore
 argus companion moment [KIND] [--dry]  offer her one now (water, stretch, eyes, session, meal, late, bored, popin);
                              --dry prints what she'd do without showing or saying it
 argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, lie, sleep, wake, dance,
-                             stop_dancing, glitch, grin, drop (bind `body type` to a key to talk to her)
+                             stop_dancing, glitch, grin, drop, mini_player_on/off (bind `body type` to a key to talk to her)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer

@@ -46,6 +46,29 @@ ShellRoot {
     property bool lying: false
     property bool sleeping: false
     property bool music: false
+    // her mini player: shown while music plays (and a minute after), X puts it away until nothing's played for 10 s
+    property var mpris: null
+    property real lastPlaying: -1000
+    property bool miniPutAway: false
+    property bool miniOff: false
+    readonly property bool miniShown: !miniOff && !miniPutAway && mode !== "hidden" && loaded && mpris !== null
+                                      && (mpris.trackTitle || "") !== "" && now - lastPlaying < 60
+    onMiniShownChanged: {
+        if (miniShown && mode === "resting" && !(ledge && ledge.free) && !sleeping && !talking) {
+            const seat = miniLedge()
+            vanish(() => { settle(seat, seat.x1 + (seat.x2 - seat.x1) * 0.3, true); play("perch_arrive") })
+        }
+    }
+    function miniLedge() {
+        return { x1: mini.x + 12, x2: mini.x + mini.width - 12, y: mini.y + 1, win: "mini-player", floor: false,
+                 floating: true, focus: -1 }
+    }
+    FileView {
+        id: petPrefs
+        path: root.companion + "pet-laphvk.json"
+        onLoaded: { try { root.miniOff = JSON.parse(text()).mini_player_off === true } catch (e) { } }
+    }
+    function setMiniOff(off) { miniOff = off; petPrefs.setText(JSON.stringify({ mini_player_off: off })) }
     property real danceUntil: 0
     property bool panelBusy: false
     property string said: ""
@@ -406,6 +429,8 @@ ShellRoot {
         case "dance": danceUntil = now + 45; break
         case "stop_dancing": danceUntil = 0; break
         case "glitch": if (mode === "resting") play(glitchClip()); break
+        case "mini_player_on": setMiniOff(false); break
+        case "mini_player_off": setMiniOff(true); break
         case "grin": if (mode === "resting" && !seated) play("grin"); else if (seated) blinkWith = lying ? "laydown_blink" : "perch_blink"; break
         }
     }
@@ -452,7 +477,9 @@ ShellRoot {
                 try {
                     root.workspace = JSON.parse(parts[0]).id
                     root.clients = JSON.parse(parts[1])
-                    root.spots = Pet.ledges(root.clients, root.workspace, root.floor, root.size)
+                    const spots = Pet.ledges(root.clients, root.workspace, root.floor, root.size)
+                    if (root.miniShown) spots.push(root.miniLedge())
+                    root.spots = spots
                 } catch (e) { }
             }
         }
@@ -485,7 +512,12 @@ ShellRoot {
     Timer {
         interval: 1000; running: true; repeat: true
         onTriggered: {
-            root.music = Mpris.players.values.some(p => p.isPlaying)
+            const players = Mpris.players.values
+            const playing = players.find(p => p.isPlaying)
+            root.music = !!playing
+            if (playing) { root.mpris = playing; root.lastPlaying = root.now }
+            else if (root.mpris && players.indexOf(root.mpris) < 0) root.mpris = null
+            if (root.miniPutAway && root.now - root.lastPlaying > 10) root.miniPutAway = false
             const req = new XMLHttpRequest()
             req.onreadystatechange = () => {
                 if (req.readyState !== XMLHttpRequest.DONE) return
@@ -542,7 +574,27 @@ ShellRoot {
         WlrLayershell.namespace: "mira-pet"
         // The keyboard only while the typing box is open; never otherwise.
         WlrLayershell.keyboardFocus: root.typing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-        mask: Region { item: hit; Region { item: typeBox } }
+        mask: Region { item: hit; Region { item: typeBox } Region { item: miniArea } }
+
+        MiniPlayer {
+            id: mini
+            visible: root.miniShown
+            x: root.floor.x1 + 16
+            y: root.floor.y - height - 40
+            player: root.mpris
+            now: root.now
+            onPutAway: { root.miniPutAway = true; menuOpen = false }
+            onTurnOff: { root.setMiniOff(true); menuOpen = false }
+        }
+        // what of the player takes clicks: the plate, and its menu above it while open
+        Item {
+            id: miniArea
+            readonly property int menu: mini.menuOpen ? 90 : 0
+            x: root.miniShown ? mini.x : 0
+            y: root.miniShown ? mini.y - menu : 0
+            width: root.miniShown ? mini.width : 0
+            height: root.miniShown ? mini.height + menu : 0
+        }
 
         // Only her body takes the pointer (and only near it): the rest of the screen is clicked straight through.
         Item {
