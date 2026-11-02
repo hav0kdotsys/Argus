@@ -119,7 +119,7 @@ def _cli_run(args) -> int:
         print(line or "(Mira passed)")
         return 0
     m = ticker.moment(folder)
-    print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  (lines: {folder / 'check-ins.md'})")
+    print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")
     return 0
 
 

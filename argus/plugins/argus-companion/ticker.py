@@ -145,10 +145,10 @@ def where(folder: Path, hosts: dict | None = None) -> str:
 def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     now = time.time()
     panel = _panel()
-    hosts = _presence()
+    # Each machine with a body has its own companion (winhvk runs MiraPet and `argus companion run` too), so a machine
+    # only offers moments while it's the one in use: an idle laphvk is "away" even when the camera sees Hannah at
+    # winhvk, and winhvk's companion reaches her there. One Mira at a time, never two at once.
     idle = _idle_seconds(folder, now)
-    if hosts.get("winhvk") == "active":
-        idle = 0.0  # at her main PC: present, whatever laphvk's input says
     return presence.Moment(now=datetime.fromtimestamp(now), idle=idle,
                            busy=_fullscreen(folder) or bool(panel.get("busy")), quiet=bool(panel.get("quiet")),
                            talked=_talked_since(folder, last_tick) or bool(panel.get("busy")))
