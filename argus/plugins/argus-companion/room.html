@@ -31,13 +31,13 @@
   .sq.dest::after { content: ""; width: 26%; height: 26%; border-radius: 50%; background: var(--dot); position: absolute; }
   .w { color: #fff; text-shadow: 0 0 2px #000, 0 0 1px #000, 0 1px 2px #000; } .b { color: #111; text-shadow: 0 0 2px #fff8; }
   .moves { color: var(--dim); max-width: 560px; text-align: center; min-height: 20px; word-spacing: 3px; }
-  #ttt .board { grid-template-columns: repeat(3, 96px); gap: 4px; background: #3a3446; }
-  #ttt .cell { width: 96px; height: 96px; background: var(--plate); display: flex; align-items: center; justify-content: center;
+  #tictactoe .board { grid-template-columns: repeat(3, 96px); gap: 4px; background: #3a3446; }
+  #tictactoe .cell { width: 96px; height: 96px; background: var(--plate); display: flex; align-items: center; justify-content: center;
                font-size: 54px; cursor: pointer; }
-  #c4 .board { grid-template-columns: repeat(7, 58px); gap: 6px; padding: 8px; background: #1d1830; }
-  #c4 .cell { width: 58px; height: 58px; border-radius: 50%; background: var(--bg); cursor: pointer; }
+  #connect4 .board { grid-template-columns: repeat(7, 58px); gap: 6px; padding: 8px; background: #1d1830; }
+  #connect4 .cell { width: 58px; height: 58px; border-radius: 50%; background: var(--bg); cursor: pointer; }
   .x, .p1 { color: var(--pink); } .o, .p2 { color: var(--cyan); }
-  #c4 .cell.p1 { background: var(--pink); box-shadow: 0 0 12px var(--pink); } #c4 .cell.p2 { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  #connect4 .cell.p1 { background: var(--pink); box-shadow: 0 0 12px var(--pink); } #connect4 .cell.p2 { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
   .hands { display: flex; gap: 14px; margin: 16px 0; }
   .hands button { font-size: 44px; width: 96px; height: 96px; background: var(--plate); border: 1px solid #3a3446; cursor: pointer; color: var(--text); }
   .throws { font-size: 54px; display: flex; gap: 40px; min-height: 70px; align-items: center; }
@@ -156,8 +156,10 @@ function endCheck(status) {
   tell("chess", result, "", `${$("level").selectedOptions[0].text} level, ${chess.moves.length} plies: ${chess.moves.slice(-6).join(" ")}`);
 }
 function newChess() {
-  chess = { fen: "", legal: [], sel: null, last: [], you: $("side").value, over: false, moves: [], busy: true };
+  chess = { fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", legal: [], sel: null, last: [],
+            you: $("side").value, over: false, moves: [], busy: true };
   $("chessSay").textContent = "…";
+  drawChess();
   api(`/api/chess/new?color=${chess.you}&level=${$("level").value}`).then(r => {
     chess.busy = false;
     if (r.error) { $("chessSay").textContent = r.error; chess.over = true; return; }
