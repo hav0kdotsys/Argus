@@ -503,9 +503,23 @@ ShellRoot {
         id: idleMonitor
         timeout: 60
         respectInhibitors: false
-        onIsIdleChanged: stateFile.setText(JSON.stringify({ idle_since: idleMonitor.isIdle ? Math.floor(Date.now() / 1000) - idleMonitor.timeout : null }))
+        onIsIdleChanged: root.writeIdle(idleMonitor.isIdle)
     }
-    FileView { id: stateFile; path: root.companion + "state.json"; Component.onCompleted: stateFile.setText(JSON.stringify({ idle_since: null })) }
+    // Wayland only tells a new client about idleness from when it started, so a restart would make Hannah look
+    // freshly present: keep the stored idle_since across restarts, and clear it only once she's seen active.
+    property var storedIdleSince: null
+    function writeIdle(idle) {
+        const since = idle ? (storedIdleSince || Math.floor(Date.now() / 1000) - idleMonitor.timeout) : null
+        storedIdleSince = since
+        stateFile.setText(JSON.stringify({ idle_since: since }))
+    }
+    FileView {
+        id: stateFile
+        path: root.companion + "state.json"
+        onLoaded: { try { root.storedIdleSince = JSON.parse(text()).idle_since || null } catch (e) { } }
+    }
+    // Not idle a while after starting means she was active: clear what an earlier run left behind.
+    Timer { interval: 65000; running: true; onTriggered: if (!idleMonitor.isIdle) root.writeIdle(false) }
     IdleMonitor { id: awayMonitor; timeout: 300; respectInhibitors: false }
     Timer { id: awake; interval: 120000 }   // a click-woken nap doesn't fall straight back asleep
 
