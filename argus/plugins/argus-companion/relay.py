@@ -23,6 +23,7 @@ import secrets
 import shutil
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from hmac import compare_digest
@@ -37,6 +38,7 @@ PORT = 8773
 HEADER = "X-Argus-Token"
 SESSIONS = {"main": None, "body": "body"}      # session -> mira-api userId (the scope modifier)
 TURN_TIMEOUT = 600
+DIGEST_KEEP, DIGEST_HOURS, DIGEST_LINE = 6, 3, 200     # what her side session said lately, carried into her main one
 SEE_PROMPT = ("This is a frame of HavoK's own computer screen. Say plainly what's on it: the app or game, what's happening, "
               "any text that matters. Be concise and leave out private details like passwords or message contents.")
 
@@ -76,6 +78,7 @@ class Relay:
         self.token = secrets.token_urlsafe(24)
         self.server: ThreadingHTTPServer | None = None
         self.seen: dict[str, dict] = {}         # session -> what her last turn there said about it (id, lock, who answered)
+        self.lately: list[tuple[float, str]] = []   # (when, what she said) in her side session, not yet in her main one
 
     def announce(self) -> None:
         """argus.json in her body's folder: how it reaches this relay. HavoK-only on Linux."""
@@ -92,6 +95,8 @@ class Relay:
         if not token:
             write(_event("turn.error", {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine", "status": "unconfigured"}))
             return
+        if session == "main":
+            text = self.digest() + text
         request = request_for(text, session, self.host, max_tokens, base, token)
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
@@ -115,8 +120,20 @@ class Relay:
         if final.get("type") != "turn.final":
             return
         about = final.get("session") or {}
+        said = " ".join(str(((final.get("choice") or {}).get("message") or {}).get("content") or "").split())
+        if session == "body" and 0 < len(said) <= DIGEST_LINE:      # longer is work (her words for MiraWords), not a moment
+            self.lately = [*self.lately, (time.time(), said)][-DIGEST_KEEP:]
         self.seen[session] = {"id": about.get("sessionId"), "locked": about.get("lockedProvider"),
                               "answeredBy": final.get("answeredBy") or final.get("provider")}
+
+    def digest(self) -> str:
+        """What her body said on its own lately (its side session), once, at the top of HavoK's next words to her: the
+        short digest that links the two sessions without filling her main history with every aside."""
+        cutoff = time.time() - DIGEST_HOURS * 3600
+        recent, self.lately = [said for at, said in self.lately if at >= cutoff], []
+        if not recent:
+            return ""
+        return f"(Lately your body on {self.host} said, on its own: " + " / ".join(f'"{r}"' for r in recent) + ")\n\n"
 
     def brains(self) -> dict:
         """Mira's providers as her router has them on debhvk, and what each of her body's sessions is locked to."""

@@ -222,6 +222,10 @@ def test_her_body_reaches_her_backend_only_through_the_relay_and_in_the_right_se
         assert "on winhvk" in sent["messages"][0]["content"]
         turn("body")
         assert seen[-1][3]["userId"] == "body"                                             # the side session
+        turn("main")                                    # what she said there reaches her main session, once
+        assert seen[-1][3]["messages"][0]["content"].startswith('(Lately your body on winhvk said, on its own: "Hi.")')
+        turn("main")
+        assert seen[-1][3]["messages"][0]["content"].startswith("dance")
         try:
             turn("main", token="wrong")
             raise AssertionError("a request without her token got through")
