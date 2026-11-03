@@ -254,8 +254,8 @@ def test_mira_reaches_her_bodys_hands_with_the_token_argus_made(tmp_path, monkey
                          200 if self.headers.get(relay.HEADER) == "t0k" else 403)
 
         def do_POST(self):
-            calls.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
-            self._answer({"result": "Dancing."})
+            calls.append((self.path, json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
+            self._answer({"result": "Dancing." if self.path == "/do" else "Opened Spotify."})
 
     body = ThreadingHTTPServer(("127.0.0.1", 0), Body)
     threading.Thread(target=body.serve_forever, daemon=True).start()
@@ -265,7 +265,8 @@ def test_mira_reaches_her_bodys_hands_with_the_token_argus_made(tmp_path, monkey
         (tmp_path / "argus.json").write_text(json.dumps({"port": 1, "token": "t0k"}), encoding="utf-8")
         assert relay.hands("kit", folder=tmp_path) == [{"name": "animate"}]
         assert relay.hands("do", {"tool": "animate", "args": {"name": "dance"}}, folder=tmp_path) == {"result": "Dancing."}
-        assert calls == [{"tool": "animate", "args": {"name": "dance"}}]
+        assert relay.hands("answer", {"args": {"text": "yes"}}, folder=tmp_path) == {"result": "Opened Spotify."}
+        assert calls == [("/do", {"tool": "animate", "args": {"name": "dance"}}), ("/answer", {"args": {"text": "yes"}})]
         (tmp_path / "argus.json").write_text(json.dumps({"port": 1, "token": "stale"}), encoding="utf-8")
         assert relay.hands("kit", folder=tmp_path) == {"error": "her body answered 403"}
     finally:

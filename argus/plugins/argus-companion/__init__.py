@@ -117,7 +117,8 @@ argus companion away         count as away now (no waiting for the idle clock) u
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
 argus companion play [GAME]  her room: chess, tictactoe, connect4, rps (chess against her at any level), settings
-argus companion hands kit|do B64  her body's hands for MIRA's MCP: her tools here, or one call ({"tool","args"} as base64 JSON)
+argus companion hands kit|do|answer B64  her body's hands for MIRA's MCP: her tools here, one call ({"tool","args"} as
+                                  base64 JSON), or HavoK's answer to a call she asked first about ({"args":{"text"}})
 argus companion status       the signals the ticker sees right now"""
 
 
@@ -181,8 +182,9 @@ def _cli_run(args) -> int:
         import json
 
         from . import relay
-        call = json.loads(base64.b64decode(args.rest[0])) if args.kind == "do" and args.rest else None
-        print(json.dumps(relay.hands("kit" if args.kind == "kit" else "do", call)))
+        what = args.kind if args.kind in ("kit", "do", "answer") else "kit"
+        call = json.loads(base64.b64decode(args.rest[0])) if what != "kit" and args.rest else None
+        print(json.dumps(relay.hands(what, call)))
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")
