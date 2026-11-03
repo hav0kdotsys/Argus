@@ -174,3 +174,59 @@ def test_the_move_arrow_lands_on_the_screen_squares_and_clears(tmp_path):
     assert first["from"] == "e2" and first["to"] == "e4" and first["at"] > 0
     coach.set_coach(tmp_path, False)                                   # coaching off: the arrow goes
     assert json.loads((tmp_path / "arrow.json").read_text(encoding="utf-8"))["at"] == 0
+
+
+def test_her_body_reaches_her_backend_only_through_the_relay_and_in_the_right_session(tmp_path, monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import urllib.error
+    import urllib.request
+
+    relay = _mod("relay")
+    backend = _mod("backend")
+    seen = []
+
+    class Fake(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def do_POST(self):
+            seen.append((self.path, self.headers.get("Authorization"), self.headers.get("X-Jarvis-Client"),
+                         json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.end_headers()
+            for kind, data in (("turn.started", {}), ("turn.final", {"choice": {"message": {"content": "Hi."}}})):
+                self.wfile.write(f"event: {kind}\ndata: {json.dumps({'type': kind, **data})}\n\n".encode())
+
+    mira = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=mira.serve_forever, daemon=True).start()
+    monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{mira.server_port}", "tok"))
+    body = relay.Relay("winhvk", tmp_path, port=0)
+    server = body.serve()
+    try:
+        told = json.loads((tmp_path / "argus.json").read_text(encoding="utf-8"))
+        assert told["token"] == body.token and told["host"] == "winhvk"
+        url = f"http://127.0.0.1:{server.server_port}/turn"
+
+        def turn(session, token=body.token):
+            request = urllib.request.Request(url, data=json.dumps({"text": "dance", "session": session}).encode(),
+                                             headers={relay.HEADER: token})
+            with urllib.request.urlopen(request, timeout=10) as response:
+                return response.read().decode()
+
+        out = turn("main")
+        assert "event: turn.final" in out and '"Hi."' in out
+        path, auth, client, sent = seen[-1]
+        assert path == "/v1/mira/call/stream" and auth == "Bearer tok" and client == "desktop"
+        assert "userId" not in sent and sent["messages"][0]["content"].startswith("dance")   # her main session
+        assert "on winhvk" in sent["messages"][0]["content"]
+        turn("body")
+        assert seen[-1][3]["userId"] == "body"                                             # the side session
+        try:
+            turn("main", token="wrong")
+            raise AssertionError("a request without her token got through")
+        except urllib.error.HTTPError as exc:
+            assert exc.code == 403
+    finally:
+        server.shutdown()
+        mira.shutdown()
