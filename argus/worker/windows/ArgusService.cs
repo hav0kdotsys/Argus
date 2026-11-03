@@ -221,11 +221,13 @@ namespace Argus
             catch (Exception error) { Problem("couldn't stop her companion: " + error.Message); }
         }
 
-        // Her companion is ARGUS's Python process running "companion run" in that session.
+        // Her companion running "companion run" in that session: ARGUS's Python process, or the conhost and PowerShell that
+        // start it. Python only appears seconds after the launch, and a second pass in that gap (a timer tick and a logon
+        // landing together after boot) would start her companion twice.
         private static List<int> Companions(uint session)
         {
             List<int> found = new List<int>();
-            using (ManagementObjectSearcher search = new ManagementObjectSearcher("SELECT ProcessId, SessionId, CommandLine FROM Win32_Process WHERE Name = 'python.exe' OR Name = 'pythonw.exe'"))
+            using (ManagementObjectSearcher search = new ManagementObjectSearcher("SELECT ProcessId, SessionId, CommandLine FROM Win32_Process WHERE Name = 'python.exe' OR Name = 'pythonw.exe' OR Name = 'powershell.exe' OR Name = 'pwsh.exe' OR Name = 'conhost.exe'"))
             using (ManagementObjectCollection all = search.Get())
             {
                 foreach (ManagementBaseObject each in all)
