@@ -44,7 +44,9 @@ def test_her_body_on_runs_it_and_stands_the_old_body_down_and_off_is_the_rollbac
     def fake(command, **_):
         calls.append(command)
         assert command[:4] == ["systemctl", "--user", "-M", "havok@"]      # HavoK's own manager, from root
-        verb, unit = command[4], command[5]
+        verb, unit = command[4], command[-1]
+        if verb == "show":
+            return subprocess.CompletedProcess(command, 0, "loaded\n" if unit in running else "not-found\n", "")
         if verb == "is-active":
             return subprocess.CompletedProcess(command, 0, running[unit] + "\n", "")
         running[unit] = "active" if verb == "start" else "inactive"
@@ -56,3 +58,17 @@ def test_her_body_on_runs_it_and_stands_the_old_body_down_and_off_is_the_rollbac
     off = {**on, "body": {"enabled": False}}
     assert sorted(worker.apply(off, run=fake, say=lambda _: None)) == ["started mira-pet.service", "stopped mira-body.service"]
     assert running[worker.COMPANION] == "active"
+
+
+def test_a_machine_without_her_bodies_has_nothing_started_for_them(monkeypatch):
+    worker = _worker()
+    monkeypatch.setattr(worker.os, "geteuid", lambda: 0)
+    calls = []
+
+    def fake(command, **_):
+        calls.append(command[4])
+        return subprocess.CompletedProcess(command, 0, "not-found\n" if command[4] == "show" else "inactive\n", "")
+
+    headless = {"host": "debhvk", "user": "havok", "body": {"enabled": False}, "companion": {"enabled": False}}
+    assert worker.apply(headless, run=fake, say=lambda _: None) == []
+    assert "start" not in calls and "stop" not in calls

@@ -153,6 +153,10 @@ def systemctl(user: str, *args: str, run=subprocess.run) -> subprocess.Completed
 
 
 def state(user: str, unit: str, run=subprocess.run) -> str:
+    """active, inactive, failed, ...; "missing" for a unit this machine doesn't have (debhvk has no bodies)."""
+    loaded = (systemctl(user, "show", "-p", "LoadState", "--value", unit, run=run).stdout or "").strip()
+    if loaded == "not-found":
+        return "missing"
     return (systemctl(user, "is-active", unit, run=run).stdout or "").strip() or "unknown"
 
 
@@ -162,7 +166,7 @@ def apply(config: dict, run=subprocess.run, say=print) -> list[str]:
     changed = []
     for unit, want in desired(config).items():
         now = state(user, unit, run)
-        if now == "unknown" or (now == "inactive" and not want) or (now == "active" and want):
+        if now in ("unknown", "missing") or (now == "inactive" and not want) or (now == "active" and want):
             continue
         if want and now != "activating":
             done = systemctl(user, "start", unit, run=run)
