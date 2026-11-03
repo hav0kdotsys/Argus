@@ -1,0 +1,10 @@
+# ARGUS on winhvk. Installed as %ProgramData%\ARGUS\argus.yaml (admins only can change it); the ARGUS service rereads it
+# every 30 s. What it starts runs as HavoK, in HavoK's desktop session.
+host: winhvk
+user: havok
+body:
+  enabled: true     # MIRA's body in HavoK's session; false brings MiraPet back
+  path: C:\Users\HavoK\AppData\Local\Programs\Mira\Mira.exe
+companion:
+  enabled: true     # the relay her body thinks and speaks through, and her check-ins
+  command: C:\Windows\System32\conhost.exe --headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File "D:\Network\Projects\Argus\argus\bin\argus.ps1" companion run

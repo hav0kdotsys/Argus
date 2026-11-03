@@ -1,0 +1,15 @@
+# ARGUS's worker on this machine, as root: it keeps what runs here matching /etc/argus/argus.yaml.
+# Installed by install.sh as /etc/systemd/system/argus.service. HavoK's live ARGUS TUI is never touched by it.
+[Unit]
+Description=ARGUS worker (houses MIRA's body and links this machine)
+After=network-online.target systemd-logind.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -u /usr/local/lib/argus/argus_worker.py run --config /etc/argus/argus.yaml
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

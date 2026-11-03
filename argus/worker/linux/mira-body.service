@@ -1,0 +1,11 @@
+# MIRA's body on this desktop (the mira-body fork's Linux build), in HavoK's own session. ARGUS's worker starts and
+# stops it from argus.yaml (body.enabled), so it isn't enabled on its own. Installed by deploy-body.sh.
+[Unit]
+Description=MIRA's body (mira-body)
+PartOf=graphical-session.target
+After=graphical-session.target mira-companion.service
+
+[Service]
+ExecStart=%h/.dotnet/dotnet %h/.local/share/mira-body/Mira.dll
+Restart=on-failure
+RestartSec=10

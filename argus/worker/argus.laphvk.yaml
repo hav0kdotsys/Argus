@@ -1,0 +1,7 @@
+# ARGUS on laphvk. Installed as /etc/argus/argus.yaml; the worker rereads it every 30 s.
+host: laphvk
+user: havok
+body:
+  enabled: true     # MIRA's body on this desktop; false brings the old QML body back
+companion:
+  enabled: true     # the relay her body thinks and speaks through, and her check-ins

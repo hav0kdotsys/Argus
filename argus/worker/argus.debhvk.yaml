@@ -1,0 +1,7 @@
+# ARGUS on debhvk (headless). Installed as /etc/argus/argus.yaml.
+host: debhvk
+user: havok
+body:
+  enabled: false
+companion:
+  enabled: false
