@@ -204,10 +204,59 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
 - **Staged on debhvk, for HavoK's guarded deploy:** `mcp-server/mira-body.js` (`mira_body_kit`, `mira_body`) and its
   registration in `mcp-server/server.js` (backup `server.js.bak-mirabody-20261103-004209`). `node --check` is clean
   and the handlers were exercised with a fake SSH. The container still needs rebuilding (HavoK).
-- Still open in P2:
-  - the 112-line "words in her mouth" audit (her start-up greeting "Isn't it late, choom?" is one of them)
-  - her voice through Mira's TTS
-  - her settings' brain picker showing Mira's debhvk providers
-  - glances (See) through Mira's vision
-  - a call held by a Security toggle getting HavoK's yes through Mira
-  - the digest from `agent:body` into the main session
+- The rest of P2, done the same day:
+  - **Words in her mouth:** every quick line her code said by itself (pats, throws, pop-ins, her wake word, her hellos,
+    check-ins, chess, chaos notes, job lines: 39 moments) is now one MIRA writes herself. Once a day her body describes
+    the moments to her side session, she writes 8 lines for each, and they're kept in `words.json` in her data folder
+    (`app/MiraWords.cs`). Until they come, her body stays quiet at those moments. Capri's recorded hellos are cut, a mini
+    game's canned fallback is never said, and a job's status is a readout (▸). Every row of the audit has a verdict in
+    `docs/ANIMATIONS.md`. Capri's character is stripped from every aside before it reaches MIRA. Verified live: she wrote
+    all of them in about 2 minutes.
+  - **Voice:** both bodies speak in MIRA's own voice: relay `/speak` → mira-api `/v1/tts`, voice `mira`, sent as a
+    notification so conversation keeps its ElevenLabs reserve. It's WAV where ffmpeg is, which is both PCs. The mouth
+    follows it like any voice. **ARGUS quiet means silent** (423).
+  - **Brain picker:** BRAIN (Windows) and Brain (Linux) list MIRA's 7 providers from her router's health, and picking
+    one pins her main session (relay `/brains`, `/brain`). There's no "Auto" yet: mira-api has no unlock route.
+  - **Glances:** `See` sends the frame to relay `/see`. mira-api's `camera/analyze` (Claude) describes it, and MIRA
+    answers in her side session. Verified live: 7.2 s.
+  - **Security holds:** a yes said to her body runs the held call before MIRA hears what ran. Her hands port takes
+    `/answer`, and the staged MCP module has `mira_body_answer`, which passes on HavoK's own answer and never Mira's.
+  - **Digest:** what her body said on its own lately reaches her main conversation once, at the top of HavoK's next words
+    to her body.
+- P1 leftovers, done: the lie-down family and `perch_talk` are on Linux. She lies along a window or the floor
+  (Hyprland has no taskbar), and it's in her menu and tools. No clip is missing on Linux now. Seen on screen.
+  Her Discord status is off until Mira has her own Discord application (Capri's id showed her as Capri).
+
+### P3 (2026-11-03): built and staged; installing it needs HavoK (admin/sudo)
+- `argus/worker/`: `argus_worker.py`, the root worker for laphvk and debhvk. It's stdlib only and runs from a root-owned
+  copy. It reads `/etc/argus/argus.yaml` every 30 s and keeps HavoK's user units in line: body on means `mira-body` up
+  and `mira-pet` down. **Off is the whole rollback.** It also keeps `mira-companion` up.
+- `windows/ArgusService.cs`: the ARGUS service, LocalSystem. It reads `%ProgramData%\ARGUS\argus.yaml` and starts
+  `Mira.exe` and her companion in HavoK's session, as HavoK (WTSQueryUserToken + CreateProcessAsUser). The `MIRA-Pet`
+  task runs only while her body is off. It builds on winhvk, and `--check` reads the config.
+- Per-host configs, `install.sh`/`install.ps1`, `uninstall.ps1` (restores MiraPet and the startup shortcut),
+  `deploy-body.sh`/`deploy-body.ps1` (no admin), and a README. `pet/windows/deploy.ps1` leaves the body alone once the
+  service is installed.
+- laphvk's body is staged at `~/.local/share/mira-body` with its user unit (not started).
+- Tests: the config reader (anything unclear is an error) and the on/off/rollback logic.
+
+### P4 (2026-11-03): her bodies linked through the fork
+- Her body writes ARGUS's `state.json` (idle, foreground window, fullscreen, what's playing), as the old bodies did, so
+  check-ins and the link keep their senses after the cutover. Its hands port answers `GET /state`.
+- `bridge.py`: music on her other PC makes her body here dance, and stop when it stops. Her other body coming back
+  online makes this one glitch.
+- Not done: the mesh beyond the laphvk↔winhvk pair (debhvk is headless; mobilehvk isn't on ARGUS yet), and her services
+  on the cockpit's device board, which is a mira-api change (HavoK's guarded deploy).
+
+### P5 (2026-11-03): mapped
+- Every clip and effect window has its Mira row in `docs/ANIMATIONS.md`: her body's own senses, MIRA's tools through
+  MCP, or ARGUS's link. Seeing each row on screen happens at the cutover (P6).
+
+### Waiting on HavoK
+1. **debhvk:** the guarded deploy of the MCP container (`mira-body.js`: `mira_body_kit`, `mira_body`,
+   `mira_body_answer`).
+2. **laphvk:** `sudo argus/worker/linux/install.sh laphvk`. That's the cutover: her body on, the QML body down.
+3. **winhvk:** an admin PowerShell running `argus\worker\windows\install.ps1`. That's the cutover there.
+4. **debhvk:** `sudo argus/worker/linux/install.sh debhvk` (headless; back up first, as always on debhvk).
+5. A Discord application id for Mira's status.
+6. Optional, mira-api: an unlock route, so her brain picker can offer "Auto" again.
