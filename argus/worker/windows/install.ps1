@@ -30,8 +30,12 @@ icacls $data /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'Administrators:(OI)(CI)
 & (Join-Path $program 'ArgusService.exe') --check $config
 if ($LASTEXITCODE -ne 0) { throw 'argus.yaml has a problem; fix it and run this again.' }
 
+# A running exe can't be overwritten, but it can be renamed: the new one goes in beside it, then she's stopped.
+$exe = Join-Path $bodyTo 'Mira.exe'
+Remove-Item "$exe.old" -Force -ErrorAction SilentlyContinue
+if (Test-Path $exe) { Move-Item $exe "$exe.old" -Force }
+Copy-Item $bodyFrom $exe -Force
 Get-Process Mira -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$bodyTo*" } | Stop-Process -Force
-Copy-Item $bodyFrom $bodyTo -Force
 
 # The old companion's startup shortcut goes to rollback; the service starts her companion from now on.
 $startup = Join-Path $user 'AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\MIRA Companion.lnk'
