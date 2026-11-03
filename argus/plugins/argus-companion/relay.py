@@ -70,6 +70,7 @@ class Relay:
         self.host, self.folder, self.port = host, folder or body_folder(), port
         self.token = secrets.token_urlsafe(24)
         self.server: ThreadingHTTPServer | None = None
+        self.seen: dict[str, dict] = {}         # session -> what her last turn there said about it (id, lock, who answered)
 
     def announce(self) -> None:
         """argus.json in her body's folder: how it reaches this relay. HavoK-only on Linux."""
@@ -90,12 +91,67 @@ class Relay:
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
                 for line in response:
+                    self.note(session, line)
                     write(line)
         except urllib.error.HTTPError as exc:
             write(_event("turn.error", {"error": f"mira-api answered {exc.code}", "status": "http"}))
         except (OSError, ValueError) as exc:
             logger.warning("relay: Mira's backend didn't answer (%s)", exc)
             write(_event("turn.error", {"error": "Mira's backend didn't answer", "status": "unreachable"}))
+
+    def note(self, session: str, line: bytes) -> None:
+        """Her session's id and lock, from each turn.final passing through, so her body's brain picker can pin it."""
+        if not line.startswith(b"data:") or b"turn.final" not in line:
+            return
+        try:
+            final = json.loads(line[5:])
+        except ValueError:
+            return
+        if final.get("type") != "turn.final":
+            return
+        about = final.get("session") or {}
+        self.seen[session] = {"id": about.get("sessionId"), "locked": about.get("lockedProvider"),
+                              "answeredBy": final.get("answeredBy") or final.get("provider")}
+
+    def brains(self) -> dict:
+        """Mira's providers as her router has them on debhvk, and what each of her body's sessions is locked to."""
+        base, token = backend._config()
+        if not token:
+            return {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine"}
+        request = urllib.request.Request(f"{base.rstrip('/')}/v1/mira/providers/health",
+                                         headers={"Authorization": f"Bearer {token}", "X-Jarvis-Client": "desktop"})
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                health = json.loads(response.read().decode("utf-8"))
+        except (OSError, ValueError) as exc:
+            logger.warning("relay: Mira's providers didn't answer (%s)", exc)
+            return {"error": "Mira's backend didn't answer"}
+        providers = {name: {"ok": info.get("ok"), "down": bool(info.get("down"))}
+                     for name, info in (health.get("providers") or {}).items()}
+        return {"providers": providers, "sessions": self.seen}
+
+    def pin(self, session: str, provider: str) -> dict:
+        """Lock one of her sessions to a provider (mira-api's own escape hatch). The main session is the one Mira Desktop
+        and her Voice Interface share, so a pin there is a pin for her everywhere."""
+        known = self.seen.get(session) or {}
+        if not known.get("id"):
+            return {"error": "talk to her once first: ARGUS learns which session is hers from her first answer"}
+        base, token = backend._config()
+        if not token:
+            return {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine"}
+        request = urllib.request.Request(
+            f"{base.rstrip('/')}/v1/mira/session/{known['id']}/provider",
+            data=json.dumps({"provider": provider}).encode("utf-8"),
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Jarvis-Client": "desktop"})
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            return {"error": f"mira-api answered {exc.code}"}
+        except (OSError, ValueError):
+            return {"error": "Mira's backend didn't answer"}
+        known["locked"] = provider
+        return {"locked": provider}
 
     def serve(self) -> ThreadingHTTPServer:
         relay = self
@@ -104,9 +160,43 @@ class Relay:
             def log_message(self, *args):
                 return
 
+            def answer(self, body: dict) -> None:
+                data = json.dumps(body).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+            def allowed(self) -> bool:
+                if compare_digest(self.headers.get(HEADER, ""), relay.token):
+                    return True
+                self.send_error(403)
+                return False
+
+            def do_GET(self):
+                if self.path != "/brains":
+                    self.send_error(404)
+                elif self.allowed():
+                    self.answer(relay.brains())
+
             def do_POST(self):
-                if self.path != "/turn" or not compare_digest(self.headers.get(HEADER, ""), relay.token):
-                    self.send_error(404 if self.path != "/turn" else 403)
+                if self.path not in ("/turn", "/brain"):
+                    self.send_error(404)
+                    return
+                if not self.allowed():
+                    return
+                if self.path == "/brain":
+                    try:
+                        ask = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+                        session, provider = str(ask.get("session", "main")), str(ask["provider"]).strip()
+                    except (KeyError, TypeError, ValueError):
+                        self.send_error(400)
+                        return
+                    if session not in SESSIONS or not provider:
+                        self.send_error(400)
+                        return
+                    self.answer(relay.pin(session, provider))
                     return
                 try:
                     ask = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))

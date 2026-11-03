@@ -270,3 +270,64 @@ def test_mira_reaches_her_bodys_hands_with_the_token_argus_made(tmp_path, monkey
         assert relay.hands("kit", folder=tmp_path) == {"error": "her body answered 403"}
     finally:
         body.shutdown()
+
+
+def test_her_bodys_brain_picker_pins_the_session_her_last_answer_came_from(tmp_path, monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import urllib.request
+
+    relay = _mod("relay")
+    backend = _mod("backend")
+    pinned = []
+
+    class Fake(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def reply(self, body):
+            data = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):
+            self.reply({"providers": {"claude-code": {"ok": True, "down": False}, "groqcloud": {"ok": False, "down": True}}})
+
+        def do_POST(self):
+            sent = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            if self.path.endswith("/provider"):
+                pinned.append((self.path, sent["provider"]))
+                self.reply({"status": "ok"})
+                return
+            self.send_response(200)
+            self.end_headers()
+            final = {"type": "turn.final", "answeredBy": "claude-code",
+                     "session": {"sessionId": "s1", "lockedProvider": "claude-code"}, "choice": {"message": {"content": "Hi."}}}
+            self.wfile.write(f"event: turn.final\ndata: {json.dumps(final)}\n\n".encode())
+
+    mira = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=mira.serve_forever, daemon=True).start()
+    monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{mira.server_port}", "tok"))
+    body = relay.Relay("laphvk", tmp_path, port=0)
+    server = body.serve()
+    base = f"http://127.0.0.1:{server.server_port}"
+
+    def call(path, payload=None):
+        data = None if payload is None else json.dumps(payload).encode()
+        request = urllib.request.Request(base + path, data=data, headers={relay.HEADER: body.token})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return response.read().decode()
+
+    try:
+        assert "error" in json.loads(call("/brain", {"session": "main", "provider": "groqcloud"}))   # no session known yet
+        assert not pinned
+        call("/turn", {"text": "hi", "session": "main"})
+        brains = json.loads(call("/brains"))
+        assert set(brains["providers"]) == {"claude-code", "groqcloud"} and brains["providers"]["groqcloud"]["down"]
+        assert brains["sessions"]["main"] == {"id": "s1", "locked": "claude-code", "answeredBy": "claude-code"}
+        assert json.loads(call("/brain", {"session": "main", "provider": "groqcloud"})) == {"locked": "groqcloud"}
+        assert pinned == [("/v1/mira/session/s1/provider", "groqcloud")]
+    finally:
+        server.shutdown()
+        mira.shutdown()
