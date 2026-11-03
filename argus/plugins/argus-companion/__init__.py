@@ -117,11 +117,12 @@ argus companion away         count as away now (no waiting for the idle clock) u
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
                              a game the title can't prove is against the computer
 argus companion play [GAME]  her room: chess, tictactoe, connect4, rps (chess against her at any level), settings
+argus companion hands kit|do B64  her body's hands for MIRA's MCP: her tools here, or one call ({"tool","args"} as base64 JSON)
 argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "link", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "link", "hands", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("rest", nargs="*", help="for body: words after the action (perch discord)")
@@ -174,6 +175,14 @@ def _cli_run(args) -> int:
     if args.action == "link":
         from . import link
         print(link.status(folder))
+        return 0
+    if args.action == "hands":
+        import base64
+        import json
+
+        from . import relay
+        call = json.loads(base64.b64decode(args.rest[0])) if args.kind == "do" and args.rest else None
+        print(json.dumps(relay.hands("kit" if args.kind == "kit" else "do", call)))
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")

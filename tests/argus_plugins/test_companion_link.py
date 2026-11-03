@@ -230,3 +230,43 @@ def test_her_body_reaches_her_backend_only_through_the_relay_and_in_the_right_se
     finally:
         server.shutdown()
         mira.shutdown()
+
+
+def test_mira_reaches_her_bodys_hands_with_the_token_argus_made(tmp_path, monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    relay = _mod("relay")
+    calls = []
+
+    class Body(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def _answer(self, data, code=200):
+            out = json.dumps(data).encode()
+            self.send_response(code)
+            self.send_header("Content-Length", str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+
+        def do_GET(self):
+            self._answer([{"name": "animate"}] if self.headers.get(relay.HEADER) == "t0k" else {"error": "forbidden"},
+                         200 if self.headers.get(relay.HEADER) == "t0k" else 403)
+
+        def do_POST(self):
+            calls.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            self._answer({"result": "Dancing."})
+
+    body = ThreadingHTTPServer(("127.0.0.1", 0), Body)
+    threading.Thread(target=body.serve_forever, daemon=True).start()
+    monkeypatch.setattr(relay, "HANDS_PORT", body.server_port)
+    try:
+        assert relay.hands("kit", folder=tmp_path) == {"error": "ARGUS isn't housing her body on this machine right now"}
+        (tmp_path / "argus.json").write_text(json.dumps({"port": 1, "token": "t0k"}), encoding="utf-8")
+        assert relay.hands("kit", folder=tmp_path) == [{"name": "animate"}]
+        assert relay.hands("do", {"tool": "animate", "args": {"name": "dance"}}, folder=tmp_path) == {"result": "Dancing."}
+        assert calls == [{"tool": "animate", "args": {"name": "dance"}}]
+        (tmp_path / "argus.json").write_text(json.dumps({"port": 1, "token": "stale"}), encoding="utf-8")
+        assert relay.hands("kit", folder=tmp_path) == {"error": "her body answered 403"}
+    finally:
+        body.shutdown()
