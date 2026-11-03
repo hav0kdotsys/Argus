@@ -37,6 +37,8 @@ PORT = 8773
 HEADER = "X-Argus-Token"
 SESSIONS = {"main": None, "body": "body"}      # session -> mira-api userId (the scope modifier)
 TURN_TIMEOUT = 600
+SEE_PROMPT = ("This is a frame of HavoK's own computer screen. Say plainly what's on it: the app or game, what's happening, "
+              "any text that matters. Be concise and leave out private details like passwords or message contents.")
 
 
 def body_folder() -> Path:
@@ -156,6 +158,32 @@ class Relay:
         known["locked"] = provider
         return {"locked": provider}
 
+    def describe(self, image: str) -> str | None:
+        """What a frame of HavoK's screen shows, from MIRA's vision (Claude, through mira-api). Her body's glance becomes
+        words she then answers herself."""
+        base, token = backend._config()
+        if not token:
+            return None
+        request = urllib.request.Request(
+            f"{base.rstrip('/')}/v1/mira/camera/analyze",
+            data=json.dumps({"imageBase64": image, "mimeType": "image/jpeg", "prompt": SEE_PROMPT}).encode(),
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Jarvis-Client": "desktop"})
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                seen = json.loads(response.read().decode("utf-8"))
+        except (OSError, ValueError) as exc:
+            logger.warning("relay: Mira's vision didn't answer (%s)", exc)
+            return None
+        return (seen.get("content") or "").strip() or None
+
+    def glance(self, text: str, image: str, max_tokens: int, write) -> None:
+        seen = self.describe(image)
+        if not seen:
+            write(_event("turn.error", {"error": "Mira's vision didn't answer", "status": "unseen"}))
+            return
+        self.stream(f"(Your body on {self.host} just glanced at HavoK's screen. What it shows: {seen})\n\n{text}",
+                    "body", max_tokens, write)
+
     def speak(self, text: str) -> tuple[int, bytes, str]:
         """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a
         notification, so her body never spends the credits kept for conversation. Never while ARGUS is quiet."""
@@ -211,7 +239,7 @@ class Relay:
                     self.answer(relay.brains())
 
             def do_POST(self):
-                if self.path not in ("/turn", "/brain", "/speak"):
+                if self.path not in ("/turn", "/brain", "/speak", "/see"):
                     self.send_error(404)
                     return
                 if not self.allowed():
@@ -243,10 +271,11 @@ class Relay:
                     ask = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
                     text, session = str(ask["text"]).strip(), str(ask.get("session", "main"))
                     max_tokens = int(ask.get("max_tokens", 1500))
+                    image = str(ask["image"]) if self.path == "/see" else None
                 except (KeyError, TypeError, ValueError):
                     self.send_error(400)
                     return
-                if not text or session not in SESSIONS:
+                if not text or session not in SESSIONS or (image is not None and not 0 < len(image) <= 8 * 1024 * 1024):
                     self.send_error(400)
                     return
                 self.send_response(200)
@@ -259,7 +288,10 @@ class Relay:
                     self.wfile.flush()
 
                 try:
-                    relay.stream(text, session, max_tokens, write)
+                    if image is not None:
+                        relay.glance(text, image, max_tokens, write)
+                    else:
+                        relay.stream(text, session, max_tokens, write)
                 except (BrokenPipeError, ConnectionResetError):
                     logger.info("relay: her body stopped listening mid-turn")
 

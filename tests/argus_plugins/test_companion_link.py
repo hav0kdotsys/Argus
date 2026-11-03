@@ -382,3 +382,48 @@ def test_her_body_speaks_in_her_own_voice_and_never_while_argus_is_quiet(tmp_pat
     finally:
         server.shutdown()
         mira.shutdown()
+
+
+def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session(tmp_path, monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import urllib.request
+
+    relay = _mod("relay")
+    backend = _mod("backend")
+    asked = []
+
+    class Fake(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def do_POST(self):
+            sent = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            asked.append((self.path, sent))
+            self.send_response(200)
+            self.end_headers()
+            if self.path.endswith("/camera/analyze"):
+                self.wfile.write(json.dumps({"status": "success", "content": "Factorio, a burning base."}).encode())
+                return
+            final = {"type": "turn.final", "choice": {"message": {"content": "Your base is on fire."}}}
+            self.wfile.write(f"event: turn.final\ndata: {json.dumps(final)}\n\n".encode())
+
+    mira = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=mira.serve_forever, daemon=True).start()
+    monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{mira.server_port}", "tok"))
+    body = relay.Relay("winhvk", tmp_path, port=0)
+    server = body.serve()
+    try:
+        request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/see",
+                                         data=json.dumps({"text": "React in one line.", "image": "/9j/AAAA"}).encode(),
+                                         headers={relay.HEADER: body.token})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            out = response.read().decode()
+        assert "Your base is on fire." in out
+        (look, frame), (turn, said) = asked
+        assert look == "/v1/mira/camera/analyze" and frame["imageBase64"] == "/9j/AAAA"
+        assert turn == "/v1/mira/call/stream" and said["userId"] == "body"
+        assert "Factorio, a burning base." in said["messages"][0]["content"]
+        assert said["messages"][0]["content"].count("React in one line.") == 1
+    finally:
+        server.shutdown()
+        mira.shutdown()
