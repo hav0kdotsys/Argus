@@ -85,7 +85,10 @@ class Relay:
         self.folder.mkdir(parents=True, exist_ok=True)
         path = self.folder / "argus.json"
         temp = path.with_suffix(".tmp")
-        temp.write_text(json.dumps({"port": self.port, "token": self.token, "host": self.host}), encoding="utf-8")
+        door = {"port": self.port, "token": self.token, "host": self.host}
+        if self.companion is not None:
+            door["companion"] = str(self.companion)     # where her body reports what it sees (state.json)
+        temp.write_text(json.dumps(door), encoding="utf-8")
         if sys.platform != "win32":
             temp.chmod(0o600)
         temp.replace(path)
@@ -340,14 +343,15 @@ HANDS_PORT = 8774
 
 
 def hands(what: str, call: dict | None = None, folder: Path | None = None, timeout: float = 120) -> dict | list:
-    """MIRA's MCP using her body's hands here: ``kit`` (her tools, in MCP's shape), ``do`` (one tool call) or ``answer``
+    """MIRA's MCP using her body's hands here: ``kit`` (her tools, in MCP's shape), ``state`` (what's playing there),
+    ``do`` (one tool call) or ``answer``
     (HavoK's own yes or no to a call her body asked first about, passed on by MIRA). Reached over
     SSH as ``argus companion hands kit|do <base64 json>``; the answer is JSON for her MCP to read."""
     try:
         door = json.loads(((folder or body_folder()) / "argus.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {"error": "ARGUS isn't housing her body on this machine right now"}
-    path, data = ("/kit", None) if what == "kit" else (f"/{what}", json.dumps(call or {}).encode("utf-8"))
+    path, data = (f"/{what}", None) if what in ("kit", "state") else (f"/{what}", json.dumps(call or {}).encode("utf-8"))
     request = urllib.request.Request(f"http://127.0.0.1:{HANDS_PORT}{path}", data=data,
                                      headers={HEADER: str(door.get("token", "")), "Content-Type": "application/json"})
     try:

@@ -432,3 +432,33 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
     finally:
         server.shutdown()
         mira.shutdown()
+
+
+def test_music_on_her_other_pc_has_her_body_here_dance_and_her_other_body_arriving_glitches_her(tmp_path):
+    bridge_mod = _mod("bridge")
+    did = []
+    up = [True]
+
+    def act(tool, args):
+        if not up[0]:
+            return {"error": "her body isn't up on this machine"}
+        did.append(args["name"])
+        return {"result": "ok"}
+
+    bridge = bridge_mod.Bridge(tmp_path, act=act)
+
+    def hear(at, playing):
+        (tmp_path / "link.json").write_text(json.dumps({"peer": "winhvk", "at": at, "music": {"playing": playing}}), encoding="utf-8")
+
+    hear(1000, True)
+    up[0] = False
+    assert bridge.tick(False, now=1001) == []             # her body isn't up yet: nothing changes, it tries again
+    up[0] = True
+    assert bridge.tick(False, now=1002) == ["dance"]
+    assert bridge.tick(False, now=1003) == []             # still dancing: not asked again
+    assert bridge.tick(True, now=1004) == ["stop_dancing"]   # music here too: her own ears take it from here
+    hear(1005, False)
+    assert bridge.tick(False, now=1006) == []
+    hear(1300, False)                                     # her other body was gone five minutes, and is back
+    assert bridge.tick(False, now=1301) == ["glitch"]
+    assert did == ["dance", "stop_dancing", "glitch"]

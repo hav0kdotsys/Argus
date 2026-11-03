@@ -513,6 +513,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     host = "winhvk" if sys.platform == "win32" else "laphvk"
     link.start(folder, host)
     relay.start(host, folder)
+    from . import bridge
+    bridge.start(folder)
     if sys.platform != "win32":       # winhvk's body has its own ears (MiraPet/Ears.cs)
         from agent.memory_provider import spawn_context_thread
 
