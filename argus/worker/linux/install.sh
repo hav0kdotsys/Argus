@@ -20,7 +20,11 @@ fi
 install -m 0644 "$here/argus.service" /etc/systemd/system/argus.service
 loginctl enable-linger "$user"
 # The old QML body no longer starts on its own at login: the worker starts it only while body.enabled is false.
-if [ "$host" = laphvk ]; then systemctl --user -M "$user@" disable mira-pet.service 2>/dev/null || true; fi
+# Disabling a linked unit also unlinks it, so it's linked again (not enabled): the worker still needs it for the rollback.
+if [ "$host" = laphvk ]; then
+    systemctl --user -M "$user@" disable mira-pet.service 2>/dev/null || true
+    systemctl --user -M "$user@" link "$(cd "$here/../.." && pwd)/pet/systemd/mira-pet.service"
+fi
 systemctl daemon-reload
 systemctl enable --now argus.service
 sleep 3
