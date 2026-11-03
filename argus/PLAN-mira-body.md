@@ -273,7 +273,16 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
 - Not seen yet: lying asleep (her own doze after the mouse sits idle a while; an asked nap stands her up first, as
   upstream), her mouth and talk clips on Linux, landing on a window, the rarer blinks, and the effects that would move
   HavoK's things (clones, desktop icons, chaos).
-- Still to do: a reboot and a logoff/logon on each PC. The old bodies (`pet/windows/MiraPet`, `pet/mira-pet`) are the
+- winhvk survived a reboot (HavoK, 19:15): the service, her body and her companion came back on their own. It started
+  her companion twice, though: the timer and the logon both checked within the 2 s before Python appeared. The service
+  now counts the conhost/PowerShell that start her companion too. Reinstalled over SSH (admin), one companion since.
+  `install.ps1` moves the running Mira.exe aside like `deploy-body.ps1` (it had stopped halfway, with the service down).
+- laphvk's boot path checked without a reboot (this session runs there): `argus.service` is enabled, HavoK's manager
+  lingers, `mira-companion` is enabled, `mira-body` is static (the worker starts it) and `mira-pet` is linked, not enabled.
+- debhvk now has ARGUS itself, not only its worker: the checkout in `~/argus`, `argus` on PATH, `~/.argus` set up by its
+  first run, and `argus-companion` enabled in its config (backup `config.yaml.bak-20261103`). Her companion stays off
+  there (`argus.yaml`).
+- Still to do: a reboot of laphvk. The old bodies (`pet/windows/MiraPet`, `pet/mira-pet`) are the
   rollback and run from the checkout, so they're retired only once the new bodies have been through that.
 
 ### Waiting on HavoK
