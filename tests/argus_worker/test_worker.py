@@ -35,10 +35,10 @@ def test_argus_yaml_reads_as_written_and_anything_unclear_is_an_error_not_a_gues
         worker.load(tmp_path / "missing.yaml")
 
 
-def test_her_body_on_runs_it_and_stands_the_old_body_down_and_off_is_the_rollback(monkeypatch):
+def test_her_body_on_runs_it_and_off_stops_it(monkeypatch):
     worker = _worker()
     monkeypatch.setattr(worker.os, "geteuid", lambda: 0)
-    running = {worker.COMPANION: "active", worker.BODY: "inactive", worker.OLD_BODY: "active"}
+    running = {worker.COMPANION: "active", worker.BODY: "inactive"}
     calls = []
 
     def fake(command, **_):
@@ -53,10 +53,10 @@ def test_her_body_on_runs_it_and_stands_the_old_body_down_and_off_is_the_rollbac
         return subprocess.CompletedProcess(command, 0, "", "")
 
     on = {"host": "laphvk", "user": "havok", "body": {"enabled": True}, "companion": {"enabled": True}}
-    assert sorted(worker.apply(on, run=fake, say=lambda _: None)) == ["started mira-body.service", "stopped mira-pet.service"]
+    assert sorted(worker.apply(on, run=fake, say=lambda _: None)) == ["started mira-body.service"]
     assert worker.apply(on, run=fake, say=lambda _: None) == []                         # settled: nothing more to do
     off = {**on, "body": {"enabled": False}}
-    assert sorted(worker.apply(off, run=fake, say=lambda _: None)) == ["started mira-pet.service", "stopped mira-body.service"]
+    assert sorted(worker.apply(off, run=fake, say=lambda _: None)) == ["stopped mira-body.service"]
     assert running[worker.COMPANION] == "active"
 
 

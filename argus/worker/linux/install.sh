@@ -1,10 +1,10 @@
 #!/bin/sh
 # ARGUS's worker as root on this machine (laphvk or debhvk). Run with sudo from this folder:
-#   sudo ./install.sh laphvk     (her body on: the worker runs it in HavoK's session, the old QML body stands down)
+#   sudo ./install.sh laphvk     (her body on: the worker runs it in HavoK's session)
 #   sudo ./install.sh debhvk     (headless: no body, no companion)
 # It installs a root-owned copy of the worker, /etc/argus/argus.yaml (kept if it's already there), the system unit, and
 # lets HavoK's own systemd manager linger so her units can be started from root. Rollback: set body.enabled: false in
-# /etc/argus/argus.yaml (the old body comes back within 30 s), or `systemctl disable --now argus` to stop ARGUS's worker.
+# /etc/argus/argus.yaml (her body stops within 30 s), or `systemctl disable --now argus` to stop ARGUS's worker.
 set -eu
 [ "$(id -u)" -eq 0 ] || { echo "run it with sudo"; exit 1; }
 host="${1:?which machine: laphvk or debhvk}"
@@ -19,12 +19,6 @@ fi
 /usr/bin/python3 /usr/local/lib/argus/argus_worker.py check --config /etc/argus/argus.yaml
 install -m 0644 "$here/argus.service" /etc/systemd/system/argus.service
 loginctl enable-linger "$user"
-# The old QML body no longer starts on its own at login: the worker starts it only while body.enabled is false.
-# Disabling a linked unit also unlinks it, so it's linked again (not enabled): the worker still needs it for the rollback.
-if [ "$host" = laphvk ]; then
-    systemctl --user -M "$user@" disable mira-pet.service 2>/dev/null || true
-    systemctl --user -M "$user@" link "$(cd "$here/../.." && pwd)/pet/systemd/mira-pet.service"
-fi
 systemctl daemon-reload
 systemctl enable --now argus.service
 sleep 3

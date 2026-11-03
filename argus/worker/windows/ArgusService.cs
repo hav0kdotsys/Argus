@@ -3,8 +3,7 @@
 // It keeps what runs on this PC matching %ProgramData%\ARGUS\argus.yaml, every 30 s and whenever someone logs on or
 // unlocks. A service lives in session 0 and can't draw on the desktop, so MIRA's body and her companion are started in
 // HavoK's own desktop session, as HavoK (WTSQueryUserToken + CreateProcessAsUser): they see and touch her desktop like
-// any app she runs, and nothing they do runs as SYSTEM. body.enabled false brings the old body (the MIRA-Pet task)
-// back, which is the whole rollback.
+// any app she runs, and nothing they do runs as SYSTEM. body.enabled false stops her body.
 //
 // C# 5 for .NET Framework 4.8's csc, like the body. Built by build.ps1, installed by install.ps1 (admin).
 using System;
@@ -97,7 +96,7 @@ namespace Argus
 
         internal string Describe()
         {
-            return (Host.Length > 0 ? Host : "this PC") + ": body " + (BodyOn ? "on (" + BodyPath + ")" : "off (MIRA-Pet)") +
+            return (Host.Length > 0 ? Host : "this PC") + ": body " + (BodyOn ? "on (" + BodyPath + ")" : "off") +
                    ", companion " + (CompanionOn ? "on (" + CompanionCommand + ")" : "off");
         }
 
@@ -109,12 +108,10 @@ namespace Argus
 
     internal sealed class ArgusService : ServiceBase
     {
-        private const string OldBodyTask = "MIRA-Pet";
         private readonly object gate = new object();
         private Timer timer;
         private Config seen;
         private string lastProblem;
-        private bool? oldTaskOn;
 
         internal ArgusService()
         {
@@ -161,35 +158,17 @@ namespace Argus
             if (!Native.WTSQueryUserToken(session, out token)) return;      // nobody logged on at the console
             try
             {
-                if (config.BodyOn)
+                if (!config.BodyOn) Kill(session, "Mira");
+                else if (Processes(session, "Mira").Count == 0)
                 {
-                    OldTask(false);
-                    Kill(session, "MiraPet");
-                    if (Processes(session, "Mira").Count == 0)
-                    {
-                        if (File.Exists(config.BodyPath)) Launch(token, "\"" + config.BodyPath + "\"", Path.GetDirectoryName(config.BodyPath), "her body");
-                        else Problem("her body isn't at " + config.BodyPath);
-                    }
-                }
-                else
-                {
-                    Kill(session, "Mira");
-                    OldTask(true);
-                    if (Processes(session, "MiraPet").Count == 0) Run("schtasks.exe", "/Run /TN \"" + OldBodyTask + "\"");
+                    if (File.Exists(config.BodyPath)) Launch(token, "\"" + config.BodyPath + "\"", Path.GetDirectoryName(config.BodyPath), "her body");
+                    else Problem("her body isn't at " + config.BodyPath);
                 }
                 List<int> companions = Companions(session);
                 if (config.CompanionOn && companions.Count == 0) Launch(token, config.CompanionCommand, Profile(token), "her companion");
                 if (!config.CompanionOn) foreach (int id in companions) KillId(id);
             }
             finally { Native.CloseHandle(token); }
-        }
-
-        // The old body's logon task: off while her body runs, so it doesn't come back at the next logon; on for the rollback.
-        private void OldTask(bool on)
-        {
-            if (oldTaskOn == on) return;
-            Run("schtasks.exe", "/Change /TN \"" + OldBodyTask + "\" " + (on ? "/ENABLE" : "/DISABLE"));
-            oldTaskOn = on;
         }
 
         private static List<Process> Processes(uint session, string name)
@@ -277,19 +256,6 @@ namespace Argus
                 if (environment != IntPtr.Zero) Native.DestroyEnvironmentBlock(environment);
                 if (primary != IntPtr.Zero) Native.CloseHandle(primary);
             }
-        }
-
-        private void Run(string file, string arguments)
-        {
-            try
-            {
-                using (Process process = Process.Start(new ProcessStartInfo(file, arguments) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true }))
-                {
-                    process.WaitForExit(30000);
-                    if (process.ExitCode != 0) Problem(file + " " + arguments + ": " + process.StandardError.ReadToEnd().Trim());
-                }
-            }
-            catch (Exception error) { Problem(file + ": " + error.Message); }
         }
 
         // A problem is logged once, not every 30 s, until something else happens.

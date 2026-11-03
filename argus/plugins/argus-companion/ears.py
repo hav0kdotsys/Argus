@@ -6,7 +6,7 @@ and when the last beat fell. ``beat.json`` ({"bpm", "beat_at", "at"}, beat_at in
 her body nods to and what the link sends to her other body. Nothing is recorded or kept: each 10 ms of sound becomes
 one loudness number, and only the last few seconds of those exist.
 
-winhvk's body has the same ears in C# (MiraPet/Ears.cs, WASAPI loopback), writing the same ``beat.json``.
+winhvk has no ears here: its body (the mira-body fork) listens for music itself.
 """
 
 from __future__ import annotations

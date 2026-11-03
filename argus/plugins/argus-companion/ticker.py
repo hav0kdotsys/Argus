@@ -197,7 +197,7 @@ def _forced_away(folder: Path, idle: float, now: float) -> float:
 def moment(folder: Path, last_tick: float = 0.0) -> presence.Moment:
     now = time.time()
     panel = _panel()
-    # Each machine with a body has its own companion (winhvk runs MiraPet and `argus companion run` too), so a machine
+    # Each machine with a body has its own companion (winhvk runs its body and `argus companion run` too), so a machine
     # only offers moments while it's the one in use: an idle laphvk is "away" even when the camera sees Hannah at
     # winhvk, and winhvk's companion reaches her there. One Mira at a time, never two at once.
     idle = _idle_seconds(folder, now)
@@ -515,7 +515,7 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     relay.start(host, folder)
     from . import bridge
     bridge.start(folder)
-    if sys.platform != "win32":       # winhvk's body has its own ears (MiraPet/Ears.cs)
+    if sys.platform != "win32":       # winhvk's body listens for music itself
         from agent.memory_provider import spawn_context_thread
 
         from . import ears

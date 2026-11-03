@@ -2,6 +2,6 @@
 host: laphvk
 user: havok
 body:
-  enabled: true     # MIRA's body on this desktop; false brings the old QML body back
+  enabled: true     # MIRA's body on this desktop; false stops it
 companion:
   enabled: true     # the relay her body thinks and speaks through, and her check-ins

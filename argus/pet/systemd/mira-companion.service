@@ -1,11 +1,11 @@
-# Mira's check-ins (argus-companion's ticker): they show in her pet's bubble. Needs the argus-companion plugin enabled
+# Mira's companion on laphvk (argus-companion: her check-ins, the relay her body thinks through, the link). Needs the argus-companion plugin enabled
 # (plugins.enabled in ~/.argus/config.yaml). Enable once:
 #   systemctl --user link ~/argus/argus/pet/systemd/mira-companion.service && systemctl --user enable --now mira-companion
 # Edit what she says in ~/.argus/companion/check-ins.md; her quiet switch is MIRA's voice-panel quiet.
 [Unit]
 Description=Mira's check-ins (argus companion run)
 PartOf=graphical-session.target
-After=graphical-session.target mira-pet.service
+After=graphical-session.target
 
 [Service]
 ExecStart=%h/.local/bin/argus companion run

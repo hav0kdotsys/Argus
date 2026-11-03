@@ -3,7 +3,7 @@
 host: winhvk
 user: havok
 body:
-  enabled: true     # MIRA's body in HavoK's session; false brings MiraPet back
+  enabled: true     # MIRA's body in HavoK's session; false stops it
   path: C:\Users\HavoK\AppData\Local\Programs\Mira\Mira.exe
 companion:
   enabled: true     # the relay her body thinks and speaks through, and her check-ins

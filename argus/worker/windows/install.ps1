@@ -5,9 +5,8 @@
 #     automatic, restarts on failure)
 #   - writes %ProgramData%\ARGUS\argus.yaml from argus.winhvk.yaml if there isn't one, writable by admins only
 #   - puts her body (mira-body's out\windows\Mira.exe) in %LOCALAPPDATA%\Programs\Mira, where it updates without admin
-#   - stands the old body and companion down: the MIRA Companion startup shortcut moves to %ProgramData%\ARGUS\rollback,
-#     and the service turns off the MIRA-Pet logon task itself while her body is on
-# Rollback: set body.enabled: false in argus.yaml (MiraPet comes back within 30 s), or uninstall.ps1 for all of it.
+#   - stands the old companion launch down: the MIRA Companion startup shortcut moves to %ProgramData%\ARGUS\rollback
+# Undo: uninstall.ps1.
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -41,7 +40,6 @@ Get-Process Mira -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$
 $startup = Join-Path $user 'AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\MIRA Companion.lnk'
 if (Test-Path $startup) { Move-Item $startup (Join-Path $data 'rollback\MIRA Companion.lnk') -Force }
 Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -like '*companion run*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
-Get-Process MiraPet -ErrorAction SilentlyContinue | Stop-Process -Force
 
 if (-not (Get-Service ARGUS -ErrorAction SilentlyContinue)) {
     sc.exe create ARGUS binPath= ("`"" + (Join-Path $program 'ArgusService.exe') + "`"") start= auto obj= LocalSystem DisplayName= 'ARGUS' | Out-Null

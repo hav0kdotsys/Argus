@@ -282,6 +282,14 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
 - debhvk now has ARGUS itself, not only its worker: the checkout in `~/argus`, `argus` on PATH, `~/.argus` set up by its
   first run, and `argus-companion` enabled in its config (backup `config.yaml.bak-20261103`). Her companion stays off
   there (`argus.yaml`).
+- **Old bodies retired (2026-11-03, HavoK's call):** `pet/windows/MiraPet`, `pet/mira-pet`, its unit and
+  `build_sheets.py` are removed (they stay in git history). The worker and the service no longer stand anything in when
+  her body is off: `body.enabled: false` just stops it. On winhvk the MIRA-Pet task is exported to
+  `%ProgramData%\ARGUS\rollback` and deleted, and MiraPet's last build moved to `%LOCALAPPDATA%\argus\retired`.
+  On laphvk the `mira-pet` unit link and Quickshell's `mira-pet` config link are gone.
+- Gap found while retiring: her companion's check-ins go out loud through MIRA's voice panel and into `say.json`, but
+  only the old bodies drew `say.json` as a bubble (and read `body.json`/`event.json`). The fork doesn't, so since the
+  cutover a check-in is heard, not shown, and a pat or toss on the new body doesn't reach the companion.
 - Still to do: a reboot of laphvk. The old bodies (`pet/windows/MiraPet`, `pet/mira-pet`) are the
   rollback and run from the checkout, so they're retired only once the new bodies have been through that.
 

@@ -29,9 +29,8 @@ from pathlib import Path
 
 TICK = 30
 
-# Her units in HavoK's own systemd (user) manager. mira-pet is the QML body from before the fork: while her body is off it
-# stands in, so turning her body off in argus.yaml is the whole rollback.
-BODY, OLD_BODY, COMPANION = "mira-body.service", "mira-pet.service", "mira-companion.service"
+# Her units in HavoK's own systemd (user) manager.
+BODY, COMPANION = "mira-body.service", "mira-companion.service"
 
 DEFAULTS = {"host": "", "user": "", "body": {"enabled": False}, "companion": {"enabled": True}}
 KNOWN = {"host": str, "user": str, "body": dict, "companion": dict, "devices": list, "links": dict, "quiet_hours": str}
@@ -143,7 +142,7 @@ def load(path: Path | None = None) -> dict:
 def desired(config: dict) -> dict[str, bool]:
     """Which of her user units should be running for this config."""
     body = bool(config["body"]["enabled"])
-    return {COMPANION: bool(config["companion"]["enabled"]), BODY: body, OLD_BODY: not body}
+    return {COMPANION: bool(config["companion"]["enabled"]), BODY: body}
 
 
 def systemctl(user: str, *args: str, run=subprocess.run) -> subprocess.CompletedProcess:
