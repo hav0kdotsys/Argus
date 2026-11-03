@@ -173,3 +173,41 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
   44 sheets, 32 windows (16 Overlay effects: Chaos, ChessBoard, ClipToast, Clone, GameHud, Ink, MiniBoard,
   MiniPlayer, ReactionFeed, TalkPill, Tear, Shatter, Takeover, HerPointer, TaskPanel, SpeechBox), the
   paint/effect routines, and **112 lines her code says by itself**, for the P2 audit.
+
+### P1 (2026-11-03): core done
+- **Recolour** (`tools/recolour.py`): Capri's primary (#FA033F, 85% of her coloured pixels) maps exactly onto #C77DFF,
+  and every other red keeps its offset from it. Her greens, the cyan and the blue glitch splits stay. The art goes to
+  `assets/mira/` (originals untouched; both builds embed it). 51 colour literals in code were moved, using a hard band
+  so a re-run changes nothing; an orange test fixture (hue 14°) is left alone.
+- **Rename** (`tools/rename.py`): string literals only (regular and verbatim), about 1,050 of them: window titles,
+  menus, bubbles, the data folder `%LOCALAPPDATA%\Mira` / `~/.config/Mira`, mutexes `Local\Mira.*`, the uninstall key,
+  and `Mira.exe`. Kept: resource names, credit to Capri, and every web address (a renamed domain is someone else's
+  site).
+- **No calls home:** the update check never asks Capri's releases. The links you'd click yourself (Help, Capri's
+  Discord, Support/Ko-fi) stay as credit.
+- **Linux:** her windows set their own Hyprland rules (Lua `hl.window_rule`, or the hyprlang keyword), and with no
+  bottom panel the floor rises by her legs.
+- winhvk smoke after P1/P2: **185 PASS / 4 FAIL**, identical to stock.
+- Still open in P1: port the lie-down family and `perch_talk` to the Linux port (P5 with the rest).
+
+### P2 (2026-11-03): the link works end to end
+- Body: `app/MiraLink.cs` (both builds). Ask, call mode and asides go through ARGUS's relay to mira-api. What HavoK
+  says goes to the main conversation (`agent:desktop`); the body's own moments go to `agent:body`. Cues in her reply
+  still move the body. During a smoke test, or without ARGUS, the link is off.
+- Her hands: `MiraHands`, 127.0.0.1:8774 with ARGUS's token. `GET /kit` returns her tools in MCP's shape; `POST /do`
+  runs one through the body's own tool runner, so Security's toggles hold. Verified on laphvk: 15 tools, she danced
+  and stopped on command.
+- ARGUS: `relay.py`, 127.0.0.1:8773, started by the companion on both PCs. It writes `argus.json` (port, fresh token,
+  0600) into her body's folder. `argus companion hands kit|do <b64>` lets her MCP reach the body.
+- Verified live: relay → mira-api → **claude-code answered in 4.7 s** through `agent:body`. winhvk's relay is up, and
+  the MCP's exact SSH command answers there.
+- **Staged on debhvk, for HavoK's guarded deploy:** `mcp-server/mira-body.js` (`mira_body_kit`, `mira_body`) and its
+  registration in `mcp-server/server.js` (backup `server.js.bak-mirabody-20261103-004209`). `node --check` is clean
+  and the handlers were exercised with a fake SSH. The container still needs rebuilding (HavoK).
+- Still open in P2:
+  - the 112-line "words in her mouth" audit (her start-up greeting "Isn't it late, choom?" is one of them)
+  - her voice through Mira's TTS
+  - her settings' brain picker showing Mira's debhvk providers
+  - glances (See) through Mira's vision
+  - a call held by a Security toggle getting HavoK's yes through Mira
+  - the digest from `agent:body` into the main session
