@@ -252,11 +252,35 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
 - Every clip and effect window has its Mira row in `docs/ANIMATIONS.md`: her body's own senses, MIRA's tools through
   MCP, or ARGUS's link. Seeing each row on screen happens at the cutover (P6).
 
+### P6 (2026-11-03): cut over on both PCs; seen on screen
+- Installed: laphvk's `argus.service` started her body and stopped the QML body; winhvk's ARGUS service starts `Mira.exe`
+  and her companion in HavoK's session. debhvk's worker runs headless.
+- Seen on screen through her own tools, captured on both PCs (laphvk with grim; winhvk from a one-off task in HavoK's
+  session): glitch, grin, blink, dance, idle, sit (perch), dancing seated, lie down, sit up, stand up, hang (dangle),
+  hide and show (leave and arrive, from standing, a window and lying), nap and wake, walk (Windows), hologram, ink, and
+  her bubble while she talks (Windows).
+- Fixed on the way:
+  - Her glitch burst when she hides or arrives was still Capri red on Windows: reds with an alpha worked out at runtime
+    slipped past `recolour.py`. It handles them now (5 colours).
+  - `deploy-body.ps1` couldn't replace Mira.exe because the service restarts her the moment she exits. It moves the
+    running exe aside first.
+  - `install.sh` disabling the linked `mira-pet` unit also unlinked it, which took laphvk's rollback away. It's linked
+    again (not enabled), and install.sh relinks it.
+  - The last ties to Capri you could click: the Help page and Discord menu items, the Ko-fi Support button, and "open
+    your website" (capriai.app). The update check was already cut.
+- No calls to Capri: her connections, sampled on both PCs, went only to ARGUS's relay; her tool kits name nothing of
+  Capri's.
+- Not seen yet: lying asleep (her own doze after the mouse sits idle a while; an asked nap stands her up first, as
+  upstream), her mouth and talk clips on Linux, landing on a window, the rarer blinks, and the effects that would move
+  HavoK's things (clones, desktop icons, chaos).
+- Still to do: a reboot and a logoff/logon on each PC. The old bodies (`pet/windows/MiraPet`, `pet/mira-pet`) are the
+  rollback and run from the checkout, so they're retired only once the new bodies have been through that.
+
 ### Waiting on HavoK
 1. ~~debhvk: the MCP container~~ **done 2026-11-03** (`docker restart mira-mcp`; the source folder is mounted, so no
    rebuild). `mira_body_kit`, `mira_body` and `mira_body_answer` are live; a real call reached winhvk's ARGUS.
-2. **laphvk:** `sudo argus/worker/linux/install.sh laphvk`. That's the cutover: her body on, the QML body down.
-3. **winhvk:** an admin PowerShell running `argus\worker\windows\install.ps1`. That's the cutover there.
+2. ~~laphvk install~~ **done 2026-11-03** (HavoK).
+3. ~~winhvk install~~ **done 2026-11-03** (HavoK).
 4. ~~debhvk worker~~ **done 2026-11-03**: `argus.service` runs as root, body and companion off. A unit a machine doesn't
    have is left alone.
 5. ~~Discord application id~~ **done**: her status uses MIRA's own application (vortex-discord-bot's
