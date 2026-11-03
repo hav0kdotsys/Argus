@@ -257,6 +257,12 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
    rebuild). `mira_body_kit`, `mira_body` and `mira_body_answer` are live; a real call reached winhvk's ARGUS.
 2. **laphvk:** `sudo argus/worker/linux/install.sh laphvk`. That's the cutover: her body on, the QML body down.
 3. **winhvk:** an admin PowerShell running `argus\worker\windows\install.ps1`. That's the cutover there.
-4. **debhvk:** `sudo argus/worker/linux/install.sh debhvk` (headless; back up first, as always on debhvk).
-5. A Discord application id for Mira's status.
+4. ~~debhvk worker~~ **done 2026-11-03**: `argus.service` runs as root, body and companion off. A unit a machine doesn't
+   have is left alone.
+5. ~~Discord application id~~ **done**: her status uses MIRA's own application (vortex-discord-bot's
+   `DISCORD_APPLICATION_ID`), with no Capri buttons and no requests to Capri's art host. Her picture needs a Rich
+   Presence art image named `mira` in that application (Discord Developer Portal → Rich Presence → Art Assets).
+- mira-api, 2026-11-03 (backup `src/server.js.bak-groqsize-20261103-144724`, image `mira-api:rollback-20261103-groq`):
+  GroqCloud gets the compact soul, and compaction skips Groq when the transcript can't fit its 8,000 tokens/minute
+  (9,797 and 17,077 were requested and refused). That rebuild also shipped the pending one-soul persona patch.
 6. Optional, mira-api: an unlock route, so her brain picker can offer "Auto" again.
