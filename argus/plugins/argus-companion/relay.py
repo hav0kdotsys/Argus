@@ -20,6 +20,8 @@ import json
 import logging
 import os
 import secrets
+import shutil
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -66,8 +68,9 @@ def _event(kind: str, payload: dict) -> bytes:
 
 
 class Relay:
-    def __init__(self, host: str, folder: Path | None = None, port: int = PORT):
+    def __init__(self, host: str, folder: Path | None = None, port: int = PORT, companion: Path | None = None):
         self.host, self.folder, self.port = host, folder or body_folder(), port
+        self.companion = companion            # where the shared quiet switch lives; quiet means her body makes no sound
         self.token = secrets.token_urlsafe(24)
         self.server: ThreadingHTTPServer | None = None
         self.seen: dict[str, dict] = {}         # session -> what her last turn there said about it (id, lock, who answered)
@@ -153,6 +156,26 @@ class Relay:
         known["locked"] = provider
         return {"locked": provider}
 
+    def speak(self, text: str) -> tuple[int, bytes, str]:
+        """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a
+        notification, so her body never spends the credits kept for conversation. Never while ARGUS is quiet."""
+        if self.companion is not None and (self.companion / "quiet").exists():
+            return 423, b'{"error":"quiet: her body makes no sound right now"}', "application/json"
+        base, token = backend._config()
+        if not token:
+            return 503, b'{"error":"ARGUS has no MIRA_AUTH_TOKEN on this machine"}', "application/json"
+        request = urllib.request.Request(
+            f"{base.rstrip('/')}/v1/tts", data=json.dumps({"text": text, "voice": "mira", "purpose": "notification"}).encode(),
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                sound = response.read()
+        except urllib.error.HTTPError as exc:
+            return 502, json.dumps({"error": f"mira-api's voice answered {exc.code}"}).encode(), "application/json"
+        except OSError:
+            return 502, b'{"error":"Mira\'s voice didn\'t answer"}', "application/json"
+        return 200, *as_wav(sound)
+
     def serve(self) -> ThreadingHTTPServer:
         relay = self
 
@@ -174,6 +197,13 @@ class Relay:
                 self.send_error(403)
                 return False
 
+            def sound(self, status: int, data: bytes, kind: str) -> None:
+                self.send_response(status)
+                self.send_header("Content-Type", kind)
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
             def do_GET(self):
                 if self.path != "/brains":
                     self.send_error(404)
@@ -181,10 +211,21 @@ class Relay:
                     self.answer(relay.brains())
 
             def do_POST(self):
-                if self.path not in ("/turn", "/brain"):
+                if self.path not in ("/turn", "/brain", "/speak"):
                     self.send_error(404)
                     return
                 if not self.allowed():
+                    return
+                if self.path == "/speak":
+                    try:
+                        text = str(json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))["text"]).strip()
+                    except (KeyError, TypeError, ValueError):
+                        self.send_error(400)
+                        return
+                    if not text:
+                        self.send_error(400)
+                        return
+                    self.sound(*relay.speak(text[:2000]))
                     return
                 if self.path == "/brain":
                     try:
@@ -232,6 +273,20 @@ class Relay:
         return self.server
 
 
+def as_wav(sound: bytes) -> tuple[bytes, str]:
+    """Her voice comes as MP3. Where ffmpeg is (laphvk), it goes back as 24 kHz mono 16-bit WAV, which every body plays;
+    otherwise as it came (Windows decodes MP3 itself)."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg or sound[:4] == b"RIFF":
+        return sound, "audio/wav" if sound[:4] == b"RIFF" else "audio/mpeg"
+    try:
+        done = subprocess.run([ffmpeg, "-loglevel", "error", "-i", "pipe:0", "-f", "wav", "-ar", "24000", "-ac", "1",
+                               "-acodec", "pcm_s16le", "pipe:1"], input=sound, capture_output=True, timeout=60, check=True)
+    except (OSError, subprocess.SubprocessError):
+        return sound, "audio/mpeg"
+    return done.stdout, "audio/wav"
+
+
 HANDS_PORT = 8774
 
 
@@ -254,8 +309,8 @@ def hands(what: str, call: dict | None = None, folder: Path | None = None, timeo
         return {"error": "her body isn't up on this machine"}
 
 
-def start(host: str) -> Relay | None:
-    relay = Relay(host)
+def start(host: str, companion: Path | None = None) -> Relay | None:
+    relay = Relay(host, companion=companion)
     try:
         relay.serve()
     except OSError:

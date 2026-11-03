@@ -331,3 +331,54 @@ def test_her_bodys_brain_picker_pins_the_session_her_last_answer_came_from(tmp_p
     finally:
         server.shutdown()
         mira.shutdown()
+
+
+def test_her_body_speaks_in_her_own_voice_and_never_while_argus_is_quiet(tmp_path, monkeypatch):
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    import urllib.error
+    import urllib.request
+
+    relay = _mod("relay")
+    backend = _mod("backend")
+    asked = []
+
+    class Fake(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            return
+
+        def do_POST(self):
+            asked.append((self.path, json.loads(self.rfile.read(int(self.headers["Content-Length"])))))
+            data = b"RIFF\x00\x00\x00\x00WAVEfmt "
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    mira = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=mira.serve_forever, daemon=True).start()
+    monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{mira.server_port}", "tok"))
+    companion = tmp_path / "companion"
+    companion.mkdir()
+    body = relay.Relay("laphvk", tmp_path, port=0, companion=companion)
+    server = body.serve()
+
+    def speak():
+        request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/speak", data=json.dumps({"text": "hi"}).encode(),
+                                         headers={relay.HEADER: body.token})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return response.headers["Content-Type"], response.read()
+
+    try:
+        kind, sound = speak()
+        assert kind == "audio/wav" and sound.startswith(b"RIFF")
+        assert asked == [("/v1/tts", {"text": "hi", "voice": "mira", "purpose": "notification"})]
+        (companion / "quiet").write_text("quiet", encoding="utf-8")
+        try:
+            speak()
+            raise AssertionError("she spoke while ARGUS was quiet")
+        except urllib.error.HTTPError as exc:
+            assert exc.code == 423
+        assert len(asked) == 1
+    finally:
+        server.shutdown()
+        mira.shutdown()
