@@ -392,7 +392,7 @@ def test_her_body_speaks_in_her_own_voice_and_never_while_argus_is_quiet(tmp_pat
         mira.shutdown()
 
 
-def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session(tmp_path, monkeypatch):
+def test_her_bodys_glance_is_one_turn_in_her_side_session_with_the_picture_itself(tmp_path, monkeypatch):
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     import urllib.request
 
@@ -409,9 +409,6 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
             asked.append((self.path, sent))
             self.send_response(200)
             self.end_headers()
-            if self.path.endswith("/camera/analyze"):
-                self.wfile.write(json.dumps({"status": "success", "content": "Factorio, a burning base."}).encode())
-                return
             final = {"type": "turn.final", "choice": {"message": {"content": "Your base is on fire."}}}
             self.wfile.write(f"event: turn.final\ndata: {json.dumps(final)}\n\n".encode())
 
@@ -429,13 +426,13 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
         with urllib.request.urlopen(request, timeout=10) as response:
             out = response.read().decode()
         assert "Your base is on fire." in out
-        (look, frame), (turn, said) = asked
-        assert look == "/v1/mira/camera/analyze" and frame["imageBase64"] == "/9j/AAAA"
+        [(turn, said)] = asked                               # one call: no separate describe first
+        assert said["images"] == [{"data": "/9j/AAAA", "mimeType": "image/jpeg"}]
         assert turn == "/v1/mira/call/stream" and said["userId"] == "body"
-        assert "Factorio, a burning base." in said["messages"][0]["content"]
+        assert "the picture is attached" in said["messages"][0]["content"]
         assert said["messages"][0]["content"].count("React in one line.") == 1
         # her session keeps what she saw, not the glance's instructions
-        assert "Factorio, a burning base." in said["historyText"] and "React in one line." not in said["historyText"]
+        assert "glanced at HavoK's screen" in said["historyText"] and "React in one line." not in said["historyText"]
         assert said["trustedWeb"] is False and said["tools"] is False   # a glance is no web lookup and uses no tools
         timed = json.loads((companion / "turns.jsonl").read_text(encoding="utf-8"))   # how long it took, for her latency work
         assert timed["kind"] == "glance" and timed["session"] == "body" and timed["ms"] >= 0

@@ -41,8 +41,6 @@ TURN_TIMEOUT = 600
 TIMINGS = "turns.jsonl"          # one line per turn her body asked for, in the companion folder: how long it took
 TIMINGS_KEEP = 3000
 DIGEST_KEEP, DIGEST_HOURS, DIGEST_LINE = 6, 3, 200     # what her side session said lately, carried into her main one
-SEE_PROMPT = ("This is a frame of HavoK's own computer screen. Say plainly what's on it: the app or game, what's happening, "
-              "any text that matters. Be concise and leave out private details like passwords or message contents.")
 
 
 def body_folder() -> Path:
@@ -59,7 +57,7 @@ def where_said(host: str, session: str) -> str:
 
 
 def request_for(text: str, session: str, host: str, max_tokens: int, base: str, token: str,
-                history: str = "") -> urllib.request.Request:
+                history: str = "", images: list | None = None) -> urllib.request.Request:
     """history: what her session keeps of this turn instead of *text* (mira-api's ``historyText``), for a turn whose
     instructions would only weigh down every later turn; her reply is kept in full either way."""
     body = {"messages": [{"role": "user", "content": text + where_said(host, session)}], "mode": "agent",
@@ -67,6 +65,8 @@ def request_for(text: str, session: str, host: str, max_tokens: int, base: str, 
     if history:
         # A generated turn: its words are instructions, not something to look up on the web, and it needs no tools.
         body["historyText"], body["trustedWeb"], body["tools"] = history, False, False
+    if images:
+        body["images"] = images
     if SESSIONS[session]:
         body["userId"] = SESSIONS[session]
     return urllib.request.Request(
@@ -114,14 +114,14 @@ class Relay:
             temp.chmod(0o600)
         temp.replace(path)
 
-    def stream(self, text: str, session: str, max_tokens: int, write, history: str = "") -> None:
+    def stream(self, text: str, session: str, max_tokens: int, write, history: str = "", images: list | None = None) -> None:
         base, token = backend._config()
         if not token:
             write(_event("turn.error", {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine", "status": "unconfigured"}))
             return
         if session == "main":
             text = self.digest() + text
-        request = request_for(text, session, self.host, max_tokens, base, token, history)
+        request = request_for(text, session, self.host, max_tokens, base, token, history, images)
         started, first = time.monotonic(), None
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
@@ -219,31 +219,14 @@ class Relay:
         known["locked"] = provider
         return {"locked": provider}
 
-    def describe(self, image: str) -> str | None:
-        """What a frame of HavoK's screen shows, from MIRA's vision (Claude, through mira-api). Her body's glance becomes
-        words she then answers herself."""
-        base, token = backend._config()
-        if not token:
-            return None
-        request = urllib.request.Request(
-            f"{base.rstrip('/')}/v1/mira/camera/analyze",
-            data=json.dumps({"imageBase64": image, "mimeType": "image/jpeg", "prompt": SEE_PROMPT}).encode(),
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Jarvis-Client": "desktop"})
-        try:
-            with urllib.request.urlopen(request, timeout=90) as response:
-                seen = json.loads(response.read().decode("utf-8"))
-        except (OSError, ValueError) as exc:
-            logger.warning("relay: Mira's vision didn't answer (%s)", exc)
-            return None
-        return (seen.get("content") or "").strip() or None
-
     def glance(self, text: str, image: str, max_tokens: int, write) -> None:
-        seen = self.describe(image)
-        if not seen:
-            write(_event("turn.error", {"error": "Mira's vision didn't answer", "status": "unseen"}))
-            return
-        self.stream(f"(Your body on {self.host} just glanced at HavoK's screen. What it shows: {seen})\n\n{text}",
-                    "body", max_tokens, write, history=f"(Your body on {self.host} glanced at HavoK's screen: {seen})")
+        """Her body glanced at HavoK's screen: one turn in her side session with the picture itself attached, so she
+        answers what she sees (it used to be described by a separate vision call first, ~150 a day). Her session keeps a
+        short note; her reply (SAW and SAY) says what she saw."""
+        self.stream(f"(Your body on {self.host} just glanced at HavoK's screen: the picture is attached. Leave out private "
+                    f"details like passwords or message contents.)\n\n{text}",
+                    "body", max_tokens, write, history=f"(Your body on {self.host} glanced at HavoK's screen.)",
+                    images=[{"data": image, "mimeType": "image/jpeg"}])
 
     def speak(self, text: str) -> tuple[int, bytes, str]:
         """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a
