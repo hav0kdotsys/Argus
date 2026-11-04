@@ -158,6 +158,9 @@ def test_her_words_come_from_her_own_backend_in_her_companion_session(monkeypatc
         assert backend.call("a moment") == ("Drink something, gremlin.", "groqcloud")
         assert seen["path"] == "/v1/mira/call" and seen["auth"] == "Bearer tok" and seen["client"] == "api"
         assert seen["body"]["userId"] == "companion" and seen["body"]["mode"] == "agent"
+        assert "historyText" not in seen["body"]                       # nothing to shorten: kept as said
+        backend.call("a moment's long instructions", history="(a moment: water)")
+        assert seen["body"]["historyText"] == "(a moment: water)"
         monkeypatch.setattr(backend, "_config", lambda: ("http://127.0.0.1:9", "tok"))
         assert backend.call("a moment") == ("", "")                    # her backend down: she just doesn't speak
     finally:
@@ -429,6 +432,8 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
         assert turn == "/v1/mira/call/stream" and said["userId"] == "body"
         assert "Factorio, a burning base." in said["messages"][0]["content"]
         assert said["messages"][0]["content"].count("React in one line.") == 1
+        # her session keeps what she saw, not the glance's instructions
+        assert "Factorio, a burning base." in said["historyText"] and "React in one line." not in said["historyText"]
     finally:
         server.shutdown()
         mira.shutdown()

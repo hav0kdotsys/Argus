@@ -52,14 +52,18 @@ def reply_text(data: dict) -> str:
     return re.sub(r"<think>.*?(</think>|$)", "", str(content), flags=re.DOTALL | re.IGNORECASE).strip()
 
 
-def call(text: str, max_tokens: int = 800, temperature: float = 0.9, timeout: float = 150) -> tuple[str, str]:
-    """One Mira turn in her companion session: (her reply, who answered). ("", "") when she can't be reached."""
+def call(text: str, max_tokens: int = 800, temperature: float = 0.9, timeout: float = 150,
+         history: str = "") -> tuple[str, str]:
+    """One Mira turn in her companion session: (her reply, who answered). ("", "") when she can't be reached.
+    history: what the session keeps of *text* (mira-api's ``historyText``), when *text* is mostly instructions."""
     base, token = _config()
     if not token:
         logger.warning("companion: no MIRA_AUTH_TOKEN here; Mira's backend can't be asked")
         return "", ""
     body = {"messages": [{"role": "user", "content": text}], "mode": "agent", "userId": SESSION,
             "maxTokens": max_tokens, "temperature": temperature}
+    if history:
+        body["historyText"] = history
     request = urllib.request.Request(f"{base.rstrip('/')}/v1/mira/call", data=json.dumps(body).encode("utf-8"),
                                      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
                                               "X-Jarvis-Client": "api"})

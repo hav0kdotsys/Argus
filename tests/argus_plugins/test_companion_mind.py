@@ -117,3 +117,10 @@ def test_her_day_from_mira_puts_overdue_first_and_counts_waiting_decisions(mind)
     text = mind.brief("popin", timedelta(minutes=5), mind.Seen(), datetime(2026, 11, 2, 9, 0), [], [], [], day=lines)
     assert "Her day, from MIRA" in text and "Bins out" in text
     assert "Her day" not in mind.brief("popin", timedelta(minutes=5), mind.Seen(), datetime(2026, 11, 2, 9, 0), [], [], [])
+
+
+def test_a_moment_leaves_its_reason_and_facts_in_her_session_not_its_instructions(mind):
+    facts = "Why ARGUS flagged this moment: she's been at it for 2h.\n\nNow: Tuesday.\n\nWhat you remember about her:\n- likes tea"
+    note = mind.moment_note(facts, "Her reminder \"Bins out\" is now overdue.")
+    assert "she's been at it for 2h" in note and "Bins out" in note
+    assert "Tuesday" not in note and "likes tea" not in note and mind.AUTONOMY.strip()[:40] not in note

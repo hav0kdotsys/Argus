@@ -56,9 +56,14 @@ def where_said(host: str, session: str) -> str:
     return f"\n\n(From your body on {host}.)"
 
 
-def request_for(text: str, session: str, host: str, max_tokens: int, base: str, token: str) -> urllib.request.Request:
+def request_for(text: str, session: str, host: str, max_tokens: int, base: str, token: str,
+                history: str = "") -> urllib.request.Request:
+    """history: what her session keeps of this turn instead of *text* (mira-api's ``historyText``), for a turn whose
+    instructions would only weigh down every later turn; her reply is kept in full either way."""
     body = {"messages": [{"role": "user", "content": text + where_said(host, session)}], "mode": "agent",
             "maxTokens": max_tokens, "temperature": 0.9}
+    if history:
+        body["historyText"] = history
     if SESSIONS[session]:
         body["userId"] = SESSIONS[session]
     return urllib.request.Request(
@@ -93,14 +98,14 @@ class Relay:
             temp.chmod(0o600)
         temp.replace(path)
 
-    def stream(self, text: str, session: str, max_tokens: int, write) -> None:
+    def stream(self, text: str, session: str, max_tokens: int, write, history: str = "") -> None:
         base, token = backend._config()
         if not token:
             write(_event("turn.error", {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine", "status": "unconfigured"}))
             return
         if session == "main":
             text = self.digest() + text
-        request = request_for(text, session, self.host, max_tokens, base, token)
+        request = request_for(text, session, self.host, max_tokens, base, token, history)
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
                 for line in response:
@@ -202,7 +207,7 @@ class Relay:
             write(_event("turn.error", {"error": "Mira's vision didn't answer", "status": "unseen"}))
             return
         self.stream(f"(Your body on {self.host} just glanced at HavoK's screen. What it shows: {seen})\n\n{text}",
-                    "body", max_tokens, write)
+                    "body", max_tokens, write, history=f"(Your body on {self.host} glanced at HavoK's screen: {seen})")
 
     def speak(self, text: str) -> tuple[int, bytes, str]:
         """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a

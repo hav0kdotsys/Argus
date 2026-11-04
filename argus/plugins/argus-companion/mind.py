@@ -249,6 +249,14 @@ def decide(text: str) -> str | None:
     return voice.polish(" ".join(line.split()))
 
 
+def moment_note(facts: str, extra: str = "") -> str:
+    """What her companion session keeps of a moment instead of its ~5,000 characters of instructions and context: why
+    ARGUS flagged it, and its facts. Her answer is kept in full beside it."""
+    why = facts.split("\n\n", 1)[0]
+    more = " ".join(extra.split())
+    return f"(A moment of your own, from ARGUS - not Hannah talking. {why}{' ' + more[:400] if more else ''})"
+
+
 def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
         gaming: bool = False, away_for: timedelta = timedelta(0), extra: str = "") -> str | None:
     """Ask Mira about this moment. Her line, or None when she passes or her backend can't be reached."""
@@ -257,7 +265,7 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     now = time.time()
     facts = brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now),
                   memories(), recent_talk(now), own_lines(folder), away_for, _agenda(), extra)
-    raw, who = backend.call(AUTONOMY.strip() + "\n\n" + facts)
+    raw, who = backend.call(AUTONOMY.strip() + "\n\n" + facts, history=moment_note(facts, extra))
     line = decide(raw)
     logger.info("companion: %s moment -> %s (answered by %s, %d chars raw)", kind,
                 repr(line) if line else "passed", who or "nobody", len(raw))
