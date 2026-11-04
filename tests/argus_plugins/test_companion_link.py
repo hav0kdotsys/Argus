@@ -418,7 +418,9 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
     mira = ThreadingHTTPServer(("127.0.0.1", 0), Fake)
     threading.Thread(target=mira.serve_forever, daemon=True).start()
     monkeypatch.setattr(backend, "_config", lambda: (f"http://127.0.0.1:{mira.server_port}", "tok"))
-    body = relay.Relay("winhvk", tmp_path, port=0)
+    companion = tmp_path / "companion"
+    companion.mkdir()
+    body = relay.Relay("winhvk", tmp_path, port=0, companion=companion)
     server = body.serve()
     try:
         request = urllib.request.Request(f"http://127.0.0.1:{server.server_port}/see",
@@ -434,6 +436,8 @@ def test_her_bodys_glance_is_seen_by_her_vision_and_answered_in_her_side_session
         assert said["messages"][0]["content"].count("React in one line.") == 1
         # her session keeps what she saw, not the glance's instructions
         assert "Factorio, a burning base." in said["historyText"] and "React in one line." not in said["historyText"]
+        timed = json.loads((companion / "turns.jsonl").read_text(encoding="utf-8"))   # how long it took, for her latency work
+        assert timed["kind"] == "glance" and timed["session"] == "body" and timed["ms"] >= 0
     finally:
         server.shutdown()
         mira.shutdown()

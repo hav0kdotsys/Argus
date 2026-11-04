@@ -38,6 +38,8 @@ PORT = 8773
 HEADER = "X-Argus-Token"
 SESSIONS = {"main": None, "body": "body"}      # session -> mira-api userId (the scope modifier)
 TURN_TIMEOUT = 600
+TIMINGS = "turns.jsonl"          # one line per turn her body asked for, in the companion folder: how long it took
+TIMINGS_KEEP = 3000
 DIGEST_KEEP, DIGEST_HOURS, DIGEST_LINE = 6, 3, 200     # what her side session said lately, carried into her main one
 SEE_PROMPT = ("This is a frame of HavoK's own computer screen. Say plainly what's on it: the app or game, what's happening, "
               "any text that matters. Be concise and leave out private details like passwords or message contents.")
@@ -70,6 +72,19 @@ def request_for(text: str, session: str, host: str, max_tokens: int, base: str, 
         f"{base.rstrip('/')}/v1/mira/call/stream", data=json.dumps(body).encode("utf-8"),
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
                  "Accept": "text/event-stream", "X-Jarvis-Client": "desktop"})
+
+
+def record(folder: Path, row: dict) -> None:
+    """One turn's timing into the companion folder's turns.jsonl, kept to its last TIMINGS_KEEP lines."""
+    path = folder / TIMINGS
+    try:
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row) + "\n")
+        if path.stat().st_size > TIMINGS_KEEP * 600:
+            rows = path.read_text(encoding="utf-8").splitlines()[-TIMINGS_KEEP:]
+            path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    except OSError:
+        logger.debug("relay: couldn't record a turn's timing", exc_info=True)
 
 
 def _event(kind: str, payload: dict) -> bytes:
@@ -106,10 +121,15 @@ class Relay:
         if session == "main":
             text = self.digest() + text
         request = request_for(text, session, self.host, max_tokens, base, token, history)
+        started, first = time.monotonic(), None
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
                 for line in response:
-                    self.note(session, line)
+                    if first is None and line.startswith(b"data:") and b"turn.delta" in line:
+                        first = time.monotonic()
+                    final = self.note(session, line)
+                    if final is not None:
+                        self.timed(session, "glance" if history else "turn", started, first, final)
                     write(line)
         except urllib.error.HTTPError as exc:
             write(_event("turn.error", {"error": f"mira-api answered {exc.code}", "status": "http"}))
@@ -117,22 +137,37 @@ class Relay:
             logger.warning("relay: Mira's backend didn't answer (%s)", exc)
             write(_event("turn.error", {"error": "Mira's backend didn't answer", "status": "unreachable"}))
 
-    def note(self, session: str, line: bytes) -> None:
-        """Her session's id and lock, from each turn.final passing through, so her body's brain picker can pin it."""
-        if not line.startswith(b"data:") or b"turn.final" not in line:
+    def timed(self, session: str, kind: str, started: float, first: float | None, final: dict) -> None:
+        """How long a turn took, end to end and to her first sentence, with mira-api's own breakdown (``latency.server``:
+        session, memory, provider, first sentence) and who answered: what her latency and quota work is measured by."""
+        if self.companion is None:
             return
+        now = time.monotonic()
+        server = (final.get("latency") or {}).get("server") or {}
+        row = {"at": round(time.time()), "host": self.host, "session": session, "kind": kind,
+               "ms": round((now - started) * 1000), "first_ms": round((first - started) * 1000) if first else None,
+               "by": final.get("answeredBy") or final.get("provider"),
+               "server": {k: v for k, v in server.items() if isinstance(v, (int, float))}}
+        record(self.companion, row)
+
+    def note(self, session: str, line: bytes) -> dict | None:
+        """Her session's id and lock, from each turn.final passing through, so her body's brain picker can pin it. The
+        turn.final itself, or None for any other line."""
+        if not line.startswith(b"data:") or b"turn.final" not in line:
+            return None
         try:
             final = json.loads(line[5:])
         except ValueError:
-            return
+            return None
         if final.get("type") != "turn.final":
-            return
+            return None
         about = final.get("session") or {}
         said = " ".join(str(((final.get("choice") or {}).get("message") or {}).get("content") or "").split())
         if session == "body" and 0 < len(said) <= DIGEST_LINE:      # longer is work (her words for MiraWords), not a moment
             self.lately = [*self.lately, (time.time(), said)][-DIGEST_KEEP:]
         self.seen[session] = {"id": about.get("sessionId"), "locked": about.get("lockedProvider"),
                               "answeredBy": final.get("answeredBy") or final.get("provider")}
+        return final
 
     def digest(self) -> str:
         """What her body said on its own lately (its side session), once, at the top of HavoK's next words to her: the

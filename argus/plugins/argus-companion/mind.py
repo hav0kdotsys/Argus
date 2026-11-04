@@ -265,7 +265,12 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
     now = time.time()
     facts = brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now),
                   memories(), recent_talk(now), own_lines(folder), away_for, _agenda(), extra)
+    started = time.monotonic()
     raw, who = backend.call(AUTONOMY.strip() + "\n\n" + facts, history=moment_note(facts, extra))
+    from . import relay
+    relay.record(folder, {"at": round(time.time()), "host": where, "session": "companion", "kind": kind,
+                          "ms": round((time.monotonic() - started) * 1000), "first_ms": None, "by": who, "server": {},
+                          "passed": decide(raw) is None})
     line = decide(raw)
     logger.info("companion: %s moment -> %s (answered by %s, %d chars raw)", kind,
                 repr(line) if line else "passed", who or "nobody", len(raw))
