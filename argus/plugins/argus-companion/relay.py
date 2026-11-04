@@ -65,8 +65,8 @@ def request_for(text: str, session: str, host: str, max_tokens: int, base: str, 
     body = {"messages": [{"role": "user", "content": text + where_said(host, session)}], "mode": "agent",
             "maxTokens": max_tokens, "temperature": 0.9}
     if history:
-        # A generated turn: its words are instructions, not something to look up on the web.
-        body["historyText"], body["trustedWeb"] = history, False
+        # A generated turn: its words are instructions, not something to look up on the web, and it needs no tools.
+        body["historyText"], body["trustedWeb"], body["tools"] = history, False, False
     if SESSIONS[session]:
         body["userId"] = SESSIONS[session]
     return urllib.request.Request(

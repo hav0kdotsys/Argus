@@ -63,8 +63,8 @@ def call(text: str, max_tokens: int = 800, temperature: float = 0.9, timeout: fl
     body = {"messages": [{"role": "user", "content": text}], "mode": "agent", "userId": SESSION,
             "maxTokens": max_tokens, "temperature": temperature}
     if history:
-        # A generated turn: its words are instructions, not something to look up on the web.
-        body["historyText"], body["trustedWeb"] = history, False
+        # A generated turn: its words are instructions, not something to look up on the web, and it needs no tools.
+        body["historyText"], body["trustedWeb"], body["tools"] = history, False, False
     request = urllib.request.Request(f"{base.rstrip('/')}/v1/mira/call", data=json.dumps(body).encode("utf-8"),
                                      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
                                               "X-Jarvis-Client": "api"})
