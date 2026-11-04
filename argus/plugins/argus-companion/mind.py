@@ -10,8 +10,10 @@ become a joke about the show that's paused, or nothing at all.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import os
 import re
 import sqlite3
 import subprocess
@@ -80,6 +82,7 @@ class Seen:
     where: str = "laphvk"       # the machine she's at
     gaming: bool = False        # winhvk's Lan Mouse Game Mode is on
     local: bool = True          # her screen is the one Mira can see from here (window/playing are hers)
+    app: str = ""               # the app in front, without the title it shows (what a held moment compares)
 
 
 def _home() -> Path:
@@ -173,8 +176,10 @@ def look(idle: float, where: str = "laphvk", gaming: bool = False, state: dict |
     itself (state.json: the Windows body) is believed first; on laphvk, Hyprland and playerctl answer."""
     state = state or {}
     if "window" in state:
-        return Seen(window=str(state.get("window") or "")[:160], fullscreen=bool(state.get("fullscreen")),
-                    playing=str(state.get("playing") or "")[:160], idle=idle, where=where, gaming=gaming, local=True)
+        title = str(state.get("window") or "")
+        return Seen(window=title[:160], fullscreen=bool(state.get("fullscreen")),
+                    playing=str(state.get("playing") or "")[:160], idle=idle, where=where, gaming=gaming, local=True,
+                    app=re.split(r" [-—] ", title)[-1].strip()[:80])      # Windows titles end with the app's name
     try:
         win = json.loads(_run(["hyprctl", "activewindow", "-j"]) or "{}")
     except ValueError:
@@ -182,7 +187,7 @@ def look(idle: float, where: str = "laphvk", gaming: bool = False, state: dict |
     window = " - ".join(p for p in (str(win.get("class") or ""), str(win.get("title") or "")) if p)
     playing = _run(["playerctl", "metadata", "--format", "{{artist}} - {{title}} [{{status}}]"])
     return Seen(window=window[:160], fullscreen=bool(win.get("fullscreen")), playing=playing[:160], idle=idle,
-                where=where, gaming=gaming, local=where == "laphvk")
+                where=where, gaming=gaming, local=where == "laphvk", app=str(win.get("class") or "")[:80])
 
 
 def agenda_lines(agenda: dict, autonomy: dict) -> list[str]:
@@ -257,14 +262,63 @@ def moment_note(facts: str, extra: str = "") -> str:
     return f"(A moment of your own, from ARGUS - not Hannah talking. {why}{' ' + more[:400] if more else ''})"
 
 
+HOLD = 2 * 3600.0                          # a held moment is offered again after this long, news or not
+NEVER_HELD = ("pat", "tossed", "poked", "woke")  # a touch is always news
+
+
+def news(kind: str, seen: Seen, talk: list[str], day: list[str], extra: str = "") -> str:
+    """What this moment is about, minus the clock: the app in front (not its title, so a terminal retitling itself with
+    every command isn't news), fullscreen, what's playing, her day, recent talk and the moment's facts."""
+    return hashlib.sha1(json.dumps([kind, seen.where, seen.app, seen.fullscreen, seen.playing, seen.gaming, day, talk,
+                                    extra]).encode("utf-8")).hexdigest()
+
+
+def held(folder: Path, kind: str, fingerprint: str, now: float) -> bool:
+    """She passed on this kind of moment and nothing it's about has changed since (for under HOLD): don't ask again.
+    Her backend is never asked to say nothing twice; whether to speak stays her call whenever there's something new."""
+    if kind in NEVER_HELD:
+        return False
+    try:
+        last = json.loads((folder / "held.json").read_text(encoding="utf-8")).get(kind) or {}
+    except (OSError, ValueError, AttributeError):
+        return False
+    return last.get("news") == fingerprint and now - float(last.get("at") or 0) < HOLD
+
+
+def remember_pass(folder: Path, kind: str, fingerprint: str | None, now: float) -> None:
+    """After she passes: hold this kind on what it was about. After she speaks (fingerprint None): let it go."""
+    path = folder / "held.json"
+    try:
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        saved = saved if isinstance(saved, dict) else {}
+    except (OSError, ValueError):
+        saved = {}
+    if fingerprint is None:
+        saved.pop(kind, None)
+    elif (saved.get(kind) or {}).get("news") != fingerprint:
+        saved[kind] = {"news": fingerprint, "at": now}       # the hold runs from the first pass on this news
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(saved), encoding="utf-8")
+    os.replace(tmp, path)
+
+
 def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, where: str = "laphvk",
         gaming: bool = False, away_for: timedelta = timedelta(0), extra: str = "") -> str | None:
-    """Ask Mira about this moment. Her line, or None when she passes or her backend can't be reached."""
+    """Ask Mira about this moment. Her line; None when she passes or her backend can't be reached; "" when the moment
+    was held (she passed on the same thing already, so she isn't asked)."""
     from . import backend
 
     now = time.time()
-    facts = brief(kind, present_for, look(idle, where, gaming, _body_state(folder)), datetime.fromtimestamp(now),
-                  memories(), recent_talk(now), own_lines(folder), away_for, _agenda(), extra)
+    seen, talk, day = look(idle, where, gaming, _body_state(folder)), recent_talk(now), _agenda()
+    fingerprint = news(kind, seen, talk, day, extra)
+    if held(folder, kind, fingerprint, now):
+        from . import relay
+        relay.record(folder, {"at": round(now), "host": where, "session": "companion", "kind": kind, "ms": 0,
+                              "first_ms": None, "by": None, "server": {}, "held": True})
+        logger.info("companion: %s moment held (nothing new since she passed)", kind)
+        return ""
+    facts = brief(kind, present_for, seen, datetime.fromtimestamp(now), memories(), talk, own_lines(folder), away_for,
+                  day, extra)
     started = time.monotonic()
     raw, who = backend.call(AUTONOMY.strip() + "\n\n" + facts, history=moment_note(facts, extra))
     from . import relay
@@ -272,6 +326,8 @@ def ask(kind: str, present_for: timedelta, folder: Path, idle: float = 0.0, wher
                           "ms": round((time.monotonic() - started) * 1000), "first_ms": None, "by": who, "server": {},
                           "passed": decide(raw) is None})
     line = decide(raw)
+    if raw:                                   # an answer, not her backend being down
+        remember_pass(folder, kind, None if line else fingerprint, now)
     logger.info("companion: %s moment -> %s (answered by %s, %d chars raw)", kind,
                 repr(line) if line else "passed", who or "nobody", len(raw))
     return line

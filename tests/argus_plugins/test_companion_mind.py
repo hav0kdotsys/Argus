@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import importlib
+import json
 import importlib.util
 import sqlite3
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -124,3 +126,46 @@ def test_a_moment_leaves_its_reason_and_facts_in_her_session_not_its_instruction
     note = mind.moment_note(facts, "Her reminder \"Bins out\" is now overdue.")
     assert "she's been at it for 2h" in note and "Bins out" in note
     assert "Tuesday" not in note and "likes tea" not in note and mind.AUTONOMY.strip()[:40] not in note
+
+
+def _asking(mind, monkeypatch, tmp_path, answers):
+    """mind.ask with her backend answering from *answers*, and what's on screen settable; returns (calls, set_window)."""
+    backend = importlib.import_module("argus_companion_m.backend")
+    calls = []
+    monkeypatch.setattr(backend, "call", lambda text, **kw: (calls.append(text), (answers.pop(0), "claude-code"))[1])
+    window = {"w": "foot - HANDOFF.md", "app": "foot"}
+    monkeypatch.setattr(mind, "look", lambda *a, **k: mind.Seen(window=window["w"], fullscreen=False, playing="",
+                                                              idle=0, where="laphvk", gaming=False, local=True,
+                                                              app=window["app"]))
+    monkeypatch.setattr(mind, "_agenda", lambda: ["- reminder: Charge your phone"])
+    monkeypatch.setattr(mind, "_body_state", lambda folder: {})
+    return calls, window
+
+
+def test_a_moment_she_passed_on_is_not_asked_again_until_something_changes(mind, monkeypatch, tmp_path):
+    calls, window = _asking(mind, monkeypatch, tmp_path, ["SKIP", "Phone. Charger. Now.", "SKIP"])
+    assert mind.ask("popin", timedelta(minutes=40), tmp_path) is None and len(calls) == 1
+    assert mind.ask("popin", timedelta(minutes=55), tmp_path) == "" and len(calls) == 1      # same news: held
+    window["w"] = "foot - vim pet.py"                     # a retitled terminal is the same app: still held
+    assert mind.ask("popin", timedelta(minutes=70), tmp_path) == "" and len(calls) == 1
+    window.update(w="zen - Chess.com", app="zen")              # something new: she decides again
+    assert mind.ask("popin", timedelta(minutes=85), tmp_path) == "Phone. Charger. Now." and len(calls) == 2
+    assert mind.ask("popin", timedelta(minutes=99), tmp_path) is None and len(calls) == 3   # she spoke: no hold
+    timed = [json.loads(line) for line in (tmp_path / "turns.jsonl").read_text().splitlines()]
+    assert [t.get("held", False) for t in timed] == [False, True, True, False, False]
+
+
+def test_a_hold_runs_out_and_a_touch_is_never_held(mind, monkeypatch, tmp_path):
+    calls, _ = _asking(mind, monkeypatch, tmp_path, ["SKIP", "SKIP", "SKIP", "SKIP"])
+    mind.ask("bored", timedelta(hours=1), tmp_path)
+    saved = json.loads((tmp_path / "held.json").read_text())
+    saved["bored"]["at"] = time.time() - mind.HOLD - 1
+    (tmp_path / "held.json").write_text(json.dumps(saved))
+    assert mind.ask("bored", timedelta(hours=3), tmp_path) is None and len(calls) == 2
+    mind.ask("pat", timedelta(0), tmp_path)
+    assert mind.ask("pat", timedelta(0), tmp_path) is None and len(calls) == 4
+
+
+def test_the_app_in_front_is_named_without_its_title(mind):
+    seen = mind.look(0, "winhvk", state={"window": "Play Chess Online - Chess.com — Zen Browser"})
+    assert seen.app == "Zen Browser" and seen.window.startswith("Play Chess")

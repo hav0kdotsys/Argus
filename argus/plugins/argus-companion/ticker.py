@@ -321,7 +321,8 @@ def body(folder: Path, action: str) -> None:
 
 
 def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None, extra: str = "") -> str | None:
-    """Offer Mira this moment; say what she chose to say. Her line, or None when she passed."""
+    """Offer Mira this moment; say what she chose to say. Her line, None when she passed, or "" when the moment was held
+    (she passed on the same thing already, so she wasn't asked)."""
     from . import mind
     line = mind.ask(kind, present_for, folder, idle, where=where(folder), gaming=game_mode(),
                     away_for=away_for or timedelta(0), extra=extra)
@@ -332,7 +333,7 @@ def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for
         say(folder, line, kind)
     else:
         with open(folder / "checkins.log", "a", encoding="utf-8") as log:
-            log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind} (passed)\n")
+            log.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind} ({'held: nothing new' if line == '' else 'passed'})\n")
     return line
 
 
