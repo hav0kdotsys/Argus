@@ -57,9 +57,10 @@ def where_said(host: str, session: str) -> str:
 
 
 def request_for(text: str, session: str, host: str, max_tokens: int, base: str, token: str,
-                history: str = "", images: list | None = None) -> urllib.request.Request:
+                history: str = "", images: list | None = None, history_reply: str = "") -> urllib.request.Request:
     """history: what her session keeps of this turn instead of *text* (mira-api's ``historyText``), for a turn whose
-    instructions would only weigh down every later turn; her reply is kept in full either way."""
+    instructions would only weigh down every later turn. history_reply: what it keeps of her answer instead
+    (``historyReply``), for work whose result lives elsewhere, like her body's words file; else her reply is kept whole."""
     body = {"messages": [{"role": "user", "content": text + where_said(host, session)}], "mode": "agent",
             "maxTokens": max_tokens, "temperature": 0.9}
     if history:
@@ -67,6 +68,8 @@ def request_for(text: str, session: str, host: str, max_tokens: int, base: str, 
         body["historyText"], body["trustedWeb"], body["tools"] = history, False, False
     if images:
         body["images"] = images
+    if history_reply:
+        body["historyReply"] = history_reply
     if SESSIONS[session]:
         body["userId"] = SESSIONS[session]
     return urllib.request.Request(
@@ -114,14 +117,15 @@ class Relay:
             temp.chmod(0o600)
         temp.replace(path)
 
-    def stream(self, text: str, session: str, max_tokens: int, write, history: str = "", images: list | None = None) -> None:
+    def stream(self, text: str, session: str, max_tokens: int, write, history: str = "", images: list | None = None,
+               history_reply: str = "") -> None:
         base, token = backend._config()
         if not token:
             write(_event("turn.error", {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine", "status": "unconfigured"}))
             return
         if session == "main":
             text = self.digest() + text
-        request = request_for(text, session, self.host, max_tokens, base, token, history, images)
+        request = request_for(text, session, self.host, max_tokens, base, token, history, images, history_reply)
         started, first = time.monotonic(), None
         try:
             with urllib.request.urlopen(request, timeout=TURN_TIMEOUT) as response:
@@ -316,6 +320,9 @@ class Relay:
                     text, session = str(ask["text"]).strip(), str(ask.get("session", "main"))
                     max_tokens = int(ask.get("max_tokens", 1500))
                     image = str(ask["image"]) if self.path == "/see" else None
+                    # Her body's own work turns can ask her session to keep short notes instead of the whole exchange.
+                    history = str(ask.get("history") or "").strip()[:2000]
+                    history_reply = str(ask.get("history_reply") or "").strip()[:2000]
                 except (KeyError, TypeError, ValueError):
                     self.send_error(400)
                     return
@@ -335,7 +342,7 @@ class Relay:
                     if image is not None:
                         relay.glance(text, image, max_tokens, write)
                     else:
-                        relay.stream(text, session, max_tokens, write)
+                        relay.stream(text, session, max_tokens, write, history=history, history_reply=history_reply)
                 except (BrokenPipeError, ConnectionResetError):
                     logger.info("relay: her body stopped listening mid-turn")
 

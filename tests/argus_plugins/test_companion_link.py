@@ -469,3 +469,14 @@ def test_music_on_her_other_pc_has_her_body_here_dance_and_her_other_body_arrivi
     hear(1300, False)                                     # her other body was gone five minutes, and is back
     assert bridge.tick(False, now=1301) == ["glitch"]
     assert did == ["dance", "stop_dancing", "glitch"]
+
+
+def test_her_bodys_work_turn_leaves_short_notes_in_her_session():
+    relay = _mod("relay")
+    request = relay.request_for("Write your lines for these moments: ...", "body", "winhvk", 4000, "http://mira", "tok",
+                                history="(Your body asked for its lines.)", history_reply="(You wrote them.)")
+    sent = json.loads(request.data)
+    assert sent["historyText"] == "(Your body asked for its lines.)" and sent["historyReply"] == "(You wrote them.)"
+    assert sent["tools"] is False and sent["trustedWeb"] is False
+    plain = json.loads(relay.request_for("hi", "main", "laphvk", 100, "http://mira", "tok").data)
+    assert not {"historyText", "historyReply", "tools", "trustedWeb"} & set(plain)     # what HavoK says is kept whole
