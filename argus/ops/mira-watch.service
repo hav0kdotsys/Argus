@@ -1,0 +1,6 @@
+[Unit]
+Description=MIRA's watcher: one Discord alert when something of hers breaks, one when it's back (argus/ops/mira_watch.py)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/argus/argus/ops/mira_watch.py
