@@ -12,9 +12,9 @@ Signals, all local and read-only:
 A missing signal reads as "not busy, not quiet, not idle": the ticker never blocks on MIRA or Hyprland being down.
 Typing to her body (``ask.json``) gets a real ARGUS turn in one ongoing session, answered in her bubble and out
 loud. Touches on her pet body (``event.json``: a pat, a toss, pokes, waking her) are offered to her straight away, unless
-MIRA is quiet. What she says goes to ``~/.argus/companion/say.json`` (the pet's bubble), out loud through MIRA's voice panel
-(``POST /speak``: refused while MIRA is mid-conversation or quiet, and then the bubble alone carries it), and a line in
-``checkins.log``.
+MIRA is quiet. What she says goes to her body's bubble (the mira-body fork's hands port, ``/show``; and
+``~/.argus/companion/say.json``, which her retired bodies read), out loud through MIRA's voice panel (``POST /speak``:
+refused while MIRA is mid-conversation or quiet, and then the bubble alone carries it), and a line in ``checkins.log``.
 """
 
 from __future__ import annotations
@@ -230,13 +230,25 @@ def _speak(text: str, folder: Path | None = None) -> bool:
         return False
 
 
+SHOW_WAIT = 5.0
+
+
+def _show(text: str, kind: str) -> None:
+    """*text* in her body's bubble here, through its hands port (the mira-body fork doesn't read ``say.json``). Shown
+    only: her voice is MIRA's. Her body down, or busy with a chat, and nothing shows; the voice still carries it."""
+    from . import relay
+    relay.hands("show", {"text": text, "kind": kind}, timeout=SHOW_WAIT)
+
+
 def say(folder: Path, text: str, kind: str = "say", aloud: bool = True, log: bool = True) -> None:
-    """Show *text* in the pet's bubble (atomic replace, a fresh id per line), say it out loud when MIRA's voice is
-    free, and log it (her own words only: replies and the thinking dots aren't logged)."""
+    """Show *text* in her body's bubble (``say.json``, atomic replace, a fresh id per line, and her body's hands port),
+    say it out loud when MIRA's voice is free, and log it (her own words only: replies and the thinking dots aren't
+    logged)."""
     folder.mkdir(parents=True, exist_ok=True)
     tmp = folder / "say.json.tmp"
     tmp.write_text(json.dumps({"id": f"{time.time_ns()}", "text": text, "kind": kind}), encoding="utf-8")
     os.replace(tmp, folder / "say.json")
+    _show(text, kind)
     spoken = aloud and _speak(text, folder)
     if log:
         with open(folder / "checkins.log", "a", encoding="utf-8") as fh:
@@ -297,11 +309,15 @@ COME_OVER = ("popin", "bored")   # like Capri's check-ins: she glitches over to 
 
 
 def body(folder: Path, action: str) -> None:
-    """Tell her body to do something (``body.json``: {"id", "do"})."""
+    """Tell her body to do something (``body.json``: {"id", "do"}); ``come_here`` also reaches the mira-body fork
+    through its hands port, as her own move_yourself."""
     folder.mkdir(parents=True, exist_ok=True)
     tmp = folder / "body.json.tmp"
     tmp.write_text(json.dumps({"id": str(time.time_ns()), "do": action}), encoding="utf-8")
     os.replace(tmp, folder / "body.json")
+    if action == "come_here":
+        from . import relay
+        relay.hands("do", {"tool": "move_yourself", "args": {"action": "come_here"}}, timeout=SHOW_WAIT)
 
 
 def moment_now(folder: Path, kind: str, present_for, idle: float = 0.0, away_for=None, extra: str = "") -> str | None:

@@ -6,7 +6,7 @@
 - Her own check-ins: ``presence.py`` opens moments from laphvk's signals (``ticker.py``), and ``mind.py`` asks MIRA
   herself, through the provider, with her memory and what she can see, whether and what to say - nobody writes her
   lines. ``argus companion run`` ticks (the mira-companion unit runs it); what she says goes out loud through MIRA's
-  voice panel (and ``say.json``, which her retired bodies drew as a bubble).
+  voice panel and into her body's bubble (its hands port; ``say.json`` too, which her retired bodies drew).
 
 - One Mira: every ARGUS turn tells her what she said on her own since that session last heard from her
   (``pre_llm_call`` context on the user message, never the system prompt), and marks that Hannah talked to her (the

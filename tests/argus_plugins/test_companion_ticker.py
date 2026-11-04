@@ -42,6 +42,28 @@ def test_say_replaces_the_bubble_file_with_a_fresh_id_and_logs_the_line(tmp_path
     assert (tmp_path / "checkins.log").read_text(encoding="utf-8").count("water: Water. Now.") == 2
 
 
+def test_what_she_says_reaches_her_bodys_bubble_and_come_here_moves_her_there(tmp_path, monkeypatch):
+    ticker = _ticker()
+    relay = importlib.import_module("argus_companion_t.relay")
+    calls = []
+    monkeypatch.setattr(relay, "hands", lambda what, call=None, **kw: calls.append((what, call)) or {"result": "shown"})
+    monkeypatch.setattr(ticker, "PANEL_SPEAK", "http://127.0.0.1:9/speak")
+    ticker.body(tmp_path, "come_here")
+    ticker.say(tmp_path, "Water. Now.", "water")
+    ticker.say(tmp_path, "▸ Nf3", "chess", aloud=False, log=False)
+    assert calls == [("do", {"tool": "move_yourself", "args": {"action": "come_here"}}),
+                     ("show", {"text": "Water. Now.", "kind": "water"}), ("show", {"text": "▸ Nf3", "kind": "chess"})]
+
+
+def test_with_her_body_down_she_still_says_it(tmp_path, monkeypatch):
+    ticker = _ticker()
+    relay = importlib.import_module("argus_companion_t.relay")
+    monkeypatch.setattr(relay, "body_folder", lambda: tmp_path / "no-body")
+    monkeypatch.setattr(ticker, "PANEL_SPEAK", "http://127.0.0.1:9/speak")
+    ticker.say(tmp_path, "Water. Now.", "water")
+    assert (tmp_path / "checkins.log").read_text(encoding="utf-8").endswith("water: Water. Now.\n")
+
+
 def test_with_mira_and_hyprland_unreachable_the_moment_is_free_and_present(tmp_path, monkeypatch):
     ticker = _ticker()
     monkeypatch.setattr(ticker, "PANEL_STATUS", "http://127.0.0.1:9/status")

@@ -290,6 +290,10 @@ The rollback is the previous units and tasks, kept disabled, not deleted.
 - Gap found while retiring: her companion's check-ins go out loud through MIRA's voice panel and into `say.json`, but
   only the old bodies drew `say.json` as a bubble (and read `body.json`/`event.json`). The fork doesn't, so since the
   cutover a check-in is heard, not shown, and a pat or toss on the new body doesn't reach the companion.
+- Closed 2026-11-04: her hands port has `/show` (mira-body 577445b), and the companion's `say()` sends every line there as
+  well as `say.json`, shown only (MIRA's voice already said it), never over a chat or her own reply; `come_here` goes
+  as her own move_yourself. Seen in her bubble on laphvk and winhvk. A pat or toss needs no companion: the fork
+  answers it itself in MIRA's own words (MiraWords), so sending `event.json` too would have her react twice.
 - Still to do: a reboot of laphvk. The old bodies (`pet/windows/MiraPet`, `pet/mira-pet`) are the
   rollback and run from the checkout, so they're retired only once the new bodies have been through that.
 
