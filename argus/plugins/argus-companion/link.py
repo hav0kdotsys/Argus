@@ -2,8 +2,9 @@
 
 What crosses (and nothing else): what's playing on each machine (music on either and she dances on both, on the
 beat the playing machine hears), the switches Hannah would expect to be hers rather than a machine's (quiet, chess
-coaching, the settings tab - the newest change wins), and body moves aimed at the other machine (``argus companion
-body --there hop_in``).
+coaching, the settings tab - the newest change wins), body moves aimed at the other machine (``argus companion
+body --there hop_in``), and her body's own lines (``words.json``, which MIRA writes when a body asks: the newer set
+crosses and merges, so one ask a day serves both bodies).
 
 laphvk's companion serves the link on 127.0.0.1:8772; winhvk's reaches it through laphvk's SSH reverse tunnel
 (``mira-link.service``: laphvk already SSHes to winhvk, so no new port is opened anywhere). Every exchange is one POST:
@@ -204,17 +205,85 @@ def token(folder: Path, make: bool = False) -> str:
     return value
 
 
+class Words:
+    """Her body's lines on this machine (``words.json`` in the body's folder), shared across the link. Each report
+    carries their fingerprint; the lines themselves cross only while the other side's fingerprint differs. A newer set
+    from there merges in (its lines win, a moment only this body has stays) and is written in one fixed order, so both
+    sides settle on the same file and stop sending. The merged file is fresh to the body, so it doesn't ask MIRA again."""
+
+    def __init__(self, path: Path | None = None):
+        self.path = path
+        self.peer = None            # the other side's last fingerprint
+
+    def _path(self) -> Path:
+        if self.path is None:
+            from .relay import body_folder
+            return body_folder() / "words.json"
+        return self.path
+
+    def _read(self) -> tuple[dict, str, float] | None:
+        path = self._path()
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            at = path.stat().st_mtime
+        except (OSError, ValueError):
+            return None
+        lines = {str(k): [str(x) for x in v] for k, v in data.items() if isinstance(v, list)} if isinstance(data, dict) else {}
+        return (lines, _fingerprint(lines), at) if lines else None
+
+    def report(self) -> dict:
+        mine = self._read()
+        if mine is None:
+            return {}
+        lines, sha, at = mine
+        out = {"sha": sha, "at": at}
+        if self.peer is not None and self.peer != sha:
+            out["lines"] = lines
+        return out
+
+    def take(self, theirs: dict) -> bool:
+        """Their words report; True when a newer set from there was merged into this body's file."""
+        if not isinstance(theirs, dict) or not theirs.get("sha"):
+            return False
+        self.peer = str(theirs["sha"])
+        lines = theirs.get("lines")
+        if not isinstance(lines, dict):
+            return False
+        mine = self._read()
+        if mine is not None and float(theirs.get("at") or 0) <= mine[2]:
+            return False                       # ours is the newer set: ours goes to them instead
+        merged = dict(mine[0]) if mine else {}
+        merged.update({str(k): [str(x) for x in v][:20] for k, v in lines.items() if isinstance(v, list)})
+        if mine is not None and _fingerprint(merged) == mine[1]:
+            return False
+        path = self._path()
+        tmp = path.with_name(path.name + ".link")
+        tmp.write_text(_canonical(merged), encoding="utf-8")
+        tmp.replace(path)
+        return True
+
+
+def _canonical(lines: dict) -> str:
+    return json.dumps(lines, sort_keys=True, ensure_ascii=False)
+
+
+def _fingerprint(lines: dict) -> str:
+    import hashlib
+    return hashlib.sha1(_canonical(lines).encode("utf-8")).hexdigest()
+
+
 class Link:
     def __init__(self, folder: Path, here: str):
         self.folder, self.here = folder, here
         self.switches = Switches(folder)
+        self.words = Words()
         self.done_moves: set[str] = set()
         self.heard_at = 0.0
         self.clock = 0.0       # winhvk: laphvk's clock minus this one, from each exchange's round trip
 
     def report(self) -> dict:
         return {"host": self.here, "at": time.time(), "music": local_music(self.folder),
-                "switches": self.switches.report(), "move": _outbox(self.folder)}
+                "switches": self.switches.report(), "move": _outbox(self.folder), "words": self.words.report()}
 
     def hear(self, theirs: dict, shift: float = 0.0) -> None:
         """The other body's report: what's playing there for this body, their switch changes, a move for here.
@@ -234,6 +303,8 @@ class Link:
             applied = self.switches.take(theirs["switches"])
             if applied:
                 logger.info("companion link: %s changed on %s", ", ".join(applied), theirs.get("host"))
+        if isinstance(theirs.get("words"), dict) and self.words.take(theirs["words"]):
+            logger.info("companion link: her body's lines came over from %s", theirs.get("host"))
         move = theirs.get("move")
         if isinstance(move, dict) and move.get("id") and str(move["id"]) not in self.done_moves:
             self.done_moves.add(str(move["id"]))

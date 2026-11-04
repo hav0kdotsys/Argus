@@ -480,3 +480,23 @@ def test_her_bodys_work_turn_leaves_short_notes_in_her_session():
     assert sent["tools"] is False and sent["trustedWeb"] is False
     plain = json.loads(relay.request_for("hi", "main", "laphvk", 100, "http://mira", "tok").data)
     assert not {"historyText", "historyReply", "tools", "trustedWeb"} & set(plain)     # what HavoK says is kept whole
+
+
+def test_her_bodys_lines_cross_once_and_both_sides_settle_on_the_same_set(tmp_path):
+    import os
+    link = _mod("link")
+    lap, win = tmp_path / "lap.json", tmp_path / "win.json"
+    lap.write_text(json.dumps({"pet": ["old pat"], "laphvk-only": ["mine"]}), encoding="utf-8")
+    win.write_text(json.dumps({"pet": ["new pat", "another"], "woke": ["morning"]}), encoding="utf-8")
+    os.utime(lap, (1000, 1000))
+    os.utime(win, (2000, 2000))                    # winhvk asked MIRA more recently
+    a, b = link.Words(lap), link.Words(win)
+    for _ in range(4):                             # a few exchanges, each way
+        ra, rb = a.report(), b.report()
+        a.take(rb)
+        b.take(ra)
+    merged = json.loads(lap.read_text(encoding="utf-8"))
+    assert merged == {"pet": ["new pat", "another"], "woke": ["morning"], "laphvk-only": ["mine"]}
+    assert json.loads(win.read_text(encoding="utf-8")) == merged
+    assert "lines" not in a.report() and "lines" not in b.report()     # settled: only fingerprints cross now
+    assert link.Words(tmp_path / "none.json").report() == {}
