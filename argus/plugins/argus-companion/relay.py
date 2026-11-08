@@ -263,15 +263,16 @@ class Relay:
             return 502, b'{"error":"Mira\'s voice didn\'t answer"}', "application/json"
         return 200, *as_wav(sound)
 
-    def hear(self, wav: bytes) -> dict:
+    def hear(self, wav: bytes, profile: str = "assistant") -> dict:
         """Her body's ears: what its mic heard (16 kHz mono WAV) goes to mira-api's Whisper, which tries Groq first and
-        its own model underneath, so no speech model is downloaded to the PCs (HavoK, 8 Nov). What she hears isn't kept."""
+        its own model underneath, so no speech model is downloaded to the PCs (HavoK, 8 Nov). What she hears isn't kept.
+        profile "wake" checks a possible "Hey Mira" with debhvk's own model only: wake checks never go to a cloud API."""
         base, token = backend._config()
         if not token:
             return {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine"}
         boundary = "argus" + secrets.token_hex(12)
         head = "".join(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
-                       for name, value in (("language", "en"), ("profile", "assistant")))
+                       for name, value in (("language", "en"), ("profile", "wake" if profile == "wake" else "assistant")))
         body = (head + f'--{boundary}\r\nContent-Disposition: form-data; name="audio"; filename="heard.wav"\r\n'
                        f"Content-Type: audio/wav\r\n\r\n").encode() + wav + f"\r\n--{boundary}--\r\n".encode()
         request = urllib.request.Request(f"{base.rstrip('/')}/v1/stt", data=body, headers={
@@ -320,7 +321,7 @@ class Relay:
                     self.answer(relay.brains())
 
             def do_POST(self):
-                if self.path == "/hear":
+                if self.path in ("/hear", "/hear?profile=wake"):
                     if not self.allowed():
                         return
                     size = int(self.headers.get("Content-Length", "0"))
@@ -328,7 +329,7 @@ class Relay:
                     if not 44 < size <= 16 * 1024 * 1024:
                         self.send_error(400)
                         return
-                    self.answer(relay.hear(self.rfile.read(size)))
+                    self.answer(relay.hear(self.rfile.read(size), "wake" if self.path.endswith("=wake") else "assistant"))
                     return
                 if self.path not in ("/turn", "/brain", "/speak", "/see"):
                     self.send_error(404)

@@ -532,6 +532,9 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     relay.start(host, folder)
     from . import bridge
     bridge.start(folder)
+    if sys.platform == "win32":       # "Hey Mira" with HavoK's own wake model; laphvk's voice (mira-agent) hears it there
+        from . import wake
+        wake.start(relay.body_folder())
     if sys.platform != "win32":       # winhvk's body listens for music itself
         from agent.memory_provider import spawn_context_thread
 
