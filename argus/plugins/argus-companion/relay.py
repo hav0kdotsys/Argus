@@ -252,6 +252,28 @@ class Relay:
             return 502, b'{"error":"Mira\'s voice didn\'t answer"}', "application/json"
         return 200, *as_wav(sound)
 
+    def hear(self, wav: bytes) -> dict:
+        """Her body's ears: what its mic heard (16 kHz mono WAV) goes to mira-api's Whisper, which tries Groq first and
+        its own model underneath, so no speech model is downloaded to the PCs (HavoK, 8 Nov). What she hears isn't kept."""
+        base, token = backend._config()
+        if not token:
+            return {"error": "ARGUS has no MIRA_AUTH_TOKEN on this machine"}
+        boundary = "argus" + secrets.token_hex(12)
+        head = "".join(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
+                       for name, value in (("language", "en"), ("profile", "assistant")))
+        body = (head + f'--{boundary}\r\nContent-Disposition: form-data; name="audio"; filename="heard.wav"\r\n'
+                       f"Content-Type: audio/wav\r\n\r\n").encode() + wav + f"\r\n--{boundary}--\r\n".encode()
+        request = urllib.request.Request(f"{base.rstrip('/')}/v1/stt", data=body, headers={
+            "Authorization": f"Bearer {token}", "Content-Type": f"multipart/form-data; boundary={boundary}"})
+        try:
+            with urllib.request.urlopen(request, timeout=25) as response:
+                heard = json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            return {"error": f"mira-api's ears answered {exc.code}"}
+        except (OSError, ValueError):
+            return {"error": "Mira's ears didn't answer"}
+        return {"text": str(heard.get("text") or "")}
+
     def serve(self) -> ThreadingHTTPServer:
         relay = self
 
@@ -287,6 +309,16 @@ class Relay:
                     self.answer(relay.brains())
 
             def do_POST(self):
+                if self.path == "/hear":
+                    if not self.allowed():
+                        return
+                    size = int(self.headers.get("Content-Length", "0"))
+                    # 16 MB is over eight minutes of her 16 kHz mono, far past any one line.
+                    if not 44 < size <= 16 * 1024 * 1024:
+                        self.send_error(400)
+                        return
+                    self.answer(relay.hear(self.rfile.read(size)))
+                    return
                 if self.path not in ("/turn", "/brain", "/speak", "/see"):
                     self.send_error(404)
                     return
