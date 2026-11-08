@@ -55,6 +55,9 @@ ourselves); Capri VR.
 
 9. **Decided (8 Nov): the companion owns check-ins.** The body's own care check-ins are off in a real run (Linux and
    Windows); the body keeps its instant reactions (pats, throws, waking).
+10. **Decided (8 Nov): in Code/Husk Mode she speaks in the first person.** Wherever Capri's body would name the coding
+   assistant ("Claude is editing...", "Claude finished"), Mira says "I" / "I'm": she is the body, and Claude is only her
+   brain. Every Husk line is checked for it, not just the obvious ones.
 
 ## Questions that may come up while porting
 
