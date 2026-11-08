@@ -93,3 +93,9 @@ laphvk `~/.local/share/mira-body.bak-0.8.0-20261108` (copy back, restart mira-bo
 Found at the swap: the Linux build crashed on `avares://Capri/...` (its assembly is Mira now) - fixed, and `rename.py`
 renames those now. The ARGUS service on winhvk was started again (stopped since 6 Nov 14:21). Dad's TV share: winhvk's
 MIRA Link sender caps at 6 Mbps (`link-send.ps1`, backup `.bak-remotecap-20261108`; `-Lan` lifts it, nothing passes it yet).
+
+## After the swap (8 Nov, evening)
+
+- **laphvk Mainframe wouldn't close:** her Close minimizes, and Hyprland has no minimize. On Linux it hides now; the tray, her menu or a tool shows it again.
+- **Skins went purple while she danced:** Windows 0.8.6 dances to her idle, so skins made for it have no `dance.png`, and Linux still drew her own dance. On Linux a skin with no dance now dances in its own idle. A skin change also reloads her talking perch, perch sleep and lie-down sets, which kept the old art until a restart.
+- **Her winhvk voice on laphvk's speakers** (HavoK: only her voice). In her winhvk Mainframe, Her speaker > "laphvk's speakers (her voice)". Each line goes to winhvk `127.0.0.1:18776`, which laphvk's `remote-voice` user service (`ops/laphvk/remote-voice/`, installed to `~/.local/lib/remote-voice/`) keeps tunnelled to a player there (`ssh -R` over the LAN, opened from laphvk like remote-mic). If nobody answers, or laphvk's quiet flag is up, the line plays on winhvk. Her other sounds stay on winhvk. Picking any winhvk speaker turns it off.
