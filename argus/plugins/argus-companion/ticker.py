@@ -532,6 +532,8 @@ def run(folder: Path | None = None, tick: float = TICK) -> None:
     relay.start(host, folder)
     from . import bridge
     bridge.start(folder)
+    from . import skills_sync     # her body's skill mods into MIRA's own skill store on debhvk
+    skills_sync.start(relay.body_folder(), host, folder)
     if sys.platform == "win32":       # "Hey Mira" with HavoK's own wake model; laphvk's voice (mira-agent) hears it there
         from . import wake
         wake.start(relay.body_folder())
