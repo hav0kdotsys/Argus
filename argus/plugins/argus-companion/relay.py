@@ -36,7 +36,10 @@ logger = logging.getLogger(__name__)
 
 PORT = 8773
 HEADER = "X-Argus-Token"
-SESSIONS = {"main": None, "body": "body"}      # session -> mira-api userId (the scope modifier)
+SESSIONS = {"main": None, "body": "body", "game": "game"}      # session -> mira-api userId (the scope modifier)
+# Her body's game looks (playing a game until stopped, live commentary) are many a minute, so they go to Gemini Flash
+# through mira-api, not to her main brain (HavoK, 8 Nov): pinned per turn, in a session of their own, no tools.
+GAME_PROVIDER = "googleai"
 TURN_TIMEOUT = 600
 TIMINGS = "turns.jsonl"          # one line per turn her body asked for, in the companion folder: how long it took
 TIMINGS_KEEP = 3000
@@ -72,6 +75,8 @@ def request_for(text: str, session: str, host: str, max_tokens: int, base: str, 
         body["historyReply"] = history_reply
     if SESSIONS[session]:
         body["userId"] = SESSIONS[session]
+    if session == "game":
+        body["provider"], body["mode"], body["tools"], body["trustedWeb"] = GAME_PROVIDER, "assistant", False, False
     return urllib.request.Request(
         f"{base.rstrip('/')}/v1/mira/call/stream", data=json.dumps(body).encode("utf-8"),
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
@@ -232,6 +237,12 @@ class Relay:
                     "body", max_tokens, write, history=f"(Your body on {self.host} glanced at HavoK's screen.)",
                     images=[{"data": image, "mimeType": "image/jpeg"}])
 
+    def game_look(self, text: str, images: list, max_tokens: int, write) -> None:
+        """A look her body takes while it plays or comments on a game: the frames themselves to Gemini Flash in her game
+        session, which keeps only a short note of each look."""
+        self.stream(text, "game", max_tokens, write, history=f"(Your body on {self.host} looked at the game.)",
+                    images=[{"data": image, "mimeType": "image/jpeg"} for image in images])
+
     def speak(self, text: str) -> tuple[int, bytes, str]:
         """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a
         notification, so her body never spends the credits kept for conversation. Never while ARGUS is quiet."""
@@ -352,13 +363,16 @@ class Relay:
                     text, session = str(ask["text"]).strip(), str(ask.get("session", "main"))
                     max_tokens = int(ask.get("max_tokens", 1500))
                     image = str(ask["image"]) if self.path == "/see" else None
+                    # A game look can carry two frames (before and after), for Gemini to compare.
+                    game = self.path == "/see" and ask.get("game") is True
+                    frames = [image] + [str(extra) for extra in (ask.get("more") or [])[:1]] if game else []
                     # Her body's own work turns can ask her session to keep short notes instead of the whole exchange.
                     history = str(ask.get("history") or "").strip()[:2000]
                     history_reply = str(ask.get("history_reply") or "").strip()[:2000]
                 except (KeyError, TypeError, ValueError):
                     self.send_error(400)
                     return
-                if not text or session not in SESSIONS or (image is not None and not 0 < len(image) <= 8 * 1024 * 1024):
+                if not text or session not in SESSIONS or any(not 0 < len(f) <= 8 * 1024 * 1024 for f in ([image] if image is not None else []) + frames):
                     self.send_error(400)
                     return
                 self.send_response(200)
@@ -371,7 +385,9 @@ class Relay:
                     self.wfile.flush()
 
                 try:
-                    if image is not None:
+                    if game:
+                        relay.game_look(text, frames, max_tokens, write)
+                    elif image is not None:
                         relay.glance(text, image, max_tokens, write)
                     else:
                         relay.stream(text, session, max_tokens, write, history=history, history_reply=history_reply)
