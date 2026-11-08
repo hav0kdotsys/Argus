@@ -35,10 +35,27 @@ task panel; the glow when she uses the mouse; Power saver for games; pop-ups tha
 KDE Wayland and her own cursor on Linux; full Mainframe, Mods and Code/Husk Mode on Linux; she plays the game you tell
 her to until you stop her; "Listen for Mira" keeps listening 20 s after her name; her own lines in Hannah's language.
 
+## laphvk: the Linux body
+
+Most of this update is Linux (~9,000 new lines in `cross/`): the full Mainframe (sheet, theme, tips), Mods and
+Code/Husk Mode, her own pointer and the glow while she has the mouse, a keep-awake helper, care check-ins, a vault, and
+provider and error-text fixes. All of it comes to laphvk, Mira-coloured and routed through MIRA like Windows.
+
+- **Kept from our fork, on top:** Hyprland (lying along windows or the floor, since Hyprland has no taskbar; windows via
+  `hyprctl`), the idle helper (`argus/pet/idle`, 8 Nov), Mira's purple, the ARGUS link and MIRA's own words/voice/ears.
+- **KDE's KWin bridge** (upstream, for KDE Wayland) is built but does nothing on Hyprland.
+- **The vault** is Capri's own memory notes: hidden, as #5 decides.
+
 ## Not ported
 
 Capri's support-ticket help bot; Capri's website, update channel and AppImage releases (we build and deploy her
 ourselves); Capri VR.
+
+## Open
+
+9. Check-ins: Capri's body has its own care check-ins (now on Linux too, always on Windows) and ARGUS's companion has
+   MIRA-decided moments - both on means doubles. Proposed: the companion owns check-ins; the body's care check-ins are off
+   in a real run; the body keeps its instant reactions (pats, throws, waking). Waiting on HavoK.
 
 ## Questions that may come up while porting
 
