@@ -7,6 +7,8 @@ Runs in its own small venv (openwakeword 0.4.0 and onnxruntime, as on laphvk), s
   * a score between SHOW and TRUST is checked first: the last two seconds go through ARGUS's relay to debhvk's own
     Whisper in its wake profile (which never leaves debhvk), and wake her only if it heard her name.
 
+Its mic: the input named in heymira\\mic.txt (winhvk: TONOR), else the default.
+
 Her body still decides: her "Hey Mira" setting, a chat already open, her mute or quiet key all leave her asleep.
 """
 
@@ -37,6 +39,17 @@ NAME = re.compile(r"\bm(?:i|ee|ie|y)rr?ah?\b", re.IGNORECASE)
 
 def log(message: str) -> None:
     print(f"[wake] {message}", flush=True)
+
+
+def pick_mic(sd, wanted: str):
+    """The input whose name holds *wanted* (heymira\\mic.txt, e.g. TONOR), on Windows' MME API, which converts to 16 kHz
+    for us; None (the default input) when there's no such file or no such mic."""
+    if not wanted:
+        return None
+    apis = sd.query_hostapis()
+    found = [(i, d) for i, d in enumerate(sd.query_devices()) if d["max_input_channels"] > 0 and wanted.lower() in d["name"].lower()]
+    found.sort(key=lambda pair: apis[pair[1]["hostapi"]]["name"] != "MME")
+    return found[0][0] if found else None
 
 
 def door(folder: Path) -> dict:
@@ -110,8 +123,14 @@ def main() -> int:
         finally:
             checking.clear()
 
-    log(f"listening on the default mic with {Path(args.model).name}")
-    with sd.RawInputStream(samplerate=RATE, channels=1, dtype="int16", blocksize=FRAME) as stream:
+    choice = Path(args.model).with_name("mic.txt")
+    wanted = choice.read_text(encoding="utf-8").strip() if choice.exists() else ""
+    mic = pick_mic(sd, wanted)
+    name = sd.query_devices(mic, "input")["name"] if mic is not None else sd.query_devices(kind="input")["name"]
+    if wanted and mic is None:
+        log(f"no mic called {wanted!r} here, so the default")
+    log(f"listening on {name} with {Path(args.model).name}")
+    with sd.RawInputStream(samplerate=RATE, channels=1, dtype="int16", blocksize=FRAME, device=mic) as stream:
         last_parent_check = time.monotonic()
         while True:
             data, _overflow = stream.read(FRAME)
