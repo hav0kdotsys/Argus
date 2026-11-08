@@ -5,6 +5,7 @@ A body's skill mod (a .capri-skill file: know-how for a game, written by someone
 body's Mods window. Her companion on that PC sends the list of the ones turned on here, as JSON on stdin:
 
     ssh debhvk python3 ~/argus/argus/ops/mod_skills.py winhvk < skills.json
+    ssh debhvk python3 ~/argus/argus/ops/mod_skills.py winhvk /tmp/mira-skills-winhvk.json   (read, then removed)
 
 Each becomes ``mod-<id>/SKILL.md`` in the store (the folder mira-api and her tool server read, read-only), so MIRA can
 use it from any device. These are other people's words, so they are kept as know-how, never as orders:
@@ -70,11 +71,21 @@ def source_of(folder: Path) -> str | None:
 
 
 def main() -> int:
-    if len(sys.argv) != 2 or sys.argv[1] not in HOSTS:
-        print("usage: mod_skills.py winhvk|laphvk < skills.json", file=sys.stderr)
+    if len(sys.argv) not in (2, 3) or sys.argv[1] not in HOSTS:
+        print("usage: mod_skills.py winhvk|laphvk [list.json] (else the list on stdin)", file=sys.stderr)
         return 2
     host = sys.argv[1]
-    mods = json.loads(sys.stdin.read() or "[]")
+    if len(sys.argv) == 3:
+        # The list copied over by scp: Windows' ssh can't hand stdin's end through its Cloudflare proxy (8 Nov).
+        listed = Path(sys.argv[2])
+        if listed.parent != Path("/tmp") or not listed.name.startswith("mira-skills-"):
+            print("the list must be /tmp/mira-skills-*.json", file=sys.stderr)
+            return 2
+        raw = listed.read_text(encoding="utf-8")
+        listed.unlink()
+    else:
+        raw = sys.stdin.read()
+    mods = json.loads(raw or "[]")
     wanted = {}
     for mod in mods if isinstance(mods, list) else []:
         if isinstance(mod, dict) and ID.match(str(mod.get("id") or "")):

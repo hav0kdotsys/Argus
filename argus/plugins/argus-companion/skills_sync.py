@@ -1,7 +1,7 @@
 """Her body's skill mods into MIRA's own skill store (HavoK, 8 Nov 2026, port decision #4).
 
 Her body lists the skill mods turned on in it as ``skills.json`` beside ``argus.json``. When that list changes, this
-sends it to debhvk (``ssh debhvk python3 ~/argus/argus/ops/mod_skills.py <host>``), which keeps each one as know-how in
+copies it to debhvk and runs ``~/argus/argus/ops/mod_skills.py <host> <file>`` there, which keeps each one as know-how in
 MIRA's store, where she can use it from any device. Turned off here, it's moved aside there. A failed send is tried
 again with a growing wait (one minute, doubling, up to an hour); nothing else in the companion waits on it.
 """
@@ -22,6 +22,25 @@ logger = logging.getLogger(__name__)
 CHECK = 60.0
 WAIT_MOST = 3600.0
 REMOTE = "python3 ~/argus/argus/ops/mod_skills.py"
+
+
+def send(listed: Path, host: str, folder: Path) -> tuple[bool, str]:
+    """scp the list across, then run the store's script on it. On Windows ssh's Cloudflare proxy (cloudflared, its
+    ProxyCommand) inherits ssh's stdio and keeps it open after ssh exits, so a pipe on stdin or stdout never ends (8 Nov):
+    nothing goes on stdin, and what the script says goes to a file."""
+    remote = f"/tmp/mira-skills-{host}.json"
+    out = folder / "skills-send.out"
+    opts = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=20"]
+    try:
+        with open(out, "wb") as said:
+            copied = subprocess.run(["scp", "-q", *opts, str(listed), f"debhvk:{remote}"], stdin=subprocess.DEVNULL,
+                                    stdout=said, stderr=subprocess.STDOUT, timeout=90, check=False)
+            ran = copied.returncode == 0 and subprocess.run(["ssh", *opts, "debhvk", f"{REMOTE} {host} {remote}"],
+                                                             stdin=subprocess.DEVNULL, stdout=said, stderr=subprocess.STDOUT,
+                                                             timeout=90, check=False).returncode == 0
+        return ran, out.read_text(encoding="utf-8", errors="replace").strip()[-300:]
+    except (OSError, subprocess.SubprocessError) as exc:
+        return False, str(exc)
 
 
 def start(body: Path, host: str, folder: Path) -> threading.Thread | None:
@@ -49,13 +68,7 @@ def _keep(body: Path, host: str, folder: Path) -> None:
         digest = hashlib.sha256(data).hexdigest()
         if digest == sent or time.time() < next_try:
             continue
-        try:
-            done = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "debhvk", f"{REMOTE} {host}"],
-                                  input=data, capture_output=True, timeout=90, check=False)
-            ok = done.returncode == 0
-            detail = (done.stdout or done.stderr).decode("utf-8", "replace").strip()[-300:]
-        except (OSError, subprocess.SubprocessError) as exc:
-            ok, detail = False, str(exc)
+        ok, detail = send(body / "skills.json", host, folder)
         if ok:
             sent, wait, next_try = digest, CHECK, 0.0
             sent_file.write_text(json.dumps({"hash": digest, "at": time.time(), "result": detail}), encoding="utf-8")
