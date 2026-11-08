@@ -243,11 +243,16 @@ class Relay:
         self.stream(text, "game", max_tokens, write, history=f"(Your body on {self.host} looked at the game.)",
                     images=[{"data": image, "mimeType": "image/jpeg"} for image in images])
 
-    def speak(self, text: str) -> tuple[int, bytes, str]:
+    def speak(self, text: str, kind: str = "replies") -> tuple[int, bytes, str]:
         """Her voice for her body: mira-api's TTS in the voice "mira" (ElevenLabs, Edge behind it). Asked as a
-        notification, so her body never spends the credits kept for conversation. Never while ARGUS is quiet."""
+        notification, so her body never spends the credits kept for conversation. Never while ARGUS is quiet, and not
+        for a kind of line HavoK has set to stay unspoken (204: her body shows it without a sound)."""
         if self.companion is not None and (self.companion / "quiet").exists():
             return 423, b'{"error":"quiet: her body makes no sound right now"}', "application/json"
+        if self.companion is not None:
+            from . import prefs
+            if not prefs.speaks(self.companion, kind):
+                return 204, b"", "application/json"
         base, token = backend._config()
         if not token:
             return 503, b'{"error":"ARGUS has no MIRA_AUTH_TOKEN on this machine"}', "application/json"
@@ -338,14 +343,15 @@ class Relay:
                     return
                 if self.path == "/speak":
                     try:
-                        text = str(json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))["text"]).strip()
+                        ask = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+                        text, kind = str(ask["text"]).strip(), str(ask.get("kind") or "replies")
                     except (KeyError, TypeError, ValueError):
                         self.send_error(400)
                         return
                     if not text:
                         self.send_error(400)
                         return
-                    self.sound(*relay.speak(text[:2000]))
+                    self.sound(*relay.speak(text[:2000], kind))
                     return
                 if self.path == "/brain":
                     try:

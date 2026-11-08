@@ -249,7 +249,8 @@ def say(folder: Path, text: str, kind: str = "say", aloud: bool = True, log: boo
     tmp.write_text(json.dumps({"id": f"{time.time_ns()}", "text": text, "kind": kind}), encoding="utf-8")
     os.replace(tmp, folder / "say.json")
     _show(text, kind)
-    spoken = aloud and _speak(text, folder)
+    from . import prefs
+    spoken = aloud and prefs.speaks(folder, "replies" if kind == "reply" else prefs.voice_kind(kind)) and _speak(text, folder)
     if log:
         with open(folder / "checkins.log", "a", encoding="utf-8") as fh:
             fh.write(f"{datetime.now():%Y-%m-%d %H:%M} {kind}{' (aloud)' if spoken else ''}: {text}\n")

@@ -112,6 +112,8 @@ argus companion body ACTION  her body: type, show, hide, hop, walk, sit, stand, 
                              next_screen, this_screen, size small/medium/large/huge/giant,
                              perch WINDOW ("perch discord"), mini_player_on/off (bind `body type` to a key);
                              --there sends it to her body on the other machine (hop_in: she comes over)
+argus companion voice [KIND on|off]  which of her lines she says out loud, on both bodies: replies, checkins,
+                             remarks, commentary (off: shown in her bubble, not spoken)
 argus companion link         how her two bodies are linked (music, quiet, coaching and settings cross over)
 argus companion away         count as away now (no waiting for the idle clock) until you're back at this machine
 argus companion chess [on|off|look|status] [--bot]  her chess coaching (Stockfish on the board she sees); --bot coaches
@@ -123,7 +125,7 @@ argus companion status       the signals the ticker sees right now"""
 
 
 def _cli_setup(parser) -> None:
-    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "link", "hands", "status"))
+    parser.add_argument("action", nargs="?", default="status", choices=("run", "moment", "body", "away", "chess", "play", "link", "hands", "voice", "status"))
     parser.add_argument("kind", nargs="?", default="popin", help="for moment: why it came up (default popin); "
                                                                      "for body: the action")
     parser.add_argument("rest", nargs="*", help="for body: words after the action (perch discord)")
@@ -173,6 +175,8 @@ def _cli_run(args) -> int:
         else:
             ticker.body(folder, action)
         return 0
+    if args.action == "voice":
+        return _cli_voice(folder, args)
     if args.action == "link":
         from . import link
         print(link.status(folder))
@@ -188,6 +192,20 @@ def _cli_run(args) -> int:
         return 0
     m = ticker.moment(folder)
     print(f"idle {m.idle:.0f}s  busy {m.busy}  quiet {m.quiet}  at {ticker.where(folder)}  (her log: {folder / 'checkins.log'})")
+    return 0
+
+
+def _cli_voice(folder, args) -> int:
+    from . import prefs
+    kind = args.kind if args.kind != "popin" else ""
+    if kind:
+        if kind not in prefs.VOICE or not args.rest or args.rest[0] not in ("on", "off"):
+            print(f"usage: argus companion voice [{'|'.join(prefs.VOICE)} on|off]")
+            return 2
+        prefs.save(folder, {"voice": {kind: args.rest[0] == "on"}})
+    voice = prefs.load(folder)["voice"]
+    for key, label in prefs.VOICE.items():
+        print(f"{'on ' if voice[key] else 'off'}  {key:<11} {label}")
     return 0
 
 

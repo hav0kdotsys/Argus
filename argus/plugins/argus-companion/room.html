@@ -99,6 +99,7 @@
     <label class="row"><span>Mini player <small>bottom-left while music plays</small></span><input type="checkbox" id="setMini"></label>
     <label class="row"><span>Pop-ins</span><select id="setPopin"><option value="rarely">rarely</option><option value="sometimes">sometimes</option><option value="often">often</option></select></label>
   </div>
+  <div class="group"><h2>OUT LOUD <small>off: shown in her bubble, not spoken</small></h2><div id="setVoice"></div></div>
   <div class="group"><h2>MOMENTS SHE GETS</h2><div id="setMoments"></div></div>
   <div class="say" id="setSay"></div>
 </section>
@@ -306,11 +307,21 @@ $("rpsNew").onclick = rpsNew;
 function applySettings(s) {
   $("setQuiet").checked = s.quiet; $("setCoach").checked = s.coach; $("setMini").checked = s.mini_player;
   $("setCoach").disabled = !s.engine; $("setPopin").value = s.popin;
+  applyVoice(s);
   const box = $("setMoments"); box.innerHTML = "";
   for (const [k, label] of Object.entries(s.moments)) {
     const row = document.createElement("label"); row.className = "row";
     row.innerHTML = `<span>${label}</span><input type="checkbox" data-k="${k}" ${s.off.includes(k) ? "" : "checked"}>`;
     row.querySelector("input").onchange = saveMoments;
+    box.appendChild(row);
+  }
+}
+function applyVoice(s) {
+  const box = $("setVoice"); box.innerHTML = "";
+  for (const [k, label] of Object.entries(s.voices)) {
+    const row = document.createElement("label"); row.className = "row";
+    row.innerHTML = `<span>${label}</span><input type="checkbox" data-k="${k}" ${s.voice[k] ? "checked" : ""}>`;
+    row.querySelector("input").onchange = e => change({ voice: { [k]: e.target.checked } });
     box.appendChild(row);
   }
 }

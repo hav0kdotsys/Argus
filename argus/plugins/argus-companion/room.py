@@ -126,7 +126,7 @@ class Room:
         spawn_context_thread(self.server.serve_forever, name="mira-room").start()
 
     def settings(self, change: dict | None) -> dict:
-        """Her settings as the tab shows them, after applying ``change`` (quiet, coach, mini_player, off, popin)."""
+        """Her settings as the tab shows them, after applying ``change`` (quiet, coach, mini_player, off, popin, voice)."""
         from . import chess_coach, prefs, ticker
         change = change if isinstance(change, dict) else {}
         if isinstance(change.get("quiet"), bool):
@@ -136,8 +136,8 @@ class Room:
             chess_coach.set_coach(self.folder, change["coach"])
         if isinstance(change.get("mini_player"), bool):
             ticker.body(self.folder, "mini_player_on" if change["mini_player"] else "mini_player_off")
-        current = prefs.save(self.folder, change) if ("off" in change or "popin" in change) else prefs.load(self.folder)
-        return {**current, "moments": prefs.MOMENTS, "quiet": (self.folder / "quiet").exists(),
+        current = prefs.save(self.folder, change) if {"off", "popin", "voice"} & change.keys() else prefs.load(self.folder)
+        return {**current, "moments": prefs.MOMENTS, "voices": prefs.VOICE, "quiet": (self.folder / "quiet").exists(),
                 "coach": chess_coach.settings(self.folder)["coach"], "mini_player": change.get("mini_player", not self._mini_off()),
                 "engine": bool(self.engine)}
 
