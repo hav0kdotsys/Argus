@@ -51,11 +51,10 @@ provider and error-text fixes. All of it comes to laphvk, Mira-coloured and rout
 Capri's support-ticket help bot; Capri's website, update channel and AppImage releases (we build and deploy her
 ourselves); Capri VR.
 
-## Open
+## Decided after the table
 
-9. Check-ins: Capri's body has its own care check-ins (now on Linux too, always on Windows) and ARGUS's companion has
-   MIRA-decided moments - both on means doubles. Proposed: the companion owns check-ins; the body's care check-ins are off
-   in a real run; the body keeps its instant reactions (pats, throws, waking). Waiting on HavoK.
+9. **Decided (8 Nov): the companion owns check-ins.** The body's own care check-ins are off in a real run (Linux and
+   Windows); the body keeps its instant reactions (pats, throws, waking).
 
 ## Questions that may come up while porting
 
