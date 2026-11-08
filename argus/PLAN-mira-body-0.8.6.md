@@ -84,3 +84,12 @@ bodies still run the 0.8.0 fork until HavoK says swap.
 - **Open, HavoK's call:** #4 skill mods into MIRA's read-only skill store (proposed: ARGUS on debhvk writes `mod-<id>`
   for turned-on skills only, labelled know-how); Gemini free-tier limits; which mic "Hey Mira" listens on (Windows default:
   Voicemod's virtual device).
+
+## Swapped (8 Nov, 17:35)
+
+Both bodies run 0.8.6.1 + the Mira layer (`mira-body` main `7b715cf`; the 0.8.0 fork is tag `mira-0.8.0`). Rollback:
+laphvk `~/.local/share/mira-body.bak-0.8.0-20261108` (copy back, restart mira-body); winhvk
+`%LOCALAPPDATA%\Programs\Mira\Mira.exe.0.8.0` (rename to Mira.exe, end Mira.exe; the ARGUS service restarts it).
+Found at the swap: the Linux build crashed on `avares://Capri/...` (its assembly is Mira now) - fixed, and `rename.py`
+renames those now. The ARGUS service on winhvk was started again (stopped since 6 Nov 14:21). Dad's TV share: winhvk's
+MIRA Link sender caps at 6 Mbps (`link-send.ps1`, backup `.bak-remotecap-20261108`; `-Lan` lifts it, nothing passes it yet).
