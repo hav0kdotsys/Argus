@@ -169,3 +169,11 @@ def test_a_hold_runs_out_and_a_touch_is_never_held(mind, monkeypatch, tmp_path):
 def test_the_app_in_front_is_named_without_its_title(mind):
     seen = mind.look(0, "winhvk", state={"window": "Play Chess Online - Chess.com — Zen Browser"})
     assert seen.app == "Zen Browser" and seen.window.startswith("Play Chess")
+
+
+def test_an_impossible_sitting_is_never_handed_to_her_as_fact(mind):
+    seen = mind.Seen(window="foot", where="laphvk")
+    sane = mind.brief("bored", timedelta(hours=3), seen, datetime(2026, 11, 8, 12, 0), [], [], [])
+    broken = mind.brief("bored", timedelta(hours=87), seen, datetime(2026, 11, 8, 12, 0), [], [], [])
+    assert "3h 00m this sitting" in sane
+    assert "87h" not in broken and "don't mention how long" in broken

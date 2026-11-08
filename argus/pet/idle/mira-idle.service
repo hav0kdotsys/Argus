@@ -1,0 +1,12 @@
+[Unit]
+Description=MIRA's idle signal on laphvk (Quickshell IdleMonitor -> ~/.argus/companion/idle.json)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/qs --path %h/argus/argus/pet/idle/shell.qml
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target

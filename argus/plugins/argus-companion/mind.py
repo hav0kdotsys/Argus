@@ -221,6 +221,11 @@ def _span(delta: timedelta) -> str:
     return f"{minutes // 60}h {minutes % 60:02d}m" if minutes >= 60 else f"{minutes} min"
 
 
+# A sitting this long isn't a sitting, it's a broken idle signal (8 Nov: Hyprland gave her body none, and her check-ins
+# escalated over "87 hours at the desk" into telling Hannah she'd get someone into the room).
+IMPLAUSIBLE_SITTING = timedelta(hours=14)
+
+
 def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: list[str], talk: list[str],
           said: list[str], away_for: timedelta = timedelta(0), day: list[str] | None = None, extra: str = "") -> str:
     """The context she decides from: why this moment, what she can see, what she remembers, what was said."""
@@ -231,7 +236,10 @@ def brief(kind: str, present_for: timedelta, seen: Seen, now: datetime, mem: lis
     parts = [
         f"Why ARGUS flagged this moment: {reason}.",
         *([f"What's happening (facts, from ARGUS - put them in your own words if you use them):\n{extra}"] if extra else []),
-        f"Now: {now:%A %d %B %Y, %H:%M}. Hannah has been at her desk for {_span(present_for)} this sitting.",
+        f"Now: {now:%A %d %B %Y, %H:%M}. " + (f"Hannah has been at her desk for {_span(present_for)} this sitting."
+                                              if present_for <= IMPLAUSIBLE_SITTING else
+                                              "How long Hannah has been at her desk isn't known right now (ARGUS's idle "
+                                              "signal looks wrong), so don't mention how long she's been here."),
         (f"She's at {seen.where} (last input {int(seen.idle)}s ago). Focused window: {seen.window or 'unknown'}"
          f"{' (fullscreen)' if seen.fullscreen else ''}." + (" winhvk's Game Mode is on." if seen.gaming else ""))
         if seen.local else
