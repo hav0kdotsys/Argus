@@ -62,3 +62,25 @@ ourselves); Capri VR.
 ## Questions that may come up while porting
 
 Anything where Capri's backend and MIRA's meet in a way this table doesn't settle goes to HavoK before it's built.
+
+## Status (8 Nov, evening)
+
+Branch `mira-0.8.6` (mira-body, worktree `~/mira-body-086`; winhvk `D:\Network\Projects\Argus\mira-body-086`). Her live
+bodies still run the 0.8.0 fork until HavoK says swap.
+
+- **Done:** every Mira commit carried over; #1, #2, #3, #5, #7, #9, #10, plus "Hey Mira" (below), MIRA'S VOICE in both
+  Mainframes, and the lines-in-her-mouth audit redone for 0.8.6.1.
+- **#3 ears:** relay `POST /hear` -> mira-api `/v1/stt` (Groq, its own Whisper underneath); nothing downloaded to the PCs.
+- **#7 Gemini Flash:** commentary and game-playing jobs -> relay `/see` with `game:true` -> mira-api pinned to `googleai`
+  (assistant mode, no tools, frames as image parts, minimal thinking). mira-api backups `*.bak-geminisee-*`, `*.bak-gemthink-*`.
+- **"Hey Mira" on winhvk:** HavoK's own `hey_mira.onnx` (laphvk's, 20 Oct), run by the companion (`wake.py`,
+  `wake_listen.py`) from `%LOCALAPPDATA%\Mira\heymira` (its own venv: openwakeword 0.4.0); a sure hit -> body `POST /wake`,
+  an unsure one is checked by debhvk's own Whisper first (`/hear?profile=wake`, never a cloud API).
+- **Bugs found on the way:** she only answered to "Capri" (0.8.0 fork too) - fixed; Code/Husk hooks refused `Mira.exe`;
+  Capri's Ko-fi in her streaming prompts; `.capri-skin` and the mod directory's pattern renamed by `rename.py`; quick
+  calls (commentary, call lines, asides) had no MIRA path; blinks popped after the recolour.
+- **Known smoke fails on the fork:** checks of Capri's own palette (click effect red, control sign pink/cyan, chaos
+  screen's pink face, Legacy stand byte-for-byte), and the ones upstream also fails headless (modal dialogs, wheel, slide).
+- **Open, HavoK's call:** #4 skill mods into MIRA's read-only skill store (proposed: ARGUS on debhvk writes `mod-<id>`
+  for turned-on skills only, labelled know-how); Gemini free-tier limits; which mic "Hey Mira" listens on (Windows default:
+  Voicemod's virtual device).
