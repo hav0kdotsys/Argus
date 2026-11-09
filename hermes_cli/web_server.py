@@ -797,6 +797,7 @@ from hermes_cli.web_routers import (
     delegation as _delegation_routes,
     webapp_access as _webapp_access_routes,
     ui_preferences as _ui_preferences_routes,
+    estate as _estate_routes,
 )
 
 import hermes_cli.web_routers.desktop_plugins as _desktop_plugin_routes
@@ -833,6 +834,7 @@ app.include_router(_skills_routes.hub_router)
 app.include_router(_profiles_routes.router)
 app.include_router(_skills_routes.router)
 app.include_router(_tools_routes.router)
+app.include_router(_estate_routes.router)  # /api/estate/* — the MIRA estate (HvkDeck) for ARGUS clients
 app.include_router(_analytics_routes.router)
 app.include_router(_chat_ws_routes.router)
 app.include_router(_chat_workspaces_routes.router)

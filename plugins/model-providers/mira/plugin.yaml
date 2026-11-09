@@ -1,0 +1,5 @@
+name: mira-provider
+kind: model-provider
+version: 1.0.0
+description: MIRA's own brain (mira-api) as a selectable model
+author: HavoK

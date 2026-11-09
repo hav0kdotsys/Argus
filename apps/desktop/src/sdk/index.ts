@@ -46,7 +46,7 @@ import {
 import { onGatewayEvent } from '@/contrib/events'
 import { registry } from '@/contrib/registry'
 import type { WorkspaceMode } from '@/contrib/types'
-import { deleteProfile, getLogs, getStatus, hermesApi, type HermesGateway } from '@/hermes'
+import { deleteProfile, getEstateDevices, getLogs, getStatus, hermesApi, type HermesGateway } from '@/hermes'
 import { traceIdentityChange } from '@/lib/identity-trace'
 import { completeMcpDesktopOAuth } from '@/lib/mcp-dashboard-oauth'
 import {
@@ -1342,6 +1342,9 @@ export const host = {
   /** One-shot system status snapshot (platforms, versions, …). */
   status: async () => getStatus(),
 
+  /** The MIRA estate device board (PCs + phones), proxied by the gateway's /api/estate/* routes. */
+  estate: async () => getEstateDevices(),
+
   /** Credential-free routes across every current registry source. Identity is
    *  the (connectionId, profile) pair; endpoint/auth details stay in Electron. */
   profileRoutes: async () => {
@@ -1538,10 +1541,11 @@ export const host = {
 // -- react bridge -------------------------------------------------------------
 
 export type { DesktopSettingKey, DesktopSettingValues } from './settings'
+export type { ViewportRect } from './viewport'
 
 // -- ui: the design language --------------------------------------------------
 
-export type { ViewportRect } from './viewport'
+export type { EstateDevice, EstateDevicesResponse, EstateService } from '@/api/estate'
 /** THE whole Capabilities surface (Skills / Tools / MCP tabs, installed
  *  lists, full-skill detail pane, embedded hub picker with one-click
  *  installs). For plugin dialogs pass `embedded` (tab state stays local —
